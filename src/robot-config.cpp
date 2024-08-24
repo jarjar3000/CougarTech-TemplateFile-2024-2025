@@ -28,10 +28,10 @@ controller controller1 = controller(primary);
   - RightF: Front right motor
   - RightB: Back right motor
 */
-motor leftF = motor(PORT1, ratio18_1, false);
-motor leftB = motor(PORT2, ratio18_1, false);
-motor rightF = motor(PORT3, ratio18_1, true);
-motor rightB = motor(PORT4, ratio18_1, true);
+motor leftF = motor(PORT1, ratio18_1, true);
+motor leftB = motor(PORT2, ratio18_1, true);
+motor rightF = motor(PORT3, ratio18_1, false);
+motor rightB = motor(PORT4, ratio18_1, false);
 
 /*
   Lift (Arm)
@@ -39,16 +39,21 @@ motor rightB = motor(PORT4, ratio18_1, true);
   - leftLift: left arm motor (also the default name if you only use one motor)
   - rightLift: right arm motor (delete if you only have 1 motor)
 */
-motor leftLift = motor(PORT16, ratio18_1, false);
-motor rightLift = motor(PORT17, ratio18_1, true);
+motor leftLift = motor(PORT18, ratio18_1, false);
+motor rightLift = motor(PORT19, ratio18_1, true);
 
 /*
   Accumulator
 */
-motor bottomAccumulator = motor(PORT5, ratio18_1, false);
-motor topAccumulator = motor(PORT5, ratio18_1, true);
+motor bottomAccumulator = motor(PORT5, ratio18_1, true);
+motor topAccumulator = motor(PORT16, ratio18_1, true);
 
+//Sensors
+inertial inertial1 = inertial(PORT17);
 
+// Pneumatics
+digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
+digital_out clamp2 = digital_out(Brain.ThreeWirePort.B);
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

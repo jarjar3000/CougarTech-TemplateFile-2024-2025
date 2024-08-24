@@ -15,6 +15,7 @@
 
 #include "vex.h"
 #include "robot-config.h"
+#include "1-functions.h"
 
 using namespace vex;
 
@@ -40,6 +41,7 @@ void usercontrol(void)
   while(1)
   {
     //Assign buttons for pneumatics here (use a callback function)
+    controller1.ButtonX.pressed(clamp);
     while(true)
     {
       //Joysticks, arms, claws, etc. go here
@@ -81,8 +83,8 @@ void usercontrol(void)
      }
      else
      {
-        rightF.setVelocity(leftMotorSpeed, percent);
-        rightB.setVelocity(leftMotorSpeed, percent);
+        rightF.setVelocity(rightMotorSpeed, percent);
+        rightB.setVelocity(rightMotorSpeed, percent);
      }
 
      //Make the drive motors spin so the robot moves

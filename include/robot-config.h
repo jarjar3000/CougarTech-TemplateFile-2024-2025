@@ -24,6 +24,11 @@ extern motor rightLift;
 extern motor bottomAccumulator;
 extern motor topAccumulator;
 
+extern inertial inertial1;
+
+// Pneumatics
+extern digital_out clamp1;
+extern digital_out clamp2;
 
 
 /**
