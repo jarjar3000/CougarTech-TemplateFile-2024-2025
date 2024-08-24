@@ -2,82 +2,156 @@
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
 /*    Author:       jared                                                     */
-/*    Created:      8/23/2024, 3:43:06 PM                                     */
+/*    Created:      8/23/2024, 03:51:27 PM                                    */
 /*    Description:  V5 project                                                */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
+/*
+   This file will configure a robot with a four motor drive, two motor arm, and 1 motor claw.
+   Given everything is plugged into the right ports, it will function.
+   If you are branching from this file, delete what you don't need.
+*/
+
 #include "vex.h"
+#include "robot-config.h"
 
 using namespace vex;
 
 // A global instance of competition
 competition Competition;
 
-// define your global instances of motors and other devices here
+//Pre-auton
+void pre_auton(void) 
+{
 
-/*---------------------------------------------------------------------------*/
-/*                          Pre-Autonomous Functions                         */
-/*                                                                           */
-/*  You may want to perform some actions before the competition starts.      */
-/*  Do them in the following function.  You must return from this function   */
-/*  or the autonomous and usercontrol tasks will not be started.  This       */
-/*  function is only called once after the V5 has been powered on and        */
-/*  not every time that the robot is disabled.                               */
-/*---------------------------------------------------------------------------*/
-
-void pre_auton(void) {
-
-  // All activities that occur before the competition starts
-  // Example: clearing encoders, setting servo positions, ...
+  
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              Autonomous Task                              */
-/*                                                                           */
-/*  This task is used to control your robot during the autonomous phase of   */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
-
-void autonomous(void) {
-  // ..........................................................................
-  // Insert autonomous user code here.
-  // ..........................................................................
+//Autonomous
+void autonomous(void) 
+{
+  
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              User Control Task                            */
-/*                                                                           */
-/*  This task is used to control your robot during the user control phase of */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
+//Driver Control
+void usercontrol(void) 
+{
+  while(1)
+  {
+    //Assign buttons for pneumatics here (use a callback function)
+    while(true)
+    {
+      //Joysticks, arms, claws, etc. go here
 
-void usercontrol(void) {
-  // User control code here, inside the loop
-  while (1) {
-    // This is the main execution loop for the user control program.
-    // Each time through the loop your program should update motor + servo
-    // values based on feedback from the joysticks.
+      //Controller Deadzone, a smaller number makes the joysticks more sensitive
+      float deadband = 5;
+      
+      //Variables track both joystick positions and will update motor velocities
+      float leftMotorSpeed = controller1.Axis3.position();
+      float rightMotorSpeed = controller1.Axis2.position();
 
-    // ........................................................................
-    // Insert user code here. This is where you use the joystick values to
-    // update your motors, etc.
-    // ........................................................................
+      /*
+        Left Side of Drivetrain
+        The joystick positions will set the speed of the left motors.
+        If that number is less than the deadband, the motors will not move.
+      */
+     if(fabs(leftMotorSpeed) < deadband)
+     {
+        //Set the speed to 0
+        leftF.setVelocity(0, percent);
+        leftB.setVelocity(0, percent);
+     }
+     else
+     {
+        leftF.setVelocity(leftMotorSpeed, percent);
+        leftB.setVelocity(leftMotorSpeed, percent);
+     }
 
-    wait(20, msec); // Sleep the task for a short amount of time to
-                    // prevent wasted resources.
+     /*
+        Right Side of Drivetrain
+        The joystick positions will set the speed of the right motors.
+        If that number is less than the deadband, the motors will not move.
+      */
+     if(fabs(rightMotorSpeed) < deadband)
+     {
+        //Set the speed to 0
+        rightF.setVelocity(0, percent);
+        rightB.setVelocity(0, percent);
+     }
+     else
+     {
+        rightF.setVelocity(leftMotorSpeed, percent);
+        rightB.setVelocity(leftMotorSpeed, percent);
+     }
+
+     //Make the drive motors spin so the robot moves
+     leftF.spin(forward);
+     leftB.spin(forward);
+     rightF.spin(forward);
+     rightB.spin(forward);
+
+     //Set the drive motors to coast
+     leftF.setStopping(coast);
+     leftB.setStopping(coast);
+     rightF.setStopping(coast);
+     rightB.setStopping(coast);
+
+     //Set the non-drive motors to hold its position (add non-drive motors as necessary)
+     bottomAccumulator.setStopping(hold);
+     topAccumulator.setStopping(hold);
+
+     //Set the velocity of the non-drive motors (add non-drive motors as necessary)
+     bottomAccumulator.setVelocity(100, percent);
+     topAccumulator.setVelocity(100, percent);
+
+     /*
+      Arm
+      The code below assigns lifting the arm to the left bumpers on the controller
+      This code can be applied to anything mechanism that will function using bumper presses
+     */
+     if(controller1.ButtonL1.pressing())
+     {
+        leftLift.spin(forward);
+        rightLift.spin(forward);
+     }
+     else if(controller1.ButtonL2.pressing())
+     {
+        leftLift.spin(reverse);
+        rightLift.spin(reverse);
+     }
+     else
+     {
+        leftLift.stop();
+        rightLift.stop();
+     }
+
+     /*
+      Accumulator
+      Buttons that control the accumulator
+     */
+     if(controller1.ButtonR1.pressing())
+     {
+        bottomAccumulator.spin(forward);
+        topAccumulator.spin(forward);
+     }
+     else if(controller1.ButtonR2.pressing())
+     {
+        bottomAccumulator.spin(reverse);
+        topAccumulator.spin(reverse);
+     }
+     else
+     {
+        bottomAccumulator.stop();
+        topAccumulator.stop();
+     }
+
+      //Wait to conserve brain resources
+      wait(20, msec);
+    }
   }
 }
 
-//
-// Main will set up the competition functions and callbacks.
-//
 int main() {
   // Set up callbacks for autonomous and driver control periods.
   Competition.autonomous(autonomous);
