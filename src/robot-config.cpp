@@ -55,6 +55,8 @@ inertial inertial1 = inertial(PORT17);
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
 digital_out clamp2 = digital_out(Brain.ThreeWirePort.B);
 
+timer failsafe = timer();
+
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  *

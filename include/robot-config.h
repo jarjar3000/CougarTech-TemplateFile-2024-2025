@@ -30,6 +30,8 @@ extern inertial inertial1;
 extern digital_out clamp1;
 extern digital_out clamp2;
 
+extern timer failsafe;
+
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

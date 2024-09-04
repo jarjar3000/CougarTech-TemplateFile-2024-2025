@@ -102,22 +102,26 @@ void usercontrol(void)
      //Set the non-drive motors to hold its position (add non-drive motors as necessary)
      bottomAccumulator.setStopping(hold);
      topAccumulator.setStopping(hold);
+     leftLift.setStopping(hold);
+     rightLift.setStopping(hold);
 
      //Set the velocity of the non-drive motors (add non-drive motors as necessary)
      bottomAccumulator.setVelocity(100, percent);
      topAccumulator.setVelocity(100, percent);
+     leftLift.setVelocity(100, percent); 
+     rightLift.setVelocity(100, percent); 
 
      /*
       Arm
       The code below assigns lifting the arm to the left bumpers on the controller
       This code can be applied to anything mechanism that will function using bumper presses
      */
-     if(controller1.ButtonL1.pressing())
+     if(controller1.ButtonL2.pressing())
      {
         leftLift.spin(forward);
         rightLift.spin(forward);
      }
-     else if(controller1.ButtonL2.pressing())
+     else if(controller1.ButtonL1.pressing())
      {
         leftLift.spin(reverse);
         rightLift.spin(reverse);
