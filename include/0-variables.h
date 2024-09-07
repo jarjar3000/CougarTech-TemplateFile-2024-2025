@@ -3,8 +3,6 @@ using namespace vex;
 
 bool extended = false;
 bool slow = false;
-const double LOWER_ACCUMULATOR_THRESHOLD = 0; // 200
-const double HIGHER_ACCUMULATOR_THRESHOLD = 200; // 150
 
 // PID Variables
 const double kP = 0.3;
