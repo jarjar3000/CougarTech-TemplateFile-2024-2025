@@ -14,3 +14,6 @@ double derivative = 0;
 double prevError = 0;
 double leftSpeed = 0;
 double rightSpeed = 0;
+
+// Driving Variables
+const double MAX_DRIVE_SPEED = 80;

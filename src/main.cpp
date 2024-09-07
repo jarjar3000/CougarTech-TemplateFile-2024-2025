@@ -69,8 +69,16 @@ void usercontrol(void)
      }
      else
      {
-        leftF.setVelocity(leftMotorSpeed, percent);
-        leftB.setVelocity(leftMotorSpeed, percent);
+         if (fabs(leftMotorSpeed) >= MAX_DRIVE_SPEED)
+         {
+            leftF.setVelocity(MAX_DRIVE_SPEED, percent);
+            leftB.setVelocity(MAX_DRIVE_SPEED, percent);
+         } 
+         else
+         {
+            leftF.setVelocity(leftMotorSpeed, percent);
+            leftB.setVelocity(leftMotorSpeed, percent);
+         } 
      }
 
      /*
@@ -86,8 +94,16 @@ void usercontrol(void)
      }
      else
      {
-        rightF.setVelocity(rightMotorSpeed, percent);
-        rightB.setVelocity(rightMotorSpeed, percent);
+        if (fabs(rightMotorSpeed) >= MAX_DRIVE_SPEED)
+         {
+            rightF.setVelocity(MAX_DRIVE_SPEED, percent);
+            rightB.setVelocity(MAX_DRIVE_SPEED, percent);
+         } 
+         else
+         {
+            rightF.setVelocity(rightMotorSpeed, percent);
+            rightB.setVelocity(rightMotorSpeed, percent);
+         } 
      }
 
      //Make the drive motors spin so the robot moves
@@ -119,12 +135,12 @@ void usercontrol(void)
       The code below assigns lifting the arm to the left bumpers on the controller
       This code can be applied to anything mechanism that will function using bumper presses
      */
-     if(controller1.ButtonL2.pressing())
+     if(controller1.ButtonL1.pressing())
      {
         leftLift.spin(forward);
         rightLift.spin(forward);
      }
-     else if(controller1.ButtonL1.pressing())
+     else if(controller1.ButtonL2.pressing())
      {
         leftLift.spin(reverse);
         rightLift.spin(reverse);
