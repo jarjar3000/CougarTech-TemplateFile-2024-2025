@@ -55,6 +55,10 @@ inertial inertial1 = inertial(PORT17);
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
 digital_out clamp2 = digital_out(Brain.ThreeWirePort.B);
 
+optical optical1 = optical(PORT9);
+vision vision1 = vision(PORT10);
+limit limit1 = limit(Brain.ThreeWirePort.C);
+
 timer failsafe = timer();
 
 /**

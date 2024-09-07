@@ -42,6 +42,9 @@ void usercontrol(void)
   {
     //Assign buttons for pneumatics here (use a callback function)
     controller1.ButtonX.pressed(clamp);
+
+    // Button to slow down drivetrain
+    controller1.ButtonY.pressed(slowDown);
     while(true)
     {
       //Joysticks, arms, claws, etc. go here
@@ -136,10 +139,28 @@ void usercontrol(void)
       Accumulator
       Buttons that control the accumulator
      */
+   //  printf("%.2f\n", topAccumulator.position(degrees));
      if(controller1.ButtonR1.pressing())
      {
-        bottomAccumulator.spin(forward);
-        topAccumulator.spin(forward);
+        if (optical1.color() == red || optical1.color() == blue || slow)
+        {
+            // Reset encoder
+            // controller1.rumble(".");
+            topAccumulator.resetPosition();
+        }
+        
+        // When the motor is in the threshold, spin slow. Otherwise, spin fast
+         if (fabs(topAccumulator.position(degrees)) >= LOWER_ACCUMULATOR_THRESHOLD && fabs(topAccumulator.position(degrees)) <= HIGHER_ACCUMULATOR_THRESHOLD)
+         {
+            bottomAccumulator.spin(forward, 100, percent);
+            topAccumulator.spin(forward, 5, percent); // To delay less, make code faster
+         }
+         else 
+         {
+            controller1.rumble(".");
+            bottomAccumulator.spin(forward, 100, percent);
+            topAccumulator.spin(forward, 100, percent);
+         }   
      }
      else if(controller1.ButtonR2.pressing())
      {

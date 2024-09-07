@@ -32,7 +32,9 @@ extern digital_out clamp2;
 
 extern timer failsafe;
 
-
+extern vision vision1;
+extern optical optical1;
+extern limit limit1;
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  *

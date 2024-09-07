@@ -18,6 +18,18 @@ void clamp()
     }
 }
 
+void slowDown()
+{
+    if (slow)
+    {
+        slow = false;
+    }
+    else 
+    {
+        slow = true; 
+    }
+}
+
 void drive(vex::directionType d, double deg1, double failsafeTime)
 {
     // Reset all motors + encoders
