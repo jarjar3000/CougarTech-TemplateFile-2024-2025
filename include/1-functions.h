@@ -10,11 +10,11 @@ void clamp()
         clamp2.set(true);
         extended = false;
     }
-    else 
+    else
     {
         clamp1.set(false);
         clamp2.set(false);
-        extended = true; 
+        extended = true;
     }
 }
 
@@ -24,9 +24,9 @@ void slowDown()
     {
         slow = false;
     }
-    else 
+    else
     {
-        slow = true; 
+        slow = true;
     }
 }
 
@@ -50,16 +50,16 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
     // Reset failsafe timer
     failsafe.clear();
 
-    switch(d)
+    switch (d)
     {
-        case vex::directionType::fwd:
+    case vex::directionType::fwd:
         // Start driving forward
         leftF.spin(forward);
         leftB.spin(forward);
         rightF.spin(forward);
         rightB.spin(forward);
 
-        while(1)
+        while (1)
         {
             // Error (Proportional)
             avgPosition = (leftF.position(degrees) + rightF.position(degrees)) / 2;
@@ -72,7 +72,7 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
             derivative = error - prevError;
             prevError = error;
 
-            // Calculate 
+            // Calculate
             leftSpeed = error * kP + integral * kI + derivative * kD;
             rightSpeed = error * kP + integral * kI + derivative * kD;
 
@@ -84,11 +84,11 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
         }
 
         break;
-        
-        case vex::directionType::rev:
+
+    case vex::directionType::rev:
         break;
 
-        case vex::directionType::undefined:
+    case vex::directionType::undefined:
         break;
     }
 }
