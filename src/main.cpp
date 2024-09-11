@@ -31,7 +31,7 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   
+
 }
 
 // Driver Control
@@ -98,7 +98,7 @@ void usercontrol(void)
          }
          else
          {
-            if (fabs(rightMotorSpeed) >= MAX_DRIVE_SPEED)
+            if (rightMotorSpeed >= MAX_DRIVE_SPEED)
             {
                rightF.setVelocity(MAX_DRIVE_SPEED, percent);
                rightB.setVelocity(MAX_DRIVE_SPEED, percent);
@@ -164,7 +164,6 @@ void usercontrol(void)
           Accumulator
           Buttons that control the accumulator
          */
-         //  printf("%.2f\n", topAccumulator.position(degrees));
          if (controller1.ButtonR1.pressing())
          {
             if (limit1.pressing())

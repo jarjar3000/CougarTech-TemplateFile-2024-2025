@@ -1,9 +1,6 @@
 using namespace vex;
 #include "vex.h"
 
-bool extended = false;
-bool slow = false;
-
 // PID Variables
 const double kP = 0.3;
 const double kI = 0.2;
@@ -17,3 +14,5 @@ double rightSpeed = 0;
 
 // Driving Variables
 const double MAX_DRIVE_SPEED = 80;
+bool extended = false;
+bool slow = false;
