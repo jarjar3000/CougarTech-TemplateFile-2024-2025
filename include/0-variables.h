@@ -12,6 +12,12 @@ double prevError = 0;
 double leftSpeed = 0;
 double rightSpeed = 0;
 
+// Constants
+const double DRIVE_INTEGRAL_WINDUP = 100;
+const double TURN_INTEGRAL_WINDUP = 100;
+const double DRIVE_ERROR_TOLERANCE = 5;
+const double TURN_ERROR_TOLERANCE = 1;
+
 // Driving Variables
 const double MAX_DRIVE_SPEED = 80;
 bool extended = false;
