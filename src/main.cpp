@@ -31,7 +31,11 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
+   inertial1.setHeading(0, degrees);
+   heading = 0;
 
+   drive(forward, 500, 10);
+   // turn(right, 90, 10);
 }
 
 // Driver Control
@@ -136,8 +140,8 @@ void usercontrol(void)
          // Set the velocity of the non-drive motors (add non-drive motors as necessary)
          bottomAccumulator.setVelocity(100, percent);
          topAccumulator.setVelocity(100, percent);
-         leftLift.setVelocity(100, percent);
-         rightLift.setVelocity(100, percent);
+         leftLift.setVelocity(50, percent);
+         rightLift.setVelocity(50, percent);
 
          /*
           Arm
@@ -169,7 +173,7 @@ void usercontrol(void)
             if (limit1.pressing())
             {
                bottomAccumulator.spin(forward, 100, percent);
-               topAccumulator.spin(forward, 40, percent);
+               topAccumulator.spin(forward, 20, percent);
             }
             else
             {
