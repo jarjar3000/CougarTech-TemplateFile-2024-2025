@@ -31,6 +31,7 @@ void slowDown()
 }
 
 // Drives the robot in a direction for deg1 degrees
+// TODO: Convert degrees to an actual measurement of distance (inches)
 void drive(vex::directionType d, double deg1, double failsafeTime)
 {
     // Reset all motors + encoders
@@ -288,4 +289,22 @@ void turn(vex::turnType d, double heading, double failsafeTime)
     rightB.stop();
 
     wait(500, msec);
+}
+
+void moveClamp(bool pos)
+{
+    clamp1.set(pos);
+    clamp2.set(pos);   
+}
+
+void spinAccumulator(vex::directionType d, double vel)
+{
+    bottomAccumulator.spin(d, vel, percent);
+    topAccumulator.spin(d, vel, percent);
+}
+
+void stopAccumulator()
+{
+    bottomAccumulator.stop();
+    topAccumulator.stop();
 }

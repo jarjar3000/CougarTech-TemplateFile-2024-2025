@@ -25,6 +25,6 @@ const double TURN_ERROR_TOLERANCE = 1;
 double heading = 0;
 
 // Driving Variables
-const double MAX_DRIVE_SPEED = 80;
+const double MAX_DRIVE_SPEED = 100;
 bool extended = false;
 bool slow = false;
