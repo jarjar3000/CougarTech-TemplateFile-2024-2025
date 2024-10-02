@@ -4,17 +4,17 @@ using namespace vex;
 
 void clamp()
 {
-    if (extended)
+    if (clamp1.value() == 0)
     {
         clamp1.set(true);
         clamp2.set(true);
-        extended = false;
+        // extended = false;
     }
     else
     {
         clamp1.set(false);
         clamp2.set(false);
-        extended = true;
+        // extended = true;
     }
 }
 
@@ -289,12 +289,6 @@ void turn(vex::turnType d, double heading, double failsafeTime)
     rightB.stop();
 
     wait(500, msec);
-}
-
-void moveClamp(bool pos)
-{
-    clamp1.set(pos);
-    clamp2.set(pos);   
 }
 
 void spinAccumulator(vex::directionType d, double vel)
