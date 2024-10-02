@@ -17,21 +17,9 @@ void clamp()
     }
 }
 
-void slowDown()
-{
-    if (slow)
-    {
-        slow = false;
-    }
-    else
-    {
-        slow = true;
-    }
-}
-
 // Drives the robot in a direction for deg1 degrees
 // TODO: Convert degrees to an actual measurement of distance (inches)
-void drive(vex::directionType d, double deg1, double failsafeTime)
+void drive(vex::directionType d, double distance, double failsafeTime)
 {
     // Reset all motors + encoders
     leftF.setPosition(0, degrees);
@@ -57,9 +45,14 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
 
         while (true)
         {
+            controller1.Screen.clearScreen();
             // Error (Proportional)
             avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
-            error = deg1 - avgPosition;
+            if (avgPosition == 0)
+            {
+                avgPosition = 0.0000001;
+            }
+            error = distance - (WHEEL_DIAMETER * M_PI)/avgPosition;
 
             // Integral
             integral += error;
@@ -84,7 +77,7 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
             rightF.setVelocity(rightSpeed, percent);
             rightB.setVelocity(rightSpeed, percent);
 
-            controller1.Screen.print("%f", error);
+            printf("Error: %f\n", error);
 
             // Break if desination is reached
             if (error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE)
@@ -101,7 +94,7 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
             // Conserve brain resources
             wait(20, msec);
         }
-        printf("It borke");
+        controller1.Screen.print("%f", error);
         break;
 
     case vex::directionType::rev:
@@ -115,7 +108,7 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
         {
             // Error (Proportional)
             avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
-            error = deg1 - avgPosition;
+            error = distance - avgPosition;
 
             // Integral
             integral += error;

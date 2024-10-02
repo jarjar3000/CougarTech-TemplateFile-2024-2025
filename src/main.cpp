@@ -34,8 +34,9 @@ void autonomous(void)
    inertial1.setHeading(0, degrees);
    heading = 0;
 
-   drive(forward, 500, 10);
-   drive(reverse, 500, 10);
+   drive(forward, 12, 10);
+   
+   // drive(reverse, 12, 10);
    // int speed = 33; // 33
    // int distance = 750; // 1000
    // leftF.setVelocity(speed, percent);
