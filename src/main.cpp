@@ -34,21 +34,22 @@ void autonomous(void)
    inertial1.setHeading(0, degrees);
    heading = 0;
 
-   // drive(reverse, 500, 10);
-   int speed = 33; // 33
-   int distance = 750; // 1000
-   leftF.setVelocity(speed, percent);
-   leftB.setVelocity(speed, percent);
-   rightF.setVelocity(speed, percent);
-   rightB.setVelocity(speed, percent);
-   leftB.spinFor(reverse, distance, degrees, false);
-   leftF.spinFor(reverse, distance, degrees, false);
-   rightB.spinFor(reverse, distance, degrees, false);
-   rightF.spinFor(reverse, distance, degrees, true);
-   spinAccumulator(forward, 100);
-   clamp();
-   wait(2, seconds);
-   stopAccumulator();
+   drive(forward, 500, 10);
+   drive(reverse, 500, 10);
+   // int speed = 33; // 33
+   // int distance = 750; // 1000
+   // leftF.setVelocity(speed, percent);
+   // leftB.setVelocity(speed, percent);
+   // rightF.setVelocity(speed, percent);
+   // rightB.setVelocity(speed, percent);
+   // leftB.spinFor(reverse, distance, degrees, false);
+   // leftF.spinFor(reverse, distance, degrees, false);
+   // rightB.spinFor(reverse, distance, degrees, false);
+   // rightF.spinFor(reverse, distance, degrees, true);
+   // spinAccumulator(forward, 100);
+   // clamp();
+   // wait(2, seconds);
+   // stopAccumulator();
 
 }
 

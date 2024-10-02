@@ -39,12 +39,6 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
     rightF.setPosition(0, degrees);
     rightB.setPosition(0, degrees);
 
-    // Set velocity
-    leftF.setVelocity(80, percent);
-    leftB.setVelocity(80, percent);
-    rightF.setVelocity(80, percent);
-    rightB.setVelocity(80, percent);
-
     // Reset PID variables
     double avgPosition = 0;
     prevError = 0;
@@ -61,9 +55,7 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
         rightF.spin(forward, 80, percent);
         rightB.spin(forward, 80, percent);
 
-        printf("It start");
-
-        while (1)
+        while (true)
         {
             // Error (Proportional)
             avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
@@ -87,10 +79,12 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
             rightSpeed = error * kP + integral * kI + derivative * kD;
 
             // Change motor speed
-            leftF.setVelocity(leftSpeed, percent);
-            leftB.setVelocity(leftSpeed, percent);
-            rightF.setVelocity(rightSpeed, percent);
-            rightB.setVelocity(rightSpeed, percent);
+            leftF.spin(forward, leftSpeed, percent);
+            leftB.spin(forward, leftSpeed, percent);
+            rightF.spin(forward, rightSpeed, percent);
+            rightB.spin(forward, rightSpeed, percent);
+
+            controller1.Screen.print("%f", error);
 
             // Break if desination is reached
             if (error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE)
@@ -99,7 +93,7 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
             }
 
             // If failsafe timer is greater than input time, break
-            if (failsafe.time() >= failsafeTime)
+            if (failsafe.time(seconds) >= failsafeTime)
             {
                 break;
             }
@@ -153,7 +147,7 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
             }
 
             // If failsafe timer is greater than input time, break
-            if (failsafe.time() >= failsafeTime)
+            if (failsafe.time(seconds) >= failsafeTime)
             {
                 break;
             }
