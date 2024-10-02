@@ -79,10 +79,10 @@ void drive(vex::directionType d, double deg1, double failsafeTime)
             rightSpeed = error * kP + integral * kI + derivative * kD;
 
             // Change motor speed
-            leftF.spin(forward, leftSpeed, percent);
-            leftB.spin(forward, leftSpeed, percent);
-            rightF.spin(forward, rightSpeed, percent);
-            rightB.spin(forward, rightSpeed, percent);
+            leftF.setVelocity(leftSpeed, percent);
+            leftB.setVelocity(leftSpeed, percent);
+            rightF.setVelocity(rightSpeed, percent);
+            rightB.setVelocity(rightSpeed, percent);
 
             controller1.Screen.print("%f", error);
 
