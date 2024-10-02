@@ -9,18 +9,11 @@ void clamp()
     {
         clamp1.set(true);
         clamp2.set(true);
-<<<<<<< HEAD
-=======
-      
->>>>>>> d67350dd3f703b4b849edbb60258e17bb45227f4
     }
     else
     {
         clamp1.set(false);
         clamp2.set(false);
-<<<<<<< HEAD
-=======
-      >>>>>>> d67350dd3f703b4b849edbb60258e17bb45227f4
     }
 }
 
