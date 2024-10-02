@@ -8,13 +8,11 @@ void clamp()
     {
         clamp1.set(true);
         clamp2.set(true);
-        // extended = false;
     }
     else
     {
         clamp1.set(false);
         clamp2.set(false);
-        // extended = true;
     }
 }
 
