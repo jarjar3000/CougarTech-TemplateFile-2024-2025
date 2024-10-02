@@ -46,7 +46,7 @@ void autonomous(void)
    rightB.spinFor(reverse, distance, degrees, false);
    rightF.spinFor(reverse, distance, degrees, true);
    spinAccumulator(forward, 100);
-   // moveClamp(true);
+   clamp();
    wait(2, seconds);
    stopAccumulator();
 
