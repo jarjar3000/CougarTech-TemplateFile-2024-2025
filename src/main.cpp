@@ -62,8 +62,6 @@ void usercontrol(void)
       // Assign buttons for pneumatics here (use a callback function)
       controller1.ButtonX.pressed(clamp);
 
-      // Button to slow down drivetrain
-      controller1.ButtonY.pressed(slowDown);
       while (true)
       {
          // Joysticks, arms, claws, etc. go here

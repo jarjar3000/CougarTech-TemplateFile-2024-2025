@@ -42,59 +42,6 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         leftB.spin(forward, 80, percent);
         rightF.spin(forward, 80, percent);
         rightB.spin(forward, 80, percent);
-
-        while (true)
-        {
-            controller1.Screen.clearScreen();
-            // Error (Proportional)
-            avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
-            if (avgPosition == 0)
-            {
-                avgPosition = 0.0000001;
-            }
-            error = distance - (WHEEL_DIAMETER * M_PI)/avgPosition;
-
-            // Integral
-            integral += error;
-
-            // Prevent integral windup
-            if (error > DRIVE_INTEGRAL_WINDUP)
-            {
-                integral = 0;
-            }
-
-            // Derivative
-            derivative = error - prevError;
-            prevError = error;
-
-            // Calculate
-            leftSpeed = error * kP + integral * kI + derivative * kD;
-            rightSpeed = error * kP + integral * kI + derivative * kD;
-
-            // Change motor speed
-            leftF.setVelocity(leftSpeed, percent);
-            leftB.setVelocity(leftSpeed, percent);
-            rightF.setVelocity(rightSpeed, percent);
-            rightB.setVelocity(rightSpeed, percent);
-
-            printf("Error: %f\n", error);
-
-            // Break if desination is reached
-            if (error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE)
-            {
-                break;
-            }
-
-            // If failsafe timer is greater than input time, break
-            if (failsafe.time(seconds) >= failsafeTime)
-            {
-                break;
-            }
-
-            // Conserve brain resources
-            wait(20, msec);
-        }
-        controller1.Screen.print("%f", error);
         break;
 
     case vex::directionType::rev:
@@ -103,55 +50,67 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         leftB.spin(reverse, 80, percent);
         rightF.spin(reverse, 80, percent);
         rightB.spin(reverse, 80, percent);
-
-        while (1)
-        {
-            // Error (Proportional)
-            avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
-            error = distance - avgPosition;
-
-            // Integral
-            integral += error;
-
-            // Prevent integral windup
-            if (error > DRIVE_INTEGRAL_WINDUP)
-            {
-                integral = 0;
-            }
-
-            // Derivative
-            derivative = error - prevError;
-            prevError = error;
-
-            // Calculate
-            leftSpeed = error * kP + integral * kI + derivative * kD;
-            rightSpeed = error * kP + integral * kI + derivative * kD;
-
-            // Change motor speed
-            leftF.setVelocity(-leftSpeed, percent);
-            leftB.setVelocity(-leftSpeed, percent);
-            rightF.setVelocity(-rightSpeed, percent);
-            rightB.setVelocity(-rightSpeed, percent);
-
-            // Break if desination is reached
-            if (error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE)
-            {
-                break;
-            }
-
-            // If failsafe timer is greater than input time, break
-            if (failsafe.time(seconds) >= failsafeTime)
-            {
-                break;
-            }
-
-            // Conserve brain resources
-            wait(20, msec);
-        }
         break;
 
     case vex::directionType::undefined:
         break;
+    }
+
+    // Both Cases
+    while (true)
+    {
+        controller1.Screen.clearScreen();
+        // Error (Proportional)
+        avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
+        if (avgPosition == 0)
+        {
+            avgPosition = 0.0000001;
+        }
+        error = distance - (WHEEL_DIAMETER * M_PI)/avgPosition;
+
+        // Integral
+        integral += error;
+
+        // Prevent integral windup
+        if (error > DRIVE_INTEGRAL_WINDUP)
+        {
+            integral = 0;
+        }
+
+        // Derivative
+        derivative = error - prevError;
+        prevError = error;
+
+        // Calculate
+        leftSpeed = error * kP + integral * kI + derivative * kD;
+        rightSpeed = error * kP + integral * kI + derivative * kD;
+
+        // Change motor speed (or switch on d)
+        if (d == vex::directionType::fwd)
+        {
+            leftF.setVelocity(leftSpeed, percent);
+            leftB.setVelocity(leftSpeed, percent);
+            rightF.setVelocity(rightSpeed, percent);
+            rightB.setVelocity(rightSpeed, percent);
+        }
+        else if (d == vex::directionType::rev)
+        {
+            leftF.setVelocity(-leftSpeed, percent);
+            leftB.setVelocity(-leftSpeed, percent);
+            rightF.setVelocity(-rightSpeed, percent);
+            rightB.setVelocity(-rightSpeed, percent);
+        }
+
+        printf("Error: %f\n", error);
+
+        // Break if desination is reached AND failsafe timer is greater than input time
+        if ((error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE) && failsafe.time(seconds) >= failsafeTime)
+        {
+            break;
+        }
+
+        // Conserve brain resources
+        wait(20, msec);
     }
 
     // Stop motors
