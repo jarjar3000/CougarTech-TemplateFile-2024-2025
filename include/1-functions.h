@@ -62,11 +62,9 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         controller1.Screen.clearScreen();
         // Error (Proportional)
         avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
-        if (avgPosition == 0)
-        {
-            avgPosition = 0.0000001;
-        }
-        error = distance - (WHEEL_DIAMETER * M_PI)/avgPosition;
+
+        // The distance in inches minus the distance traveled (wheel circumfrence times rotations)
+        error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / 360);
 
         // Integral
         integral += error;
