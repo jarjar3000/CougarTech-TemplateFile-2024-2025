@@ -31,26 +31,27 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   inertial1.setHeading(0, degrees);
-   heading = 0;
+   inertial1.setHeading(270, degrees);
+   heading = 270;
 
-   drive(forward, 12, 10);
-   
-   // drive(reverse, 12, 10);
-   // int speed = 33; // 33
-   // int distance = 750; // 1000
-   // leftF.setVelocity(speed, percent);
-   // leftB.setVelocity(speed, percent);
-   // rightF.setVelocity(speed, percent);
-   // rightB.setVelocity(speed, percent);
-   // leftB.spinFor(reverse, distance, degrees, false);
-   // leftF.spinFor(reverse, distance, degrees, false);
-   // rightB.spinFor(reverse, distance, degrees, false);
-   // rightF.spinFor(reverse, distance, degrees, true);
-   // spinAccumulator(forward, 100);
-   // clamp();
-   // wait(2, seconds);
-   // stopAccumulator();
+   /*
+      Start backwards, right in front of the mobile goal
+      Preload goes in the accumulator
+   */
+
+  // Drive backwards into the mobile goal
+  drive(reverse, 3, 10);
+  clamp();
+
+  // Turn (left or right, depends on starting side)
+  turn(left, 180, 10); 
+
+  // Accumulate alliace ring into goal
+  spinAccumulator(forward, 100);
+  drive(forward, 3, 10);
+  stopAccumulator();
+
+  // Could grab other goal in middle from this position
 
 }
 
