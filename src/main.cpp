@@ -34,7 +34,8 @@ void autonomous(void)
    inertial1.setHeading(0, degrees);
    heading = 0;
 
-   drive(forward, 12, 10);
+   drive(forward, 12, 100);
+   // drive(reverse, 12, 10);
 }
 
 // Driver Control

@@ -62,9 +62,10 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         controller1.Screen.clearScreen();
         // Error (Proportional)
         avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
+        // avgPosition = fabs(leftF.position(degrees));
 
         // The distance in inches minus the distance traveled (wheel circumfrence times rotations)
-        error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / 360);
+        error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / 360) * WHEEL_GEAR_RATIO;
 
         // Integral
         integral += error;
@@ -102,13 +103,13 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         printf("Error: %f\n", error);
 
         // Break if desination is reached AND failsafe timer is greater than input time
-        if ((error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE) && failsafe.time(seconds) >= failsafeTime)
+        if ((error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
         {
             break;
         }
 
         // Conserve brain resources
-        wait(20, msec);
+        wait(2, msec);
     }
 
     // Stop motors
