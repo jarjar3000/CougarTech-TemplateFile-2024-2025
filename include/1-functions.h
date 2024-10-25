@@ -126,6 +126,11 @@ void drive(vex::directionType d, double distance, double failsafeTime)
 void turn(vex::turnType d, double heading, double failsafeTime)
 {
     // TODO: Find a way to not use the inertial? Use the encoders to figure out turn values?
+    // Reset Failsafe Timer
+    failsafe.clear();
+
+    // Reset variables
+    prevError = 0;
     switch (d)
     {
     case vex::turnType::left:
@@ -134,47 +139,6 @@ void turn(vex::turnType d, double heading, double failsafeTime)
         leftB.spin(reverse, -80, percent);
         rightF.spin(forward, 80, percent);
         rightB.spin(forward, 80, percent);
-
-        // Reset Failsafe Timer
-        failsafe.clear();
-
-        // Reset variables
-        prevError = 0;
-
-        while (1)
-        {
-            // Error
-            error = fabs(inertial1.heading(degrees) - heading);
-
-            // Ensure error is less than 180
-            if (error >= 180)
-            {
-                error -= 180;
-            }
-
-            // Integral
-            integral += error;
-
-            // Prevent integral windup
-            if (error > TURN_INTEGRAL_WINDUP)
-            {
-                integral = 0;
-            }
-
-            // Derivative
-            derivative = error - prevError;
-            prevError = error;
-
-            // Calculate and set motor speeds
-            leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-            rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-
-            // Change motor speed
-            leftF.setVelocity(-leftSpeed, percent);
-            leftB.setVelocity(-leftSpeed, percent);
-            rightF.setVelocity(rightSpeed, percent);
-            rightB.setVelocity(rightSpeed, percent);
-        }
         break;
     case vex::turnType::right:
         // Set motors to turn left
@@ -182,48 +146,60 @@ void turn(vex::turnType d, double heading, double failsafeTime)
         leftB.spin(forward, 80, percent);
         rightF.spin(reverse, -80, percent);
         rightB.spin(reverse, -80, percent);
-
-        // Reset Failsafe Timer
-        failsafe.clear();
-
-        // Reset variables
-        prevError = 0;
-
-        while (1)
-        {
-            // Error
-            error = fabs(inertial1.heading(degrees) - heading);
-
-            // Ensure error is less than 180
-            if (error >= 180)
-            {
-                error -= 180;
-            }
-
-            // Integral
-            integral += error;
-
-            // Prevent integral windup
-            if (error > TURN_INTEGRAL_WINDUP)
-            {
-                integral = 0;
-            }
-
-            // Derivative
-            derivative = error - prevError;
-            prevError = error;
-
-            // Calculate and set motor speeds
-            leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-            rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-
-            // Change motor speed
-            leftF.setVelocity(leftSpeed, percent);
-            leftB.setVelocity(leftSpeed, percent);
-            rightF.setVelocity(-rightSpeed, percent);
-            rightB.setVelocity(-rightSpeed, percent);
-        }
         break;
+    }
+
+    while (1)
+    {
+        // Error
+        error = fabs(inertial1.heading(degrees) - heading);
+
+        // Ensure error is less than 180
+        if (error >= 180)
+        {
+            error -= 180;
+        }
+
+        // Integral
+        integral += error;
+
+        // Prevent integral windup
+        if (error > TURN_INTEGRAL_WINDUP)
+        {
+            integral = 0;
+        }
+
+        // Derivative
+        derivative = error - prevError;
+        prevError = error;
+
+        // Calculate and set motor speeds
+        leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+        rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+
+        // This determines the direction of the turn
+        if (d == vex:turnType::left)
+        {
+            leftSpeed *= -1;
+        }
+        else
+        {
+            rightSpeed *= -1;
+        }
+
+        // Change motor speed
+        leftF.setVelocity(leftSpeed, percent);
+        leftB.setVelocity(leftSpeed, percent);
+        rightF.setVelocity(rightSpeed, percent);
+        rightB.setVelocity(rightSpeed, percent);
+
+        // Break upon close enough or failsafe timer
+        if ((error >= -TURN_ERROR_TOLERANCE && error <= TURN_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
+        {
+            break;
+        }
+
+        wait(2, msec);
     }
 
     // Stop motors and wait
