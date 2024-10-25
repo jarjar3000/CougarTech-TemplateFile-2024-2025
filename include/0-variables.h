@@ -2,13 +2,13 @@ using namespace vex;
 #include "vex.h"
 
 // PID Variables
-const double kP = 1;
-const double kI = 0;
-const double kD = 0;
+const double kP = 4;
+const double kI = 2;
+const double kD = 3;
 
 const double turnKP = 0.3;
-const double turnKI = 0.2;
-const double turnKD = 0.1;
+const double turnKI = 0.1;
+const double turnKD = 0.2;
 
 double error = 0;
 double integral = 0;
@@ -19,9 +19,9 @@ double rightSpeed = 0;
 
 // Constants
 const double DRIVE_INTEGRAL_WINDUP = 2;
-const double TURN_INTEGRAL_WINDUP = 45;
+const double TURN_INTEGRAL_WINDUP = 10;
 const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
-const double TURN_ERROR_TOLERANCE = 1;
+const double TURN_ERROR_TOLERANCE = 0.5;
 const double WHEEL_DIAMETER = 3.25; //in inches 5
 const double WHEEL_GEAR_RATIO =  (double) 60 / 36;
 double heading = 0;

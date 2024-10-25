@@ -123,7 +123,7 @@ void drive(vex::directionType d, double distance, double failsafeTime)
 }
 
 // Turn to a set heading
-void turn(vex::turnType d, double heading, double failsafeTime)
+void turn(vex::turnType d, double h, double failsafeTime)
 {
     // TODO: Find a way to not use the inertial? Use the encoders to figure out turn values?
     // Reset Failsafe Timer
@@ -152,7 +152,7 @@ void turn(vex::turnType d, double heading, double failsafeTime)
     while (1)
     {
         // Error
-        error = fabs(inertial1.heading(degrees) - heading);
+        error = fabs(inertial1.heading(degrees) - h);
 
         // Ensure error is less than 180
         if (error >= 180)
@@ -178,7 +178,7 @@ void turn(vex::turnType d, double heading, double failsafeTime)
         rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
 
         // This determines the direction of the turn
-        if (d == vex:turnType::left)
+        if (d == vex::turnType::left)
         {
             leftSpeed *= -1;
         }
@@ -198,6 +198,8 @@ void turn(vex::turnType d, double heading, double failsafeTime)
         {
             break;
         }
+
+        printf("Error: %.2f, Heading: %.2f\n", error, inertial1.heading(degrees));
 
         wait(2, msec);
     }

@@ -40,7 +40,7 @@ void autonomous(void)
    */
 
   // Drive backwards into the mobile goal
-  drive(reverse, 3, 10);
+  drive(reverse, 24, 10);
   clamp();
 
   // Turn (left or right, depends on starting side)
