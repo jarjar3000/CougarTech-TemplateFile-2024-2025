@@ -62,9 +62,10 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         controller1.Screen.clearScreen();
         // Error (Proportional)
         avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
+        // avgPosition = fabs(leftF.position(degrees));
 
         // The distance in inches minus the distance traveled (wheel circumfrence times rotations)
-        error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / 360);
+        error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / 360) * WHEEL_GEAR_RATIO;
 
         // Integral
         integral += error;
@@ -102,13 +103,13 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         printf("Error: %f\n", error);
 
         // Break if desination is reached AND failsafe timer is greater than input time
-        if ((error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE) && failsafe.time(seconds) >= failsafeTime)
+        if ((error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
         {
             break;
         }
 
         // Conserve brain resources
-        wait(20, msec);
+        wait(2, msec);
     }
 
     // Stop motors
@@ -125,6 +126,11 @@ void drive(vex::directionType d, double distance, double failsafeTime)
 void turn(vex::turnType d, double heading, double failsafeTime)
 {
     // TODO: Find a way to not use the inertial? Use the encoders to figure out turn values?
+    // Reset Failsafe Timer
+    failsafe.clear();
+
+    // Reset variables
+    prevError = 0;
     switch (d)
     {
     case vex::turnType::left:
@@ -133,47 +139,6 @@ void turn(vex::turnType d, double heading, double failsafeTime)
         leftB.spin(reverse, -80, percent);
         rightF.spin(forward, 80, percent);
         rightB.spin(forward, 80, percent);
-
-        // Reset Failsafe Timer
-        failsafe.clear();
-
-        // Reset variables
-        prevError = 0;
-
-        while (1)
-        {
-            // Error
-            error = fabs(inertial1.heading(degrees) - heading);
-
-            // Ensure error is less than 180
-            if (error >= 180)
-            {
-                error -= 180;
-            }
-
-            // Integral
-            integral += error;
-
-            // Prevent integral windup
-            if (error > TURN_INTEGRAL_WINDUP)
-            {
-                integral = 0;
-            }
-
-            // Derivative
-            derivative = error - prevError;
-            prevError = error;
-
-            // Calculate and set motor speeds
-            leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-            rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-
-            // Change motor speed
-            leftF.setVelocity(-leftSpeed, percent);
-            leftB.setVelocity(-leftSpeed, percent);
-            rightF.setVelocity(rightSpeed, percent);
-            rightB.setVelocity(rightSpeed, percent);
-        }
         break;
     case vex::turnType::right:
         // Set motors to turn left
@@ -181,48 +146,60 @@ void turn(vex::turnType d, double heading, double failsafeTime)
         leftB.spin(forward, 80, percent);
         rightF.spin(reverse, -80, percent);
         rightB.spin(reverse, -80, percent);
-
-        // Reset Failsafe Timer
-        failsafe.clear();
-
-        // Reset variables
-        prevError = 0;
-
-        while (1)
-        {
-            // Error
-            error = fabs(inertial1.heading(degrees) - heading);
-
-            // Ensure error is less than 180
-            if (error >= 180)
-            {
-                error -= 180;
-            }
-
-            // Integral
-            integral += error;
-
-            // Prevent integral windup
-            if (error > TURN_INTEGRAL_WINDUP)
-            {
-                integral = 0;
-            }
-
-            // Derivative
-            derivative = error - prevError;
-            prevError = error;
-
-            // Calculate and set motor speeds
-            leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-            rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-
-            // Change motor speed
-            leftF.setVelocity(leftSpeed, percent);
-            leftB.setVelocity(leftSpeed, percent);
-            rightF.setVelocity(-rightSpeed, percent);
-            rightB.setVelocity(-rightSpeed, percent);
-        }
         break;
+    }
+
+    while (1)
+    {
+        // Error
+        error = fabs(inertial1.heading(degrees) - heading);
+
+        // Ensure error is less than 180
+        if (error >= 180)
+        {
+            error -= 180;
+        }
+
+        // Integral
+        integral += error;
+
+        // Prevent integral windup
+        if (error > TURN_INTEGRAL_WINDUP)
+        {
+            integral = 0;
+        }
+
+        // Derivative
+        derivative = error - prevError;
+        prevError = error;
+
+        // Calculate and set motor speeds
+        leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+        rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+
+        // This determines the direction of the turn
+        if (d == vex:turnType::left)
+        {
+            leftSpeed *= -1;
+        }
+        else
+        {
+            rightSpeed *= -1;
+        }
+
+        // Change motor speed
+        leftF.setVelocity(leftSpeed, percent);
+        leftB.setVelocity(leftSpeed, percent);
+        rightF.setVelocity(rightSpeed, percent);
+        rightB.setVelocity(rightSpeed, percent);
+
+        // Break upon close enough or failsafe timer
+        if ((error >= -TURN_ERROR_TOLERANCE && error <= TURN_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
+        {
+            break;
+        }
+
+        wait(2, msec);
     }
 
     // Stop motors and wait
