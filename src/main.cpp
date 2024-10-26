@@ -31,33 +31,56 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
+   while (inertial1.isCalibrating())
+   {
+      inertial1.calibrate();
+   }
+
    inertial1.setHeading(270, degrees);
    heading = 270;
 
-   while (inertial1.isCalibrating())
-  {
-      inertial1.calibrate();
-  }
+   bool red = true;
 
    /*
-      Start backwards, right in front of the mobile goal
-      Preload goes in the accumulator
+      Start forwards, right in front of the stack of rings on the left
+      Ring shouldn't be in the way of the robot
+      Preload goes in the clamp
    */
 
-  // Drive backwards into the mobile goal
-  drive(reverse, 24, 10);
-  clamp();
-
-  // Turn (left or right, depends on starting side)
-  turn(left, 200, 10); //180
-
-  // Accumulate alliace ring into goal
-  spinAccumulator(forward, 100);
-  drive(forward, 20, 10);
-  wait(1, seconds);
+  // Drive into the stack of rings and accumulate
+  spinAccumulator(forward, 100); 
+  drive(forward, 24, 10);
   stopAccumulator();
 
-  // Could grab other goal in middle from this position
+  // Turn (left or right, depends on starting side)
+  turn(left, 0, 10); //180
+
+  // back one tile and accumulate
+  drive(reverse, 24, 10);
+  clamp();
+  spinAccumulator(forward, 100);
+
+  // Turn left 90 degrees
+  turn(left, 90, 10);
+  stopAccumulator();
+
+  // Forward 1.25 tiles
+  drive(forward, 28, 10);
+
+  // Left 90 degrees
+  turn(left, 180, 10);
+
+  // Forward full tile
+  drive(forward, 24, 10);
+
+  // Right 90
+  turn(right, 90, 10);
+  
+  // Arm up
+  // Move forward
+  // Arm down
+  // Back up
+
 
 }
 
