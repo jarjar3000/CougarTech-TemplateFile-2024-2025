@@ -36,9 +36,15 @@ void autonomous(void)
       inertial1.calibrate();
    }
 
-   inertial1.setHeading(270, degrees);
-   heading = 270;
+   // This is supposed to be 180 
+   inertial1.setHeading(180, degrees);
+   heading = 180;
 
+   /*
+      Because the field isn't truly mirrored, the red
+      and blue versions of this program are different.
+      (We have to turn in different directions)
+   */
    bool red = true;
 
    /*
