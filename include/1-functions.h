@@ -213,6 +213,75 @@ void turn(vex::turnType d, double h, double failsafeTime)
     printf("Error: %.2f, Heading: %.2f\n", error, inertial1.heading(degrees));
 }
 
+// Function to turn to a heading
+void turn(double heading, double failsafeTime)
+{
+    // Reset Failsafe Timer
+    failsafe.clear();
+
+    // Reset variables
+    prevError = 0;
+
+    while (1)
+    {
+        // Error
+        // It can be a negative value, it will determine what direction we turn in
+        error = heading - inertial1.heading(degrees);
+
+        // Integral
+        integral += error;
+
+        // Prevent integral windup
+        if (error > TURN_INTEGRAL_WINDUP)
+        {
+            integral = 0;
+        }
+
+        // Derivative
+        derivative = error - prevError;
+        prevError = error;
+
+        // Calculate and set motor speeds
+        leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+        rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+
+        // Spin based on direction
+        if (leftSpeed < 0 || rightSpeed > 0)
+        {
+            leftF.spin(reverse, leftSpeed, percent);
+            leftB.spin(reverse, leftSpeed, percent);
+            rightF.spin(forward, rightSpeed, percent);
+            rightB.spin(forward, rightSpeed, percent);
+        }
+        else
+        {
+            leftF.spin(forward, leftSpeed, percent);
+            leftB.spin(forward, leftSpeed, percent);
+            rightF.spin(reverse, rightSpeed, percent);
+            rightB.spin(reverse, rightSpeed, percent);
+        }
+
+        // Break upon close enough or failsafe timer
+        if ((error >= -TURN_ERROR_TOLERANCE && error <= TURN_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
+        {
+            break;
+        }
+
+        printf("Error: %.2f, Integral: %.2f, Heading: %.2f\n", error, integral, inertial1.heading(degrees));
+
+        wait(2, msec);
+
+        // Stop motors and wait
+        leftF.stop();
+        leftB.stop();
+        rightF.stop();
+        rightB.stop();
+
+        wait(500, msec);
+        printf("Error: %.2f, Heading: %.2f\n", error, inertial1.heading(degrees));
+    }
+}
+
 void spinAccumulator(vex::directionType d, double vel)
 {
     bottomAccumulator.spin(d, vel, percent);
