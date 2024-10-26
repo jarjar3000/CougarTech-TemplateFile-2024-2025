@@ -30,19 +30,29 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   inertial1.setHeading(270, degrees);
-   heading = 270;
-
-   while (inertial1.isCalibrating())
-   {
-      inertial1.calibrate();
-   }
    /*
       Since the field isn't mirrored, two "versions" of
       the program are needed.
       Change the boolean depending if we are on the red side or not.
    */
-   bool red = true;
+   bool red = false;
+   inertial1.calibrate();
+   while (inertial1.isCalibrating())
+   {
+      wait(200, msec);
+   }
+
+   if (red)
+   {
+      inertial1.setHeading(270, degrees);
+      heading = 270;
+   }
+   else
+   {
+      inertial1.setHeading(90, degrees);
+      heading = 90;
+   }
+   
 
    /*
        Start backwards, right in front of the mobile goal
@@ -61,13 +71,13 @@ void autonomous(void)
    }
    else
    {
-      turn(right, 200, 10); // 180
+      turn(right, 160, 10); // 180
    }  
 
    // Accumulate alliace ring into goal
    spinAccumulator(forward, 100);
-   drive(forward, 20, 10);
-   wait(1, seconds);
+   drive(forward, 15, 10); //20
+   wait(0.25, seconds);
    stopAccumulator();
 
    // Could grab other goal in middle from this position
