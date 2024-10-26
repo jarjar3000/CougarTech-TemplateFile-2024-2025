@@ -37,8 +37,8 @@ void autonomous(void)
    }
 
    // This is supposed to be 180 
-   inertial1.setHeading(180, degrees);
-   heading = 180;
+   inertial1.setHeading(90, degrees);
+   heading = 90;
 
    /*
       Because the field isn't truly mirrored, the red
@@ -55,7 +55,7 @@ void autonomous(void)
 
   // Drive into the stack of rings and accumulate
   spinAccumulator(forward, 100); 
-  drive(forward, 24, 10);
+  drive(forward, 24, 10); //24
   stopAccumulator();
 
   // Turn (left or right, depends on starting side)
@@ -67,7 +67,7 @@ void autonomous(void)
   spinAccumulator(forward, 100);
 
   // Turn left 90 degrees
-  turn(left, 90, 10);
+  turn(left, 270, 10); //90
   stopAccumulator();
 
   // Forward 1.25 tiles
@@ -80,12 +80,19 @@ void autonomous(void)
   drive(forward, 24, 10);
 
   // Right 90
-  turn(right, 90, 10);
+  turn(right, 270, 10);
   
   // Arm up
+  liftArm(up, 500, 100);
+
   // Move forward
+  drive(forward, 12, 10);
+
   // Arm down
+  liftArm(down, 400, 10);
+
   // Back up
+  drive(reverse, 12, 10);
 
 
 }
