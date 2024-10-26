@@ -31,13 +31,16 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   inertial1.setHeading(270, degrees);
-   heading = 270;
+//    inertial1.setHeading(270, degrees);
+//    heading = 270;
 
-   while (inertial1.isCalibrating())
-  {
-      inertial1.calibrate();
-  }
+//    while (inertial1.isCalibrating())
+//   {
+//       inertial1.calibrate();
+//   }
+
+   turn(180, 10);
+   turn(90, 10);
 
 }
 
