@@ -42,7 +42,7 @@ void autonomous(void)
       the program are needed.
       Change the boolean depending if we are on the red side or not.
    */
-   red = true;
+   bool red = true;
 
    /*
        Start backwards, right in front of the mobile goal
