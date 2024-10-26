@@ -59,7 +59,6 @@ void drive(vex::directionType d, double distance, double failsafeTime)
     // Both Cases
     while (true)
     {
-        controller1.Screen.clearScreen();
         // Error (Proportional)
         avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
         // avgPosition = fabs(leftF.position(degrees));
@@ -100,7 +99,7 @@ void drive(vex::directionType d, double distance, double failsafeTime)
             rightB.setVelocity(-rightSpeed, percent);
         }
 
-        printf("Error: %f\n", error);
+        // printf("Error: %f\n", error);
 
         // Break if desination is reached AND failsafe timer is greater than input time
         if ((error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
@@ -199,7 +198,7 @@ void turn(vex::turnType d, double h, double failsafeTime)
             break;
         }
 
-        printf("Error: %.2f, Heading: %.2f\n", error, inertial1.heading(degrees));
+        printf("Error: %.2f, Integral: %.2f, Heading: %.2f\n", error, integral, inertial1.heading(degrees));
 
         wait(2, msec);
     }
@@ -211,6 +210,7 @@ void turn(vex::turnType d, double h, double failsafeTime)
     rightB.stop();
 
     wait(500, msec);
+    printf("Error: %.2f, Heading: %.2f\n", error, inertial1.heading(degrees));
 }
 
 void spinAccumulator(vex::directionType d, double vel)

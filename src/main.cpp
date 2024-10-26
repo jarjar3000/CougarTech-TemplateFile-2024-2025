@@ -34,6 +34,11 @@ void autonomous(void)
    inertial1.setHeading(270, degrees);
    heading = 270;
 
+   while (inertial1.isCalibrating())
+  {
+      inertial1.calibrate();
+  }
+
    /*
       Start backwards, right in front of the mobile goal
       Preload goes in the accumulator
@@ -44,11 +49,12 @@ void autonomous(void)
   clamp();
 
   // Turn (left or right, depends on starting side)
-  turn(left, 180, 10); 
+  turn(left, 200, 10); //180
 
   // Accumulate alliace ring into goal
   spinAccumulator(forward, 100);
-  drive(forward, 3, 10);
+  drive(forward, 20, 10);
+  wait(1, seconds);
   stopAccumulator();
 
   // Could grab other goal in middle from this position
