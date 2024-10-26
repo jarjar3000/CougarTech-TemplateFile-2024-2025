@@ -25,7 +25,6 @@ competition Competition;
 // Pre-auton
 void pre_auton(void)
 {
-
 }
 
 // Autonomous
@@ -35,30 +34,43 @@ void autonomous(void)
    heading = 270;
 
    while (inertial1.isCalibrating())
-  {
+   {
       inertial1.calibrate();
-  }
-
-  /*
-      Start backwards, right in front of the mobile goal
-      Preload goes in the accumulator
+   }
+   /*
+      Since the field isn't mirrored, two "versions" of
+      the program are needed.
+      Change the boolean depending if we are on the red side or not.
    */
+   red = true;
 
-  // Drive backwards into the mobile goal
-  drive(reverse, 24, 10);
-  clamp();
+   /*
+       Start backwards, right in front of the mobile goal
+       Preload goes in the accumulator, near the top.
+       There should be a ring opposite the alliance color on the right.
+   */
+   
+   // Drive backwards into the mobile goal
+   drive(reverse, 24, 10);
+   clamp();
 
-  // Turn (left or right, depends on starting side)
-  turn(left, 200, 10); //180
+   // Turn (left or right, depends on starting side), but the heading will be the same
+   if (red)
+   {
+      turn(left, 200, 10); // 180
+   }
+   else
+   {
+      turn(right, 200, 10); // 180
+   }  
 
-  // Accumulate alliace ring into goal
-  spinAccumulator(forward, 100);
-  drive(forward, 20, 10);
-  wait(1, seconds);
-  stopAccumulator();
+   // Accumulate alliace ring into goal
+   spinAccumulator(forward, 100);
+   drive(forward, 20, 10);
+   wait(1, seconds);
+   stopAccumulator();
 
-  // Could grab other goal in middle from this position
-
+   // Could grab other goal in middle from this position
 }
 
 // Driver Control
