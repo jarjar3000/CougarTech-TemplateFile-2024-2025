@@ -224,3 +224,22 @@ void stopAccumulator()
     bottomAccumulator.stop();
     topAccumulator.stop();
 }
+
+// Move arm for certain number of degrees, at a certain velocity
+void liftArm(armDirections d, double deg, double vel, bool waitForCompletition=true)
+{
+    leftLift.setVelocity(vel, percent);
+    rightLift.setVelocity(vel, percent);
+    switch(d)
+    {
+        case armDirections::up:
+        leftLift.spinFor(forward, deg, degrees, false);
+        rightLift.spinFor(forward, deg, degrees, waitForCompletition);
+        break;
+        
+        case armDirections::down:
+        leftLift.spinFor(reverse, deg, degrees, false);
+        rightLift.spinFor(reverse, deg, degrees, waitForCompletition);
+        break;
+    }
+}

@@ -28,3 +28,10 @@ double heading = 0;
 
 // Driving Variables
 const double MAX_DRIVE_SPEED = 100;
+
+// Enum for arm directions
+enum armDirections
+{
+    up,
+    down
+};
