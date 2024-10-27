@@ -3,6 +3,9 @@ using namespace vex;
 #include "0-variables.h"
 #include "robot-config.h"
 
+/** 
+ * @brief Function to toggle clamp. Starting position is up.
+*/
 void clamp()
 {
     if (clamp1.value() == 0)
@@ -15,6 +18,30 @@ void clamp()
         clamp1.set(false);
         clamp2.set(false);
     }
+}
+
+/** 
+ * @brief Function to toggle alliance color. Default is red (true)
+*/
+void changeAllianceColor()
+{
+    if (red)
+    {
+        red = false;
+    }
+    else
+    {
+        red = true;
+    }
+}
+
+/** 
+    * @brief Thread Function to detect if rings of the opposite alliance color pass the intake, and ejects them.
+    * @param isRed The current alliance color  
+*/
+int eject(bool isRed)
+{
+    return 0;
 }
 
 // Drives the robot in a direction for deg1 degrees
@@ -119,167 +146,6 @@ void drive(vex::directionType d, double distance, double failsafeTime)
 
     // Wait
     wait(500, msec);
-}
-
-// Turn to a set heading
-void turn(vex::turnType d, double h, double failsafeTime)
-{
-    // TODO: Find a way to not use the inertial? Use the encoders to figure out turn values?
-    // Reset Failsafe Timer
-    failsafe.clear();
-
-    // Reset variables
-    prevError = 0;
-    switch (d)
-    {
-    case vex::turnType::left:
-        // Set motors to turn left
-        leftF.spin(reverse, -80, percent);
-        leftB.spin(reverse, -80, percent);
-        rightF.spin(forward, 80, percent);
-        rightB.spin(forward, 80, percent);
-        break;
-    case vex::turnType::right:
-        // Set motors to turn left
-        leftF.spin(forward, 80, percent);
-        leftB.spin(forward, 80, percent);
-        rightF.spin(reverse, -80, percent);
-        rightB.spin(reverse, -80, percent);
-        break;
-    }
-
-    while (1)
-    {
-        // Error
-        error = fabs(inertial1.heading(degrees) - h);
-
-        // Ensure error is less than 180
-        if (error >= 180)
-        {
-            error -= 180;
-        }
-
-        // Integral
-        integral += error;
-
-        // Prevent integral windup
-        if (error > TURN_INTEGRAL_WINDUP)
-        {
-            integral = 0;
-        }
-
-        // Derivative
-        derivative = error - prevError;
-        prevError = error;
-
-        // Calculate and set motor speeds
-        leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-        rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-
-        // This determines the direction of the turn
-        if (d == vex::turnType::left)
-        {
-            leftSpeed *= -1;
-        }
-        else
-        {
-            rightSpeed *= -1;
-        }
-
-        // Change motor speed
-        leftF.setVelocity(leftSpeed, percent);
-        leftB.setVelocity(leftSpeed, percent);
-        rightF.setVelocity(rightSpeed, percent);
-        rightB.setVelocity(rightSpeed, percent);
-
-        // Break upon close enough or failsafe timer
-        if ((error >= -TURN_ERROR_TOLERANCE && error <= TURN_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
-        {
-            break;
-        }
-
-        printf("Error: %.2f, Integral: %.2f, Heading: %.2f\n", error, integral, inertial1.heading(degrees));
-
-        wait(2, msec);
-    }
-
-    // Stop motors and wait
-    leftF.stop();
-    leftB.stop();
-    rightF.stop();
-    rightB.stop();
-
-    wait(500, msec);
-    printf("Error: %.2f, Heading: %.2f\n", error, inertial1.heading(degrees));
-}
-
-// Function to turn to a heading
-void turn(double heading, double failsafeTime)
-{
-    // Reset Failsafe Timer
-    failsafe.clear();
-
-    // Reset variables
-    prevError = 0;
-
-    while (1)
-    {
-        // Error
-        // It can be a negative value, it will determine what direction we turn in
-        error = heading - inertial1.heading(degrees);
-
-        // Integral
-        integral += error;
-
-        // Prevent integral windup
-        if (error > TURN_INTEGRAL_WINDUP)
-        {
-            integral = 0;
-        }
-
-        // Derivative
-        derivative = error - prevError;
-        prevError = error;
-
-        // Calculate and set motor speeds
-        leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-        rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-
-        // Spin based on direction
-        if (leftSpeed < 0 || rightSpeed > 0)
-        {
-            leftF.spin(reverse, leftSpeed, percent);
-            leftB.spin(reverse, leftSpeed, percent);
-            rightF.spin(forward, rightSpeed, percent);
-            rightB.spin(forward, rightSpeed, percent);
-        }
-        else
-        {
-            leftF.spin(forward, leftSpeed, percent);
-            leftB.spin(forward, leftSpeed, percent);
-            rightF.spin(reverse, rightSpeed, percent);
-            rightB.spin(reverse, rightSpeed, percent);
-        }
-
-        // Break upon close enough or failsafe timer
-        if ((error >= -TURN_ERROR_TOLERANCE && error <= TURN_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
-        {
-            break;
-        }
-
-        printf("Error: %.2f, Integral: %.2f, Heading: %.2f\n", error, integral, inertial1.heading(degrees));
-
-        wait(2, msec);
-
-        // Stop motors and wait
-        leftF.stop();
-        leftB.stop();
-        rightF.stop();
-        rightB.stop();
-
-        wait(500, msec);
-        printf("Error: %.2f, Heading: %.2f\n", error, inertial1.heading(degrees));
-    }
 }
 
 void spinAccumulator(vex::directionType d, double vel)

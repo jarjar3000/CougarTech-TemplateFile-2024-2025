@@ -51,6 +51,7 @@ void usercontrol(void)
    {
       // Assign buttons for pneumatics here (use a callback function)
       controller1.ButtonX.pressed(clamp);
+      controller1.ButtonUp.pressed(changeAllianceColor);
 
       while (true)
       {
