@@ -42,7 +42,7 @@ void autonomous(void)
    }
 
    // Start the thread
-   thread ejectThread = thread(ejectThread);
+   thread ejectThread = thread(eject);
 
 }
 
@@ -50,8 +50,8 @@ void autonomous(void)
 void usercontrol(void)
 {
    // Start the thread
-   thread ejectThread = thread(ejectThread);
-   
+   thread ejectThread = thread(eject);
+
    while (1)
    {
       // Assign buttons for pneumatics here (use a callback function)
