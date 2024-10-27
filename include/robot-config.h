@@ -25,10 +25,12 @@ extern motor bottomAccumulator;
 extern motor topAccumulator;
 
 extern inertial inertial1;
+extern optical optical1;
 
 // Pneumatics
 extern digital_out clamp1;
 extern digital_out clamp2;
+extern digital_out ejector;
 
 extern timer failsafe;
 

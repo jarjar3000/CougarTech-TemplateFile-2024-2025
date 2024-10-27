@@ -41,6 +41,28 @@ void changeAllianceColor()
 */
 int eject(bool isRed)
 {
+    // This should run the entire match, EXCEPT when we intake our first ring.
+    // The first ring that passes the sensor will be the alliance color (since it's the preload), so this can dictate the alliance color.
+    while (1)
+    {
+        // Search for the color opposite the alliance color
+        if ((optical1.color() == blue && isRed) || (optical1.color() == red && !isRed))
+        {
+            // Wait for a little while (until the ring is close)
+            this_thread::sleep_for(40);
+
+            // Extend the ejector
+            ejector.set(true);
+
+            // Wait until the ring ejects
+            this_thread::sleep_for(40)
+
+            // Retract the ejector
+            ejector.set(false);
+        }
+        // Sleep thread to not consume all of CPU resources
+        this_thread::sleep_for(20);
+    }
     return 0;
 }
 
