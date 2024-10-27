@@ -25,28 +25,27 @@ void clamp()
 */
 void changeAllianceColor()
 {
-    if (red)
+    if (allianceIsRed)
     {
-        red = false;
+        allianceIsRed = false;
     }
     else
     {
-        red = true;
+        allianceIsRed = true;
     }
 }
 
 /** 
     * @brief Thread Function to detect if rings of the opposite alliance color pass the intake, and ejects them.
-    * @param isRed The current alliance color  
 */
-int eject(bool isRed)
+int eject()
 {
     // This should run the entire match, EXCEPT when we intake our first ring.
     // The first ring that passes the sensor will be the alliance color (since it's the preload), so this can dictate the alliance color.
     while (1)
     {
         // Search for the color opposite the alliance color
-        if ((optical1.color() == blue && isRed) || (optical1.color() == red && !isRed))
+        if ((optical1.color() == blue && allianceIsRed) || (optical1.color() == red && !allianceIsRed))
         {
             // Wait for a little while (until the ring is close)
             this_thread::sleep_for(40);
