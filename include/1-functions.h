@@ -54,7 +54,7 @@ int eject()
             ejector.set(true);
 
             // Wait until the ring ejects
-            this_thread::sleep_for(40)
+            this_thread::sleep_for(40);
 
             // Retract the ejector
             ejector.set(false);
