@@ -31,22 +31,27 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-//    inertial1.setHeading(270, degrees);
-//    heading = 270;
+   // Determine the alliance color
+   if (optical1.color() == red)
+   {
+      allianceIsRed = true;
+   }
+   else if (optical1.color() == blue)
+   {
+      allianceIsRed = false;
+   }
 
-//    while (inertial1.isCalibrating())
-//   {
-//       inertial1.calibrate();
-//   }
-
-   turn(180, 10);
-   turn(90, 10);
+   // Start the thread
+   thread ejectThread = thread(ejectThread);
 
 }
 
 // Driver Control
 void usercontrol(void)
 {
+   // Start the thread
+   thread ejectThread = thread(ejectThread);
+   
    while (1)
    {
       // Assign buttons for pneumatics here (use a callback function)
