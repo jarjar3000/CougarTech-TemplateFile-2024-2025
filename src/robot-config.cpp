@@ -33,7 +33,7 @@ motor leftB = motor(PORT2, ratio18_1, true);
 motor leftE = motor(PORT3, ratio18_1, true);
 motor rightF = motor(PORT4, ratio18_1, false);
 motor rightB = motor(PORT5, ratio18_1, false);
-motor rightE = motor(PORT6, ratio18_1, true);
+motor rightE = motor(PORT6, ratio18_1, false);
 
 /*
   Accumulator
