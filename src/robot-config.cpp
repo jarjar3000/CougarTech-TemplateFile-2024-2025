@@ -30,17 +30,10 @@ controller controller1 = controller(primary);
 */
 motor leftF = motor(PORT1, ratio18_1, true);
 motor leftB = motor(PORT2, ratio18_1, true);
-motor rightF = motor(PORT3, ratio18_1, false);
-motor rightB = motor(PORT4, ratio18_1, false);
-
-/*
-  Lift (Arm)
-  Motor Names:
-  - leftLift: left arm motor (also the default name if you only use one motor)
-  - rightLift: right arm motor (delete if you only have 1 motor)
-*/
-motor leftLift = motor(PORT18, ratio18_1, false);
-motor rightLift = motor(PORT19, ratio18_1, true);
+motor leftE = motor(PORT3, ratio18_1, true);
+motor rightF = motor(PORT4, ratio18_1, false);
+motor rightB = motor(PORT5, ratio18_1, false);
+motor rightE = motor(PORT6, ratio18_1, true);
 
 /*
   Accumulator
@@ -50,7 +43,7 @@ motor topAccumulator = motor(PORT16, ratio18_1, true);
 
 //Sensors
 inertial inertial1 = inertial(PORT17);
-optical optical1 = optical(PORT5);
+optical optical1 = optical(PORT18);
 
 // Pneumatics
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);

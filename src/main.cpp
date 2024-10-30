@@ -77,25 +77,21 @@ void usercontrol(void)
          if (fabs(leftMotorSpeed) < deadband)
          {
             // Set the speed to 0
-            leftF.setVelocity(0, percent);
-            leftB.setVelocity(0, percent);
+            setLeftSpeed(0);
          }
          else
          {
             if (leftMotorSpeed >= MAX_DRIVE_SPEED)
             {
-               leftF.setVelocity(MAX_DRIVE_SPEED, percent);
-               leftB.setVelocity(MAX_DRIVE_SPEED, percent);
+               setLeftSpeed(MAX_DRIVE_SPEED);
             }
             else if (leftMotorSpeed <= -MAX_DRIVE_SPEED)
             {
-               leftF.setVelocity(-MAX_DRIVE_SPEED, percent);
-               leftB.setVelocity(-MAX_DRIVE_SPEED, percent);
+               setLeftSpeed(-MAX_DRIVE_SPEED);
             }
             else
             {
-               leftF.setVelocity(leftMotorSpeed, percent);
-               leftB.setVelocity(leftMotorSpeed, percent);
+               setLeftSpeed(leftMotorSpeed);
             }
          }
 
@@ -107,33 +103,26 @@ void usercontrol(void)
          if (fabs(rightMotorSpeed) < deadband)
          {
             // Set the speed to 0
-            rightF.setVelocity(0, percent);
-            rightB.setVelocity(0, percent);
+            setRightSpeed(0);
          }
          else
          {
             if (rightMotorSpeed >= MAX_DRIVE_SPEED)
             {
-               rightF.setVelocity(MAX_DRIVE_SPEED, percent);
-               rightB.setVelocity(MAX_DRIVE_SPEED, percent);
+               setRightSpeed(MAX_DRIVE_SPEED);
             }
             else if (rightMotorSpeed <= -MAX_DRIVE_SPEED)
             {
-               rightF.setVelocity(-MAX_DRIVE_SPEED, percent);
-               rightB.setVelocity(-MAX_DRIVE_SPEED, percent);
+               setRightSpeed(-MAX_DRIVE_SPEED);
             }
             else
             {
-               rightF.setVelocity(rightMotorSpeed, percent);
-               rightB.setVelocity(rightMotorSpeed, percent);
+               setRightSpeed(rightMotorSpeed);
             }
          }
 
          // Make the drive motors spin so the robot moves
-         leftF.spin(forward);
-         leftB.spin(forward);
-         rightF.spin(forward);
-         rightB.spin(forward);
+         drive(forward);
 
          // Set the drive motors to coast
          leftF.setStopping(coast);
@@ -144,35 +133,10 @@ void usercontrol(void)
          // Set the non-drive motors to hold its position (add non-drive motors as necessary)
          bottomAccumulator.setStopping(hold);
          topAccumulator.setStopping(hold);
-         leftLift.setStopping(hold);
-         rightLift.setStopping(hold);
 
          // Set the velocity of the non-drive motors (add non-drive motors as necessary)
          bottomAccumulator.setVelocity(100, percent);
          topAccumulator.setVelocity(100, percent);
-         leftLift.setVelocity(50, percent);
-         rightLift.setVelocity(50, percent);
-
-         /*
-          Arm
-          The code below assigns lifting the arm to the left bumpers on the controller
-          This code can be applied to anything mechanism that will function using bumper presses
-         */
-         if (controller1.ButtonL1.pressing())
-         {
-            leftLift.spin(forward);
-            rightLift.spin(forward);
-         }
-         else if (controller1.ButtonL2.pressing())
-         {
-            leftLift.spin(reverse);
-            rightLift.spin(reverse);
-         }
-         else
-         {
-            leftLift.stop();
-            rightLift.stop();
-         }
 
          /*
           Accumulator

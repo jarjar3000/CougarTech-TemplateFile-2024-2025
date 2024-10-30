@@ -3,6 +3,72 @@ using namespace vex;
 #include "0-variables.h"
 #include "robot-config.h"
 
+/**
+ * @brief Function to set speed of left side of the drive
+ * @param vel The speed to set the left side to.
+ */
+void setLeftSpeed(double vel)
+{
+    leftB.setVelocity(vel, percent);
+    leftF.setVelocity(vel, percent);
+    leftE.setVelocity(vel, percent);
+}
+
+/**
+ * @brief Function to set speed of right side of the drive
+ * @param vel The speed to set the right side to.
+ */
+void setRightSpeed(double vel)
+{
+    rightB.setVelocity(vel, percent);
+    rightF.setVelocity(vel, percent);
+    rightE.setVelocity(vel, percent);
+}
+
+/**
+ * @brief Function to spin the drive motors in a direction
+ * @param d The direction to spin the drive in.
+ */
+void drive(vex::directionType d)
+{
+    switch(d)
+    {
+        case vex::directionType::fwd:
+        leftF.spin(forward);
+        leftB.spin(forward);
+        leftE.spin(forward);
+        rightF.spin(forward);
+        rightB.spin(forward);
+        rightE.spin(forward);
+        break;
+
+        case vex::directionType::rev:
+        leftF.spin(reverse);
+        leftB.spin(reverse);
+        leftE.spin(reverse);
+        rightF.spin(reverse);
+        rightB.spin(reverse);
+        rightE.spin(reverse);
+        break;
+
+        case vex::directionType::undefined:
+        break;
+    }
+}
+
+/**
+ * @brief Stops all the drive motors
+ */
+void stopDrive()
+{
+    leftF.stop();
+    leftB.stop();
+    leftE.stop();
+    rightF.stop();
+    rightB.stop();
+    rightE.stop();
+}
+
 /** 
  * @brief Function to toggle clamp. Starting position is up.
 */
@@ -65,8 +131,12 @@ int eject()
     return 0;
 }
 
-// Drives the robot in a direction for deg1 degrees
-// TODO: Convert degrees to an actual measurement of distance (inches)
+/**
+ * @brief Drive the robot in a direction for a certain distance in inches. Used in autonomous.
+ * @param d The direction to drive in.
+ * @param distance The distance the robot should drive in inches.
+ * @param failsafeTime The amount of time that needs to pass before the robot automatically stops moving.
+ */
 void drive(vex::directionType d, double distance, double failsafeTime)
 {
     // Reset all motors + encoders
@@ -82,22 +152,20 @@ void drive(vex::directionType d, double distance, double failsafeTime)
     // Reset failsafe timer
     failsafe.clear();
 
+    // Set initial velocity
+    setLeftSpeed(80);
+    setRightSpeed(80);
+
     switch (d)
     {
     case vex::directionType::fwd:
         // Start driving forward
-        leftF.spin(forward, 80, percent);
-        leftB.spin(forward, 80, percent);
-        rightF.spin(forward, 80, percent);
-        rightB.spin(forward, 80, percent);
+        spinDrive(forward);
         break;
 
     case vex::directionType::rev:
         // Start driving backwards
-        leftF.spin(reverse, 80, percent);
-        leftB.spin(reverse, 80, percent);
-        rightF.spin(reverse, 80, percent);
-        rightB.spin(reverse, 80, percent);
+        spinDrive(forward);
         break;
 
     case vex::directionType::undefined:
@@ -105,7 +173,7 @@ void drive(vex::directionType d, double distance, double failsafeTime)
     }
 
     // Both Cases
-    while (true)
+    while ((error < -DRIVE_ERROR_TOLERANCE && error > DRIVE_ERROR_TOLERANCE) || failsafe.time(seconds) <= failsafeTime)
     {
         // Error (Proportional)
         avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
@@ -134,36 +202,23 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         // Change motor speed (or switch on d)
         if (d == vex::directionType::fwd)
         {
-            leftF.setVelocity(leftSpeed, percent);
-            leftB.setVelocity(leftSpeed, percent);
-            rightF.setVelocity(rightSpeed, percent);
-            rightB.setVelocity(rightSpeed, percent);
+            setLeftSpeed(leftSpeed);
+            setRightSpeed(rightSpeed);
         }
         else if (d == vex::directionType::rev)
         {
-            leftF.setVelocity(-leftSpeed, percent);
-            leftB.setVelocity(-leftSpeed, percent);
-            rightF.setVelocity(-rightSpeed, percent);
-            rightB.setVelocity(-rightSpeed, percent);
+            setLeftSpeed(-leftSpeed);
+            setRightSpeed(-rightSpeed);
         }
 
         // printf("Error: %f\n", error);
 
-        // Break if desination is reached AND failsafe timer is greater than input time
-        if ((error >= -DRIVE_ERROR_TOLERANCE && error <= DRIVE_ERROR_TOLERANCE) || failsafe.time(seconds) >= failsafeTime)
-        {
-            break;
-        }
-
         // Conserve brain resources
-        wait(2, msec);
+        wait(20, msec);
     }
 
     // Stop motors
-    leftF.stop();
-    leftB.stop();
-    rightF.stop();
-    rightB.stop();
+    stopDrive();
 
     // Wait
     wait(500, msec);

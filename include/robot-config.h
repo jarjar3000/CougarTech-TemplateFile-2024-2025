@@ -10,15 +10,13 @@ extern controller controller1;
     extern nameOfThing typeOfThing
 */
 
-//Drive motors (4)
+//Drive motors (6)
 extern motor leftF;
 extern motor leftB;
 extern motor rightF;
 extern motor rightB;
-
-//Lift
-extern motor leftLift;
-extern motor rightLift;
+extern motor leftE;
+extern motor rightE;
 
 //Accumulator
 extern motor bottomAccumulator;
