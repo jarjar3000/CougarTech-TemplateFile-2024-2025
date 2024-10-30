@@ -222,7 +222,7 @@ void drive(vex::directionType d, double distance, double failsafeTime)
 
     // Wait
     wait(500, msec);
-}
+
 
 void spinAccumulator(vex::directionType d, double vel)
 {
