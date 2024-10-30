@@ -224,12 +224,20 @@ void drive(vex::directionType d, double distance, double failsafeTime)
     wait(500, msec);
 }
 
+/**
+ * @brief Spin the accumulator in a direction
+ * @param d The direction to spin the accumulator in
+ * @param vel The velocity to spin the accumulator at
+*/
 void spinAccumulator(vex::directionType d, double vel)
 {
     bottomAccumulator.spin(d, vel, percent);
     topAccumulator.spin(d, vel, percent);
 }
 
+/**
+ * @brief Stops the accumulator.
+ */
 void stopAccumulator()
 {
     bottomAccumulator.stop();
