@@ -28,17 +28,17 @@ controller controller1 = controller(primary);
   - RightF: Front right motor
   - RightB: Back right motor
 */
-motor leftF = motor(PORT1, ratio18_1, true);
-motor leftB = motor(PORT2, ratio18_1, true);
-motor leftE = motor(PORT3, ratio18_1, true);
-motor rightF = motor(PORT4, ratio18_1, false);
-motor rightB = motor(PORT5, ratio18_1, false);
-motor rightE = motor(PORT6, ratio18_1, false);
+motor leftF = motor(PORT4, ratio18_1, false);
+motor leftB = motor(PORT5, ratio18_1, false);
+motor leftE = motor(PORT6, ratio18_1, false);
+motor rightF = motor(PORT1, ratio18_1, true);
+motor rightB = motor(PORT2, ratio18_1, true);
+motor rightE = motor(PORT3, ratio18_1, true);
 
 /*
   Accumulator
 */
-motor bottomAccumulator = motor(PORT5, ratio18_1, true);
+motor bottomAccumulator = motor(PORT20, ratio18_1, true);
 motor topAccumulator = motor(PORT16, ratio18_1, true);
 
 //Sensors
