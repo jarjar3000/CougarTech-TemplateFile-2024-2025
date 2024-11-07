@@ -136,7 +136,7 @@ void usercontrol(void)
 
          // Set the velocity of the non-drive motors (add non-drive motors as necessary)
          bottomAccumulator.setVelocity(100, percent);
-         topAccumulator.setVelocity(100, percent);
+         topAccumulator.setVelocity(50, percent);
 
          /*
           Accumulator
@@ -144,8 +144,8 @@ void usercontrol(void)
          */
          if (controller1.ButtonR1.pressing())
          {
-            bottomAccumulator.spin(forward, 100, percent);
-            topAccumulator.spin(forward, 100, percent);
+            bottomAccumulator.spin(forward);
+            topAccumulator.spin(forward);
          }
          else if (controller1.ButtonR2.pressing())
          {
