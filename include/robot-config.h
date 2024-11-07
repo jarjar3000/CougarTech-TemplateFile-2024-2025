@@ -27,12 +27,10 @@ extern optical optical1;
 
 // Pneumatics
 extern digital_out clamp1;
-extern digital_out clamp2;
 extern digital_out ejector;
 
 extern timer failsafe;
 
-extern limit limit1;
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  *

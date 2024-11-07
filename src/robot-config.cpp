@@ -28,12 +28,12 @@ controller controller1 = controller(primary);
   - RightF: Front right motor
   - RightB: Back right motor
 */
-motor leftF = motor(PORT4, ratio18_1, false);
-motor leftB = motor(PORT5, ratio18_1, false);
-motor leftE = motor(PORT6, ratio18_1, false);
-motor rightF = motor(PORT1, ratio18_1, true);
-motor rightB = motor(PORT2, ratio18_1, true);
-motor rightE = motor(PORT3, ratio18_1, true);
+motor leftF = motor(PORT1, ratio18_1, false);
+motor leftB = motor(PORT3, ratio18_1, false);
+motor leftE = motor(PORT2, ratio18_1, false);
+motor rightF = motor(PORT4, ratio18_1, true);
+motor rightB = motor(PORT6, ratio18_1, true);
+motor rightE = motor(PORT5, ratio18_1, true);
 
 /*
   Accumulator
@@ -47,10 +47,7 @@ optical optical1 = optical(PORT18);
 
 // Pneumatics
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
-digital_out clamp2 = digital_out(Brain.ThreeWirePort.B);
-digital_out ejector = digital_out(Brain.ThreeWirePort.C);
-
-limit limit1 = limit(Brain.ThreeWirePort.C);
+digital_out ejector = digital_out(Brain.ThreeWirePort.B);
 
 timer failsafe = timer();
 

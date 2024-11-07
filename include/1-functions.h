@@ -77,12 +77,10 @@ void clamp()
     if (clamp1.value() == 0)
     {
         clamp1.set(true);
-        clamp2.set(true);
     }
     else
     {
         clamp1.set(false);
-        clamp2.set(false);
     }
 }
 

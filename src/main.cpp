@@ -144,16 +144,8 @@ void usercontrol(void)
          */
          if (controller1.ButtonR1.pressing())
          {
-            if (limit1.pressing())
-            {
-               bottomAccumulator.spin(forward, 100, percent);
-               topAccumulator.spin(forward, 20, percent);
-            }
-            else
-            {
-               bottomAccumulator.spin(forward, 100, percent);
-               topAccumulator.spin(forward, 100, percent);
-            }
+            bottomAccumulator.spin(forward, 100, percent);
+            topAccumulator.spin(forward, 100, percent);
          }
          else if (controller1.ButtonR2.pressing())
          {
