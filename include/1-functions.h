@@ -85,6 +85,38 @@ void clamp()
 }
 
 /** 
+ * @brief Function to toggle hanging mechanism. Starting position is down.
+*/
+void hang()
+{
+    if (hang1.value() == 0)
+    {
+        hang1.set(true);
+        hang2.set(true);
+    }
+    else
+    {
+        hang1.set(false);
+        hang2.set(false);
+    }
+}
+
+/** 
+ * @brief Function to toggle tipper. Starting position is down.
+*/
+void toggleTipper()
+{
+    if (tipper.value() == 0)
+    {
+        tipper.set(true);
+    }
+    else
+    {
+        tipper.set(false);
+    }
+}
+
+/** 
  * @brief Function to toggle alliance color. Default is red (true)
 */
 void changeAllianceColor()

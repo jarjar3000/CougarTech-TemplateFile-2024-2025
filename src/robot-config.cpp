@@ -47,7 +47,10 @@ optical optical1 = optical(PORT18);
 
 // Pneumatics
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
-digital_out ejector = digital_out(Brain.ThreeWirePort.B);
+digital_out hang1 = digital_out(Brain.ThreeWirePort.B);
+digital_out hang2 = digital_out(Brain.ThreeWirePort.C);
+digital_out ejector = digital_out(Brain.ThreeWirePort.D);
+digital_out tipper = digital_out(Brain.ThreeWirePort.E);
 
 timer failsafe = timer();
 

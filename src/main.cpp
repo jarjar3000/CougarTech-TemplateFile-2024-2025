@@ -56,6 +56,8 @@ void usercontrol(void)
    {
       // Assign buttons for pneumatics here (use a callback function)
       controller1.ButtonX.pressed(clamp);
+      controller1.ButtonUp.pressed(hang);
+      controller1.ButtonA.pressed(toggleTipper);
       controller1.ButtonUp.pressed(changeAllianceColor);
 
       while (true)
@@ -136,7 +138,7 @@ void usercontrol(void)
 
          // Set the velocity of the non-drive motors (add non-drive motors as necessary)
          bottomAccumulator.setVelocity(100, percent);
-         topAccumulator.setVelocity(50, percent);
+         topAccumulator.setVelocity(80, percent);
 
          /*
           Accumulator
