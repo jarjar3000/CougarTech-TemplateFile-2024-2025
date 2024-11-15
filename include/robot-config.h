@@ -27,6 +27,7 @@ extern optical optical1;
 
 // Pneumatics
 extern digital_out clamp1;
+extern digital_out clamp2;
 extern digital_out hang1;
 extern digital_out hang2;
 extern digital_out tipper;

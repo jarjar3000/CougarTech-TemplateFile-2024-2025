@@ -31,6 +31,12 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
+   /*
+      Skills Auto
+      Start in front of the alliacne stake, facing forward.
+      Preload goes in front of the optical sensor.
+   */
+
    // Determine the alliance color
    if (optical1.color() == red)
    {
@@ -43,6 +49,52 @@ void autonomous(void)
 
    // Start the thread
    thread ejectThread = thread(eject);
+
+   // Reset rotation
+   inertial1.calibrate();
+   while (inertial1.isCalibrating())
+   {
+      wait(200, msec);
+   }
+   inertial1.resetRotation();
+
+   // Put ring on alliance stake
+   spinAccumulator(forward, 100);
+
+   // Go forward, turn left, and clamp mobile goal
+   drive(forward, 3, 10);
+   turn(left, 90, 10);
+   drive(reverse, 5, 10);
+   clamp();
+
+   // Turn right to face the red ring and grab it
+   turn(right, 90, 10);
+   drive(forward, 5, 10);
+
+   // Turn towards the next ring and grab it
+   turn(right, 90, 10);
+   drive(forward, 9, 10);
+
+   // Turn towards the ring by the neutral stake and grab it
+   turn(left, 30, 10);
+   drive(forward, 9, 10);
+
+   // Back up and grab the two rings in a row
+   drive(reverse, 9, 10);
+   turn(right, 120, 10);
+   drive(forward, 10, 10);
+
+   // Grab the lone ring
+   drive(reverse, 3, 10);
+   turn(left, 90, 10);
+   drive(forward, 4, 10);
+
+   // Place the goal in the corner
+   turn(left, 120, 10);
+   drive(reverse, 5, 10);
+   clamp();
+   
+   // Get in position for next goal
 
 }
 
@@ -138,7 +190,7 @@ void usercontrol(void)
 
          // Set the velocity of the non-drive motors (add non-drive motors as necessary)
          bottomAccumulator.setVelocity(100, percent);
-         topAccumulator.setVelocity(80, percent);
+         topAccumulator.setVelocity(100, percent);
 
          /*
           Accumulator

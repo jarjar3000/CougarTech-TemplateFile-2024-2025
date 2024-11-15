@@ -31,9 +31,9 @@ void setRightSpeed(double vel)
  */
 void drive(vex::directionType d)
 {
-    switch(d)
+    switch (d)
     {
-        case vex::directionType::fwd:
+    case vex::directionType::fwd:
         leftF.spin(forward);
         leftB.spin(forward);
         leftE.spin(forward);
@@ -42,7 +42,7 @@ void drive(vex::directionType d)
         rightE.spin(forward);
         break;
 
-        case vex::directionType::rev:
+    case vex::directionType::rev:
         leftF.spin(reverse);
         leftB.spin(reverse);
         leftE.spin(reverse);
@@ -51,7 +51,7 @@ void drive(vex::directionType d)
         rightE.spin(reverse);
         break;
 
-        case vex::directionType::undefined:
+    case vex::directionType::undefined:
         break;
     }
 }
@@ -69,24 +69,26 @@ void stopDrive()
     rightE.stop();
 }
 
-/** 
+/**
  * @brief Function to toggle clamp. Starting position is up.
-*/
+ */
 void clamp()
 {
     if (clamp1.value() == 0)
     {
         clamp1.set(true);
+        clamp2.set(true);
     }
     else
     {
         clamp1.set(false);
+        clamp2.set(false);
     }
 }
 
-/** 
+/**
  * @brief Function to toggle hanging mechanism. Starting position is down.
-*/
+ */
 void hang()
 {
     if (hang1.value() == 0)
@@ -101,9 +103,9 @@ void hang()
     }
 }
 
-/** 
+/**
  * @brief Function to toggle tipper. Starting position is down.
-*/
+ */
 void toggleTipper()
 {
     if (tipper.value() == 0)
@@ -116,9 +118,9 @@ void toggleTipper()
     }
 }
 
-/** 
+/**
  * @brief Function to toggle alliance color. Default is red (true)
-*/
+ */
 void changeAllianceColor()
 {
     if (allianceIsRed)
@@ -131,9 +133,9 @@ void changeAllianceColor()
     }
 }
 
-/** 
-    * @brief Thread Function to detect if rings of the opposite alliance color pass the intake, and ejects them.
-*/
+/**
+ * @brief Thread Function to detect if rings of the opposite alliance color pass the intake, and ejects them.
+ */
 int eject()
 {
     // This should run the entire match, EXCEPT when we intake our first ring.
@@ -177,6 +179,7 @@ void drive(vex::directionType d, double distance, double failsafeTime)
 
     // Reset PID variables
     double avgPosition = 0;
+    integral = 0;
     prevError = 0;
 
     // Reset failsafe timer
@@ -202,8 +205,8 @@ void drive(vex::directionType d, double distance, double failsafeTime)
         break;
     }
 
-    // Both Cases
-    while ((error < -DRIVE_ERROR_TOLERANCE && error > DRIVE_ERROR_TOLERANCE) || failsafe.time(seconds) <= failsafeTime)
+    // Both Cases (may need to change to do while loop so the loop always runs at least once)
+    while ((error < -DRIVE_ERROR_TOLERANCE && error > DRIVE_ERROR_TOLERANCE) && failsafe.time(seconds) <= failsafeTime)
     {
         // Error (Proportional)
         avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
@@ -255,10 +258,70 @@ void drive(vex::directionType d, double distance, double failsafeTime)
 }
 
 /**
+ * @brief Turns the robot in a direction for a specific amount of degrees
+ * @param d The direction to turn in
+ * @param deg The amount of degrees to turn in
+ * @param failsafeTime Amount of time, in seconds, until the robot automatically stops the move
+ */
+void turn(vex::turnType d, double deg, double failsafeTime)
+{
+    // Reset PID variables
+    inertial1.setRotation(0, degrees);
+    integral = 0;
+    prevError = 0;
+
+    // Reset failsafe timer
+    failsafe.clear();
+
+    // Start the PID turn
+    drive(forward);
+    do
+    {
+        // Proportional (abs the rotation so both directions are the same)
+        error = deg - fabs(inertial1.rotation(degrees));
+
+        // Integral
+        integral += error;
+
+        if (integral > TURN_INTEGRAL_WINDUP)
+        {
+            integral = 0;
+        }
+
+        // Derivative
+        derivative = error - prevError;
+        prevError = error;
+
+        // Change Motor Speed
+        leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+        rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+        switch (d)
+        {
+        case vex::turnType::left:
+            setLeftSpeed(-leftSpeed);
+            setRightSpeed(rightSpeed);
+            break;
+
+        case vex::turnType::right:
+            setLeftSpeed(leftSpeed);
+            setRightSpeed(-rightSpeed);
+            break;
+        }
+        wait(20, msec);
+    } while ((error > TURN_ERROR_TOLERANCE && error < -TURN_ERROR_TOLERANCE) && failsafe.time(seconds) <= failsafeTime);
+
+    // Stop the robot
+    stopDrive();
+
+    // Wait
+    wait(500, msec);
+}
+
+/**
  * @brief Spin the accumulator in a direction
  * @param d The direction to spin the accumulator in
  * @param vel The velocity to spin the accumulator at
-*/
+ */
 void spinAccumulator(vex::directionType d, double vel)
 {
     bottomAccumulator.spin(d, vel, percent);
