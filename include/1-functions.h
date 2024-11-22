@@ -104,16 +104,18 @@ void hang()
 }
 
 /**
- * @brief Function to toggle tipper. Starting position is down.
+ * @brief Function to toggle tipper. Starting position is up.
  */
 void toggleTipper()
 {
     if (tipper.value() == 0)
     {
+        // controller1.rumble("...");
         tipper.set(true);
     }
     else
     {
+        // controller1.rumble("-");
         tipper.set(false);
     }
 }

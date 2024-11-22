@@ -109,8 +109,8 @@ void usercontrol(void)
       // Assign buttons for pneumatics here (use a callback function)
       controller1.ButtonX.pressed(clamp);
       controller1.ButtonUp.pressed(hang);
-      controller1.ButtonA.pressed(toggleTipper);
-      controller1.ButtonUp.pressed(changeAllianceColor);
+      controller1.ButtonLeft.pressed(toggleTipper);
+      controller1.ButtonDown.pressed(changeAllianceColor);
 
       while (true)
       {

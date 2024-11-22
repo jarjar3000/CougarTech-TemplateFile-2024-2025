@@ -39,7 +39,7 @@ motor rightE = motor(PORT16, ratio18_1, true);
   Accumulator
 */
 motor bottomAccumulator = motor(PORT20, ratio18_1, true);
-motor topAccumulator = motor(PORT2, ratio18_1, false);
+motor topAccumulator = motor(PORT10, ratio18_1, true);
 
 //Sensors
 inertial inertial1 = inertial(PORT17);
