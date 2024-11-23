@@ -280,7 +280,7 @@ void turn(vex::turnType d, double deg, double failsafeTime)
     do
     {
         // Proportional (abs the rotation so both directions are the same)
-        error = deg - fabs(inertial1.rotation(degrees));
+        error = (deg - fabs(inertial1.rotation(degrees))) - 5;
         controller1.Screen.clearScreen();
         controller1.Screen.setCursor(0, 0);
         controller1.Screen.print("Error: %.2f", error);
