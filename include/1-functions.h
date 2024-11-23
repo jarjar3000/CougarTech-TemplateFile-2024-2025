@@ -206,9 +206,9 @@ void drive(vex::directionType d, double distance, double failsafeTime)
     case vex::directionType::undefined:
         break;
     }
-
+    // controller1.Screen.print("right before the loop");
     // Both Cases (may need to change to do while loop so the loop always runs at least once)
-    while ((error < -DRIVE_ERROR_TOLERANCE && error > DRIVE_ERROR_TOLERANCE) && failsafe.time(seconds) <= failsafeTime)
+    do
     {
         // Error (Proportional)
         avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
@@ -246,11 +246,10 @@ void drive(vex::directionType d, double distance, double failsafeTime)
             setRightSpeed(-rightSpeed);
         }
 
-        // printf("Error: %f\n", error);
-
         // Conserve brain resources
         wait(20, msec);
     }
+    while ((error < -DRIVE_ERROR_TOLERANCE || error > DRIVE_ERROR_TOLERANCE) && failsafe.time(seconds) <= failsafeTime);
 
     // Stop motors
     stopDrive();
@@ -276,9 +275,11 @@ void turn(vex::turnType d, double deg, double failsafeTime)
     failsafe.clear();
 
     // Start the PID turn
+    controller1.Screen.print("right before the loop");
     drive(forward);
     do
     {
+        controller1.Screen.print("made the while loop");
         // Proportional (abs the rotation so both directions are the same)
         error = deg - fabs(inertial1.rotation(degrees));
 
