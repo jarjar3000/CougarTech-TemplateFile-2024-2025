@@ -22,7 +22,7 @@ const double DRIVE_INTEGRAL_WINDUP = 2;
 const double TURN_INTEGRAL_WINDUP = 5;
 const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
 const double TURN_ERROR_TOLERANCE = 1;
-const double WHEEL_DIAMETER = 3.25; //in inches 5
+const double WHEEL_DIAMETER = 3.25; // in inches
 const double WHEEL_GEAR_RATIO = (double) 1 / 1;
 double heading = 0;
 
