@@ -279,9 +279,11 @@ void turn(vex::turnType d, double deg, double failsafeTime)
     drive(forward);
     do
     {
-        controller1.Screen.print("made the while loop");
         // Proportional (abs the rotation so both directions are the same)
         error = deg - fabs(inertial1.rotation(degrees));
+        controller1.Screen.clearScreen();
+        controller1.Screen.setCursor(0, 0);
+        controller1.Screen.print("Error: %.2f", error);
 
         // Integral
         integral += error;
@@ -311,7 +313,7 @@ void turn(vex::turnType d, double deg, double failsafeTime)
             break;
         }
         wait(20, msec);
-    } while ((error > TURN_ERROR_TOLERANCE && error < -TURN_ERROR_TOLERANCE) && failsafe.time(seconds) <= failsafeTime);
+    } while ((error > TURN_ERROR_TOLERANCE || error < -TURN_ERROR_TOLERANCE) && failsafe.time(seconds) <= failsafeTime);
 
     // Stop the robot
     stopDrive();

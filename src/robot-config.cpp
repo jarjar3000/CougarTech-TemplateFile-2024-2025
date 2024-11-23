@@ -42,8 +42,8 @@ motor bottomAccumulator = motor(PORT20, ratio18_1, true);
 motor topAccumulator = motor(PORT10, ratio18_1, true);
 
 //Sensors
-inertial inertial1 = inertial(PORT17);
-optical optical1 = optical(PORT18);
+inertial inertial1 = inertial(PORT18);
+optical optical1 = optical(PORT1);
 
 // Pneumatics
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
