@@ -52,7 +52,7 @@ void autonomous(void)
    */
    
    // Drive backwards into the mobile goal
-   drive(reverse, 20, 10); //24
+   drive(reverse, 19, 10); //20
    clamp();
 
    // Turn (left or right, depends on starting side), but the heading will be the same
@@ -86,7 +86,7 @@ void usercontrol(void)
       controller1.ButtonX.pressed(clamp);
       controller1.ButtonUp.pressed(hang);
       controller1.ButtonLeft.pressed(toggleTipper);
-      controller1.ButtonDown.pressed(changeAllianceColor);
+      // controller1.ButtonDown.pressed(changeAllianceColor);
 
       while (true)
       {
