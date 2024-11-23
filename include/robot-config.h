@@ -10,29 +10,31 @@ extern controller controller1;
     extern nameOfThing typeOfThing
 */
 
-//Drive motors (4)
+//Drive motors (6)
 extern motor leftF;
 extern motor leftB;
 extern motor rightF;
 extern motor rightB;
-
-//Lift
-extern motor leftLift;
-extern motor rightLift;
+extern motor leftE;
+extern motor rightE;
 
 //Accumulator
 extern motor bottomAccumulator;
 extern motor topAccumulator;
 
 extern inertial inertial1;
+extern optical optical1;
 
 // Pneumatics
 extern digital_out clamp1;
 extern digital_out clamp2;
+extern digital_out hang1;
+extern digital_out hang2;
+extern digital_out tipper;
+extern digital_out ejector;
 
 extern timer failsafe;
 
-extern limit limit1;
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  *
