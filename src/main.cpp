@@ -42,17 +42,8 @@ void autonomous(void)
       wait(200, msec);
    }
 
-   if (red)
-   {
-      inertial1.setHeading(270, degrees);
-      heading = 270;
-   }
-   else
-   {
-      inertial1.setHeading(90, degrees);
-      heading = 90;
-   }
-   
+   inertial1.setRotation(0, degrees);
+   // Red 270, blue 90
 
    /*
        Start backwards, right in front of the mobile goal
@@ -61,22 +52,22 @@ void autonomous(void)
    */
    
    // Drive backwards into the mobile goal
-   drive(reverse, 24, 10);
+   drive(reverse, 20, 10); //24
    clamp();
 
    // Turn (left or right, depends on starting side), but the heading will be the same
    if (red)
    {
-      turn(left, 200, 10); // 180
+      turn(left, 90, 10); // 180
    }
    else
    {
-      turn(right, 160, 10); // 180
+      turn(right, 90, 10); // 180
    }  
 
    // Accumulate alliace ring into goal
    spinAccumulator(forward, 100);
-   drive(forward, 15, 10); //20
+   drive(forward, 20, 10); //20
    wait(0.25, seconds);
    stopAccumulator();
 
