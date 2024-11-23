@@ -58,44 +58,6 @@ void autonomous(void)
    }
    inertial1.resetRotation();
 
-   // Put ring on alliance stake
-   spinAccumulator(forward, 100);
-
-   // Go forward, turn left, and clamp mobile goal
-   drive(forward, 3, 10);
-   turn(left, 90, 10);
-   drive(reverse, 5, 10);
-   clamp();
-
-   // Turn right to face the red ring and grab it
-   turn(right, 90, 10);
-   drive(forward, 5, 10);
-
-   // Turn towards the next ring and grab it
-   turn(right, 90, 10);
-   drive(forward, 9, 10);
-
-   // Turn towards the ring by the neutral stake and grab it
-   turn(left, 30, 10);
-   drive(forward, 9, 10);
-
-   // Back up and grab the two rings in a row
-   drive(reverse, 9, 10);
-   turn(right, 120, 10);
-   drive(forward, 10, 10);
-
-   // Grab the lone ring
-   drive(reverse, 3, 10);
-   turn(left, 90, 10);
-   drive(forward, 4, 10);
-
-   // Place the goal in the corner
-   turn(left, 120, 10);
-   drive(reverse, 5, 10);
-   clamp();
-   
-   // Get in position for next goal
-
 }
 
 // Driver Control

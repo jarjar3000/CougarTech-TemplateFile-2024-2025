@@ -110,12 +110,10 @@ void toggleTipper()
 {
     if (tipper.value() == 0)
     {
-        // controller1.rumble("...");
         tipper.set(true);
     }
     else
     {
-        // controller1.rumble("-");
         tipper.set(false);
     }
 }
@@ -206,13 +204,12 @@ void drive(vex::directionType d, double distance, double failsafeTime)
     case vex::directionType::undefined:
         break;
     }
-    // controller1.Screen.print("right before the loop");
-    // Both Cases (may need to change to do while loop so the loop always runs at least once)
+
+    // Both Cases
     do
     {
         // Error (Proportional)
         avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
-        // avgPosition = fabs(leftF.position(degrees));
 
         // The distance in inches minus the distance traveled (wheel circumfrence times rotations)
         error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / 360) * WHEEL_GEAR_RATIO;
