@@ -73,7 +73,7 @@ void autonomous(void)
    spinAccumulator(forward, 100);
 
    // Reverse back to original position
-   drive(reverse, 15, 10);
+   drive(reverse, 16, 10);
 
    // Turn towards the corner and ram the ring to get it
    if (red)
