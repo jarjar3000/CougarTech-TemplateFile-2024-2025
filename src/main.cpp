@@ -35,7 +35,7 @@ void autonomous(void)
       the program are needed.
       Change the boolean depending if we are on the red side or not.
    */
-   bool red = false;
+   bool red = true;
    inertial1.calibrate();
    while (inertial1.isCalibrating())
    {
@@ -58,20 +58,43 @@ void autonomous(void)
    // Turn (left or right, depends on starting side), but the heading will be the same
    if (red)
    {
-      turn(left, 90, 10); // 180
+      turn(right, 90, 10); // 180
    }
    else
    {
-      turn(right, 90, 10); // 180
+      turn(left, 90, 10); // 180
    }  
 
    // Accumulate alliace ring into goal
    spinAccumulator(forward, 100);
-   drive(forward, 20, 10); //20
+   drive(forward, 19, 10); //20, 17
    wait(0.25, seconds);
    stopAccumulator();
+   spinAccumulator(forward, 100);
 
-   // Could grab other goal in middle from this position
+   // Reverse back to original position
+   drive(reverse, 15, 10);
+
+   // Turn towards the corner and ram the ring to get it
+   if (red)
+   {
+      turn(left, 45, 10);
+   }
+   else
+   {
+      turn(right, 45, 10);
+   }
+
+   // Forward
+   stopAccumulator();
+   spinAccumulator(reverse, 100);
+   drive(forward, 55, 10); //50
+   // wait(1, seconds);
+   stopAccumulator();
+   spinAccumulator(forward, 100);
+   wait(1, seconds);
+   drive(reverse, 10, 10);
+
 }
 
 // Driver Control
