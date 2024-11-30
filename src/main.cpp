@@ -35,7 +35,7 @@ void autonomous(void)
       the program are needed.
       Change the boolean depending if we are on the red side or not.
    */
-   bool red = true;
+   bool red = allianceIsRed;
    inertial1.calibrate();
    while (inertial1.isCalibrating())
    {
@@ -97,124 +97,105 @@ void autonomous(void)
 
 }
 
+int driver()
+{
+   // Set up all pneumatic callbacks
+   controller1.ButtonX.pressed(clamp);
+   controller1.ButtonUp.pressed(hang);
+   controller1.ButtonLeft.pressed(toggleTipper);
+   controller1.ButtonR1.pressed(driveAccumulatorForward);
+   controller1.ButtonR2.pressed(driveAccumulatorReverse);
+
+   // Set the drive motors to coast
+   leftF.setStopping(coast);
+   leftB.setStopping(coast);
+   leftE.setStopping(coast);
+   rightF.setStopping(coast);
+   rightB.setStopping(coast);
+   rightE.setStopping(coast);
+
+   // Set the non-drive motors to hold its position (add non-drive motors as necessary)
+   bottomAccumulator.setStopping(hold);
+   topAccumulator.setStopping(hold);
+
+   // Set the velocity of the non-drive motors (add non-drive motors as necessary)
+   bottomAccumulator.setVelocity(100, percent);
+   topAccumulator.setVelocity(100, percent);
+   while (true)
+   {
+      // Joysticks, arms, claws, etc. go here
+
+      // Controller Deadzone, a smaller number makes the joysticks more sensitive
+      float deadband = 5;
+
+      // Variables track both joystick positions and will update motor velocities
+      float leftMotorSpeed = controller1.Axis3.position();
+      float rightMotorSpeed = controller1.Axis2.position();
+
+      /*
+         Left Side of Drivetrain
+         The joystick positions will set the speed of the left motors.
+         If that number is less than the deadband, the motors will not move.
+      */
+      if (fabs(leftMotorSpeed) < deadband)
+      {
+         // Set the speed to 0
+         setLeftSpeed(0);
+      }
+      else
+      {
+         if (leftMotorSpeed >= MAX_DRIVE_SPEED)
+         {
+            setLeftSpeed(MAX_DRIVE_SPEED);
+         }
+         else if (leftMotorSpeed <= -MAX_DRIVE_SPEED)
+         {
+            setLeftSpeed(-MAX_DRIVE_SPEED);
+         }
+         else
+         {
+            setLeftSpeed(leftMotorSpeed);
+         }
+      }
+
+      /*
+         Right Side of Drivetrain
+         The joystick positions will set the speed of the right motors.
+         If that number is less than the deadband, the motors will not move.
+         */
+      if (fabs(rightMotorSpeed) < deadband)
+      {
+         // Set the speed to 0
+         setRightSpeed(0);
+      }
+      else
+      {
+         if (rightMotorSpeed >= MAX_DRIVE_SPEED)
+         {
+            setRightSpeed(MAX_DRIVE_SPEED);
+         }
+         else if (rightMotorSpeed <= -MAX_DRIVE_SPEED)
+         {
+            setRightSpeed(-MAX_DRIVE_SPEED);
+         }
+         else
+         {
+            setRightSpeed(rightMotorSpeed);
+         }
+      }
+
+      // Make the drive motors spin so the robot moves
+      drive(forward);
+
+      // Wait to conserve brain resources
+      this_thread::sleep_for(20);
+   }
+   return 0;
+}
 // Driver Control
 void usercontrol(void)
 {
-   // Start the thread
-   thread ejectThread = thread(eject);
-
-   while (1)
-   {
-      // Assign buttons for pneumatics here (use a callback function)
-      controller1.ButtonX.pressed(clamp);
-      controller1.ButtonUp.pressed(hang);
-      controller1.ButtonLeft.pressed(toggleTipper);
-      // controller1.ButtonDown.pressed(changeAllianceColor);
-
-      while (true)
-      {
-         // Joysticks, arms, claws, etc. go here
-
-         // Controller Deadzone, a smaller number makes the joysticks more sensitive
-         float deadband = 5;
-
-         // Variables track both joystick positions and will update motor velocities
-         float leftMotorSpeed = controller1.Axis3.position();
-         float rightMotorSpeed = controller1.Axis2.position();
-
-         /*
-           Left Side of Drivetrain
-           The joystick positions will set the speed of the left motors.
-           If that number is less than the deadband, the motors will not move.
-         */
-         if (fabs(leftMotorSpeed) < deadband)
-         {
-            // Set the speed to 0
-            setLeftSpeed(0);
-         }
-         else
-         {
-            if (leftMotorSpeed >= MAX_DRIVE_SPEED)
-            {
-               setLeftSpeed(MAX_DRIVE_SPEED);
-            }
-            else if (leftMotorSpeed <= -MAX_DRIVE_SPEED)
-            {
-               setLeftSpeed(-MAX_DRIVE_SPEED);
-            }
-            else
-            {
-               setLeftSpeed(leftMotorSpeed);
-            }
-         }
-
-         /*
-            Right Side of Drivetrain
-            The joystick positions will set the speed of the right motors.
-            If that number is less than the deadband, the motors will not move.
-          */
-         if (fabs(rightMotorSpeed) < deadband)
-         {
-            // Set the speed to 0
-            setRightSpeed(0);
-         }
-         else
-         {
-            if (rightMotorSpeed >= MAX_DRIVE_SPEED)
-            {
-               setRightSpeed(MAX_DRIVE_SPEED);
-            }
-            else if (rightMotorSpeed <= -MAX_DRIVE_SPEED)
-            {
-               setRightSpeed(-MAX_DRIVE_SPEED);
-            }
-            else
-            {
-               setRightSpeed(rightMotorSpeed);
-            }
-         }
-
-         // Make the drive motors spin so the robot moves
-         drive(forward);
-
-         // Set the drive motors to coast
-         leftF.setStopping(coast);
-         leftB.setStopping(coast);
-         rightF.setStopping(coast);
-         rightB.setStopping(coast);
-
-         // Set the non-drive motors to hold its position (add non-drive motors as necessary)
-         bottomAccumulator.setStopping(hold);
-         topAccumulator.setStopping(hold);
-
-         // Set the velocity of the non-drive motors (add non-drive motors as necessary)
-         bottomAccumulator.setVelocity(100, percent);
-         topAccumulator.setVelocity(100, percent);
-
-         /*
-          Accumulator
-          Buttons that control the accumulator
-         */
-         if (controller1.ButtonR1.pressing())
-         {
-            bottomAccumulator.spin(forward);
-            topAccumulator.spin(forward);
-         }
-         else if (controller1.ButtonR2.pressing())
-         {
-            bottomAccumulator.spin(reverse);
-            topAccumulator.spin(reverse);
-         }
-         else
-         {
-            bottomAccumulator.stop();
-            topAccumulator.stop();
-         }
-
-         // Wait to conserve brain resources
-         wait(20, msec);
-      }
-   }
+   thread driverThread = thread(driver);
 }
 
 int main()
@@ -225,6 +206,10 @@ int main()
 
    // Run the pre-autonomous function.
    pre_auton();
+
+   // Start the thread
+   thread ejectThread = thread(eject);
+   optical1.setLight(ledState::on);
 
    // Prevent main from exiting with an infinite loop.
    while (true)

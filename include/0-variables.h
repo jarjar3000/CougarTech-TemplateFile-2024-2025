@@ -28,6 +28,7 @@ double heading = 0;
 
 // Driving Variables
 const double MAX_DRIVE_SPEED = 100;
+bool accumulatorIsSpinning = false;
 
 /*
     This boolean MUST be changed and the program must be redownloaded based on the alliance color.
