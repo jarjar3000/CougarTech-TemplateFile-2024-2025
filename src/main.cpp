@@ -103,8 +103,6 @@ int driver()
    controller1.ButtonX.pressed(clamp);
    controller1.ButtonUp.pressed(hang);
    controller1.ButtonLeft.pressed(toggleTipper);
-   controller1.ButtonR1.pressed(driveAccumulatorForward);
-   controller1.ButtonR2.pressed(driveAccumulatorReverse);
 
    // Set the drive motors to coast
    leftF.setStopping(coast);
@@ -121,6 +119,7 @@ int driver()
    // Set the velocity of the non-drive motors (add non-drive motors as necessary)
    bottomAccumulator.setVelocity(100, percent);
    topAccumulator.setVelocity(100, percent);
+   
    while (true)
    {
       // Joysticks, arms, claws, etc. go here
@@ -182,6 +181,25 @@ int driver()
          {
             setRightSpeed(rightMotorSpeed);
          }
+      }
+
+      /*
+         Accumulator
+      */
+      if (controller1.ButtonR1.pressing())
+      {
+         bottomAccumulator.spin(forward);
+         topAccumulator.spin(forward);
+      }
+      else if (controller1.ButtonR2.pressing())
+      {
+         bottomAccumulator.spin(reverse);
+         topAccumulator.spin(reverse);
+      }
+      else
+      {
+         bottomAccumulator.stop();
+         topAccumulator.stop();
       }
 
       // Make the drive motors spin so the robot moves

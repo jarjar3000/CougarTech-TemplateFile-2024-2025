@@ -4,44 +4,6 @@ using namespace vex;
 #include "robot-config.h"
 
 /**
- * @brief Function used in driver control to toggle accumulator to spin forward with button press
- */
-void driveAccumulatorForward()
-{
-    if (accumulatorIsSpinning)
-    {
-        bottomAccumulator.stop();
-        topAccumulator.stop();
-        accumulatorIsSpinning = false;
-    }
-    else
-    {
-        bottomAccumulator.spin(forward);
-        topAccumulator.spin(forward);
-        accumulatorIsSpinning = true;
-    }
-}
-
-/**
- * @brief Function used in driver control to toggle accumulator to spin backwards with button press
- */
-void driveAccumulatorReverse()
-{
-    if (accumulatorIsSpinning)
-    {
-        bottomAccumulator.stop();
-        topAccumulator.stop();
-        accumulatorIsSpinning = false;
-    }
-    else
-    {
-        bottomAccumulator.spin(reverse);
-        topAccumulator.spin(reverse);
-        accumulatorIsSpinning = true;
-    }
-}
-
-/**
  * @brief Function to set speed of left side of the drive
  * @param vel The speed to set the left side to.
  */
@@ -196,7 +158,7 @@ int eject()
         }
         controller1.Screen.print("Not Detected");
         // Sleep thread to not consume all of CPU resources
-        // this_thread::sleep_for(20);
+        this_thread::sleep_for(20);
     }
     return 0;
 }
