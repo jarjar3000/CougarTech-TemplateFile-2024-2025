@@ -53,13 +53,13 @@ void autonomous(void)
    // Go forward, turn left, and clamp mobile goal
    drive(forward, 7, 10);
    turn(left, 90, 10);
-   drive(reverse, 15, 10);
+   drive(reverse, 18, 10);
    clamp();
 
    // Turn right to face the red ring and grab it
    turn(right, 90, 10);
    spinAccumulator(forward, 100);
-   drive(forward, 30, 10); //25
+   drive(forward, 20, 10); //25
 
    // Turn towards the next ring and grab it
    turn(right, 87, 10);
