@@ -30,7 +30,14 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   drive(forward, 6, 100);
+   inertial1.calibrate();
+   while (inertial1.isCalibrating())
+   {
+      wait(200, msec);
+   }
+   turn(right, 45, 1000);
+   turn(right, 45, 1000);
+   turn(left, 90, 1000);
 }
 
 int driver()
@@ -162,8 +169,8 @@ int main()
    pre_auton();
 
    // Start the thread
-   thread ejectThread = thread(eject);
-   optical1.setLight(ledState::on);
+   // thread ejectThread = thread(eject);
+   // optical1.setLight(ledState::on);
 
    // Prevent main from exiting with an infinite loop.
    while (true)

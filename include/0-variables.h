@@ -6,9 +6,9 @@ const double kP = 3.5;
 const double kI = 1.5;
 const double kD = 3;
 
-const double turnKP = 0.9;
-const double turnKI = 0.8;
-const double turnKD = 1;
+const double turnKP = 0.6;
+const double turnKI = 0.3;
+const double turnKD = 0.5;
 
 double error = 0;
 double integral = 0;
@@ -21,7 +21,7 @@ double rightSpeed = 0;
 const double DRIVE_INTEGRAL_WINDUP = 2;
 const double TURN_INTEGRAL_WINDUP = 10;
 const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
-const double TURN_ERROR_TOLERANCE = 1;
+const double TURN_ERROR_TOLERANCE = 0.5;
 const double WHEEL_DIAMETER = 3.25; // in inches
 const double WHEEL_GEAR_RATIO = (double) 1 / 1;
 double heading = 0;
