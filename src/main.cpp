@@ -43,93 +43,46 @@ void autonomous(void)
    }
 
    inertial1.setRotation(0, degrees);
-   // Red 270, blue 90
-
-   /*
-       Start backwards, right in front of the mobile goal
-       Preload goes in the accumulator, near the top.
-       There should be a ring opposite the alliance color on the right.
-   */
-   
-   // Drive backwards into the mobile goal
-   drive(reverse, 19, 10); //20
-   clamp();
-
-   // Turn (left or right, depends on starting side), but the heading will be the same
-   if (red)
-   {
-      turn(right, 90, 10); // 180
-   }
-   else
-   {
-      turn(left, 90, 10); // 180
-   }  
-
-   // Accumulate alliace ring into goal
-   spinAccumulator(forward, 100);
-   drive(forward, 19, 10); //20, 17
-   wait(0.25, seconds);
-   stopAccumulator();
-   spinAccumulator(forward, 100);
-
-   // Reverse back to original position
-   drive(reverse, 16, 10);
-
-   // Turn towards the corner and ram the ring to get it
-   if (red)
-   {
-      turn(left, 45, 10);
-   }
-   else
-   {
-      turn(right, 45, 10);
-   }
-
-   // Forward
-   stopAccumulator();
-   spinAccumulator(reverse, 100);
-   drive(forward, 55, 10); //50
-   // wait(1, seconds);
-   stopAccumulator();
-   spinAccumulator(forward, 100);
-   wait(1, seconds);
-   drive(reverse, 10, 10);
+   inertial1.resetRotation();
 
    // Put ring on alliance stake
    spinAccumulator(forward, 100);
+   wait(1, seconds);
+   stopAccumulator();
 
    // Go forward, turn left, and clamp mobile goal
-   drive(forward, 3, 10);
+   drive(forward, 7, 10);
    turn(left, 90, 10);
-   drive(reverse, 5, 10);
+   drive(reverse, 15, 10);
    clamp();
 
    // Turn right to face the red ring and grab it
    turn(right, 90, 10);
-   drive(forward, 5, 10);
+   spinAccumulator(forward, 100);
+   drive(forward, 30, 10); //25
 
    // Turn towards the next ring and grab it
-   turn(right, 90, 10);
-   drive(forward, 9, 10);
+   turn(right, 87, 10);
+   drive(forward, 20, 10);
 
-   // Turn towards the ring by the neutral stake and grab it
-   turn(left, 30, 10);
-   drive(forward, 9, 10);
+   // // Turn towards the ring by the neutral stake and grab it
+   // turn(left, 30, 10);
+   // drive(forward, 9, 10);
 
-   // Back up and grab the two rings in a row
-   drive(reverse, 9, 10);
-   turn(right, 120, 10);
-   drive(forward, 10, 10);
+   // // Back up and grab the two rings in a row
+   // drive(reverse, 9, 10);
+   // turn(right, 120, 10);
+   // drive(forward, 10, 10);
 
-   // Grab the lone ring
-   drive(reverse, 3, 10);
-   turn(left, 90, 10);
-   drive(forward, 4, 10);
+   // // Grab the lone ring
+   // drive(reverse, 3, 10);
+   // turn(left, 90, 10);
+   // drive(forward, 4, 10);
 
-   // Place the goal in the corner
-   turn(left, 120, 10);
-   drive(reverse, 5, 10);
-   clamp();
+   // // Place the goal in the corner
+   // turn(left, 120, 10);
+   // drive(reverse, 5, 10);
+   // clamp();
    
    // Get in position for next goal
 
@@ -264,8 +217,8 @@ int main()
    pre_auton();
 
    // Start the thread
-   thread ejectThread = thread(eject);
-   optical1.setLight(ledState::on);
+   // thread ejectThread = thread(eject);
+   // optical1.setLight(ledState::on);
 
    // Prevent main from exiting with an infinite loop.
    while (true)

@@ -2,13 +2,13 @@ using namespace vex;
 #include "vex.h"
 
 // PID Variables
-const double kP = 9;
-const double kI = 6;
-const double kD = 8;
+const double kP = 8;
+const double kI = 4;
+const double kD = 7;
 
-const double turnKP = 0.9;
-const double turnKI = 0.8;
-const double turnKD = 1;
+const double turnKP = 0.8;
+const double turnKI = 0.4;
+const double turnKD = 0.7;
 
 double error = 0;
 double integral = 0;
