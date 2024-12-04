@@ -142,21 +142,21 @@ int eject()
     // The first ring that passes the sensor will be the alliance color (since it's the preload), so this can dictate the alliance color.
     while (1)
     {
+        controller1.Screen.clearScreen();
+        controller1.Screen.setCursor(1, 1);
         // Search for the color opposite the alliance color
         if ((optical1.color() == blue && allianceIsRed) || (optical1.color() == red && !allianceIsRed))
         {
-            // Wait for a little while (until the ring is close)
-            this_thread::sleep_for(40);
-
-            // Extend the ejector
-            ejector.set(true);
+            controller1.Screen.print("It detected it");
+            // Spin in reverse
+            topAccumulator.setVelocity(-100, percent);
 
             // Wait until the ring ejects
-            this_thread::sleep_for(40);
+            wait(5000, msec);
 
-            // Retract the ejector
-            ejector.set(false);
+            topAccumulator.setVelocity(100, percent);
         }
+        controller1.Screen.print("Not Detected");
         // Sleep thread to not consume all of CPU resources
         this_thread::sleep_for(20);
     }
