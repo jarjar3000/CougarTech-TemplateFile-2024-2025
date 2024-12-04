@@ -164,6 +164,8 @@ int main()
    // Start the thread
    // thread ejectThread = thread(eject);
    // optical1.setLight(ledState::on);
+   // thread ejectThread = thread(eject);
+   // optical1.setLight(ledState::on);
 
    // Prevent main from exiting with an infinite loop.
    while (true)
