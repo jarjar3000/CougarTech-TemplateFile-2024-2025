@@ -30,7 +30,7 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-
+   drive(forward, 6, 100);
 }
 
 int driver()
