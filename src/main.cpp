@@ -30,7 +30,7 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   drive(forward, 6, 100);
+   
 }
 
 int driver()
@@ -162,8 +162,8 @@ int main()
    pre_auton();
 
    // Start the thread
-   thread ejectThread = thread(eject);
-   optical1.setLight(ledState::on);
+   // thread ejectThread = thread(eject);
+   // optical1.setLight(ledState::on);
 
    // Prevent main from exiting with an infinite loop.
    while (true)
