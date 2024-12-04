@@ -186,8 +186,9 @@ void drive(vex::directionType d, double distance, double failsafeTime)
     failsafe.clear();
 
     // Set initial velocity
-    setLeftSpeed(80);
     setRightSpeed(80);
+    setLeftSpeed(80);
+    
 
     switch (d)
     {
@@ -277,7 +278,7 @@ void turn(vex::turnType d, double deg, double failsafeTime)
     do
     {
         // Proportional (abs the rotation so both directions are the same)
-        error = (deg - fabs(inertial1.rotation(degrees))) - 5;
+        error = (deg - fabs(inertial1.rotation(degrees)));
         controller1.Screen.clearScreen();
         controller1.Screen.setCursor(0, 0);
         controller1.Screen.print("Error: %.2f", error);
