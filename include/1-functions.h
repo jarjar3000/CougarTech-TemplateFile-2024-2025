@@ -144,21 +144,25 @@ int eject()
     {
         controller1.Screen.clearScreen();
         controller1.Screen.setCursor(1, 1);
+        controller1.Screen.print("Optical Hue: %.2f", optical1.hue());
         // Search for the color opposite the alliance color
-        if ((optical1.color() == blue && allianceIsRed) || (optical1.color() == red && !allianceIsRed))
+        if ((optical1.hue() >= 100 && allianceIsRed) || (optical1.color() == red && !allianceIsRed))
         {
-            controller1.Screen.print("It detected it");
+            controller1.rumble(".");
+
+            // Wait until the ring reaches the top
+            // wait(100, msec);
+
             // Spin in reverse
-            topAccumulator.setVelocity(-100, percent);
+            topAccumulator.setVelocity(0, percent);
 
             // Wait until the ring ejects
-            wait(5000, msec);
+            wait(200, msec);
 
-            topAccumulator.setVelocity(100, percent);
+            topAccumulator.setVelocity(85, percent);
         }
-        controller1.Screen.print("Not Detected");
         // Sleep thread to not consume all of CPU resources
-        this_thread::sleep_for(20);
+        // this_thread::sleep_for(20);
     }
     return 0;
 }

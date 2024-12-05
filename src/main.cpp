@@ -54,7 +54,7 @@ int driver()
 
    // Set the velocity of the non-drive motors (add non-drive motors as necessary)
    bottomAccumulator.setVelocity(100, percent);
-   topAccumulator.setVelocity(100, percent);
+   topAccumulator.setVelocity(85, percent);
    
    while (true)
    {
@@ -162,10 +162,8 @@ int main()
    pre_auton();
 
    // Start the thread
-   // thread ejectThread = thread(eject);
-   // optical1.setLight(ledState::on);
-   // thread ejectThread = thread(eject);
-   // optical1.setLight(ledState::on);
+   thread ejectThread = thread(eject);
+   optical1.setLight(ledState::on);
 
    // Prevent main from exiting with an infinite loop.
    while (true)
