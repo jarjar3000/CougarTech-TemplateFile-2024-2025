@@ -54,7 +54,7 @@ int driver()
 
    // Set the velocity of the non-drive motors (add non-drive motors as necessary)
    bottomAccumulator.setVelocity(100, percent);
-   topAccumulator.setVelocity(85, percent);
+   topAccumulator.setVelocity(80, percent);
    
    while (true)
    {

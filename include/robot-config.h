@@ -24,6 +24,7 @@ extern motor topAccumulator;
 
 extern inertial inertial1;
 extern optical optical1;
+extern limit limit1;
 
 // Pneumatics
 extern digital_out clamp1;

@@ -148,10 +148,11 @@ int eject()
         // Search for the color opposite the alliance color
         if ((optical1.hue() >= 100 && allianceIsRed) || (optical1.color() == red && !allianceIsRed))
         {
+            waitUntil(limit1.pressing());
+
             controller1.rumble(".");
 
-            // Wait until the ring reaches the top
-            // wait(100, msec);
+            wait(50, msec);
 
             // Spin in reverse
             topAccumulator.setVelocity(0, percent);
@@ -159,7 +160,7 @@ int eject()
             // Wait until the ring ejects
             wait(200, msec);
 
-            topAccumulator.setVelocity(85, percent);
+            topAccumulator.setVelocity(80, percent);
         }
         // Sleep thread to not consume all of CPU resources
         // this_thread::sleep_for(20);
