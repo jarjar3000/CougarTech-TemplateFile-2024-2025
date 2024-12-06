@@ -46,7 +46,7 @@ void autonomous(void)
    inertial1.resetRotation();
 
    // Put ring on alliance stake
-   spinAccumulator(forward, 100);
+   spinAccumulator(forward, 90);
    wait(1, seconds);
    stopAccumulator();
 
@@ -58,7 +58,7 @@ void autonomous(void)
 
    // Turn right to face the red ring and grab it
    turn(right, 90, 5);
-   spinAccumulator(forward, 100);
+   spinAccumulator(forward, 90);
    drive(forward, 27, 10); //25
 
    // Turn towards the next ring and grab it
