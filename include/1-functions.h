@@ -273,15 +273,15 @@ void turn(vex::turnType d, double deg, double failsafeTime)
     failsafe.clear();
 
     // Start the PID turn
-    controller1.Screen.print("right before the loop");
+    // controller1.Screen.print("right before the loop");
     drive(forward);
     do
     {
         // Proportional (abs the rotation so both directions are the same)
         error = (deg - fabs(inertial1.rotation(degrees)));
-        controller1.Screen.clearScreen();
-        controller1.Screen.setCursor(0, 0);
-        controller1.Screen.print("Error: %.2f", error);
+        // controller1.Screen.clearScreen();
+        // controller1.Screen.setCursor(0, 0);
+        // controller1.Screen.print("Error: %.2f", error);
 
         // Integral
         integral += error;

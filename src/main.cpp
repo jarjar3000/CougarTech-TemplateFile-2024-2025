@@ -51,18 +51,18 @@ void autonomous(void)
    stopAccumulator();
 
    // Go forward, turn left, and clamp mobile goal
-   drive(forward, 7, 10);
+   drive(forward, 9, 10);
    turn(left, 90, 10);
-   drive(reverse, 18, 10);
+   drive(reverse, 20, 10); // into mogo
    clamp();
 
    // Turn right to face the red ring and grab it
-   turn(right, 90, 10);
+   turn(right, 90, 5);
    spinAccumulator(forward, 100);
-   drive(forward, 20, 10); //25
+   drive(forward, 27, 10); //25
 
    // Turn towards the next ring and grab it
-   turn(right, 87, 10);
+   turn(right, 80, 10);
    drive(forward, 20, 10);
 
    // // Turn towards the ring by the neutral stake and grab it
