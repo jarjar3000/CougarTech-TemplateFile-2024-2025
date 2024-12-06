@@ -63,29 +63,19 @@ void autonomous(void)
 
    // Turn towards the next ring and grab it
    turn(right, 80, 10);
-   drive(forward, 20, 10);
+   drive(forward, 25, 10);
 
-   // // Turn towards the ring by the neutral stake and grab it
-   // turn(left, 30, 10);
-   // drive(forward, 9, 10);
+   // Turn towards the 2 rings alligned straight and grab them
+   turn(right, 90, 10);
+   drive(forward, 40, 10);
 
-   // // Back up and grab the two rings in a row
-   // drive(reverse, 9, 10);
-   // turn(right, 120, 10);
-   // drive(forward, 10, 10);
+   // Put the goal into the corner
+   turn(right, 125, 10);
+   drive(reverse, 12, 10);
+   stopAccumulator();
+   clamp();
 
-   // // Grab the lone ring
-   // drive(reverse, 3, 10);
-   // turn(left, 90, 10);
-   // drive(forward, 4, 10);
-
-   // // Place the goal in the corner
-   // turn(left, 120, 10);
-   // drive(reverse, 5, 10);
-   // clamp();
-   
-   // Get in position for next goal
-
+   // Next move is to go towrads the other side
 }
 
 int driver()
