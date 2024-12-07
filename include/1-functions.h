@@ -142,9 +142,9 @@ int eject()
     // The first ring that passes the sensor will be the alliance color (since it's the preload), so this can dictate the alliance color.
     while (1)
     {
-        controller1.Screen.clearScreen();
-        controller1.Screen.setCursor(1, 1);
-        controller1.Screen.print("Optical Hue: %.2f", optical1.hue());
+        // controller1.Screen.clearScreen();
+        // controller1.Screen.setCursor(1, 1);
+        // controller1.Screen.print("Optical Hue: %.2f", optical1.hue());
         // Search for the color opposite the alliance color
         if ((optical1.hue() >= 100 && allianceIsRed) || (optical1.color() == red && !allianceIsRed))
         {
@@ -278,15 +278,15 @@ void turn(vex::turnType d, double deg, double failsafeTime)
     failsafe.clear();
 
     // Start the PID turn
-    controller1.Screen.print("right before the loop");
+    // controller1.Screen.print("right before the loop");
     drive(forward);
     do
     {
         // Proportional (abs the rotation so both directions are the same)
         error = (deg - fabs(inertial1.rotation(degrees)));
-        controller1.Screen.clearScreen();
-        controller1.Screen.setCursor(0, 0);
-        controller1.Screen.print("Error: %.2f", error);
+        // controller1.Screen.clearScreen();
+        // controller1.Screen.setCursor(0, 0);
+        // controller1.Screen.print("Error: %.2f", error);
 
         // Integral
         integral += error;

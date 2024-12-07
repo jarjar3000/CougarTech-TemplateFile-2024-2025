@@ -25,6 +25,7 @@ competition Competition;
 // Pre-auton
 void pre_auton(void)
 {
+   
 }
 
 // Autonomous
@@ -35,12 +36,23 @@ void autonomous(void)
       the program are needed.
       Change the boolean depending if we are on the red side or not.
    */
-   bool red = allianceIsRed;
-   inertial1.calibrate();
-   while (inertial1.isCalibrating())
+
+   // Determine the alliacne color
+   optical1.setLight(ledState::on);
+   if (optical1.color() == red)
    {
-      wait(200, msec);
+      allianceIsRed = true;
    }
+   else
+   {
+      allianceIsRed = false;
+   }
+
+   // inertial1.calibrate();
+   // while (inertial1.isCalibrating())
+   // {
+   //    wait(200, msec);
+   // }
 
    inertial1.setRotation(0, degrees);
    // Red 270, blue 90
@@ -52,49 +64,50 @@ void autonomous(void)
    */
    
    // Drive backwards into the mobile goal
-   drive(reverse, 19, 10); //20
+   drive(reverse, 20, 10); //20
    clamp();
 
    // Turn (left or right, depends on starting side), but the heading will be the same
-   if (red)
+   if (allianceIsRed)
    {
-      turn(right, 90, 10); // 180
+      turn(right, 90, 5); // 180
    }
    else
    {
-      turn(left, 90, 10); // 180
+      turn(left, 90, 5); // 180
    }  
 
    // Accumulate alliace ring into goal
    spinAccumulator(forward, 100);
-   drive(forward, 19, 10); //20, 17
+   drive(forward, 26, 10); //22
    wait(0.25, seconds);
    stopAccumulator();
    spinAccumulator(forward, 100);
 
-   // Reverse back to original position
-   drive(reverse, 16, 10);
-
-   // Turn towards the corner and ram the ring to get it
-   if (red)
+   // Turn towards the stacks of ring
+   if (allianceIsRed)
    {
-      turn(left, 45, 10);
+      turn(right, 90, 5); // 180
    }
    else
    {
-      turn(right, 45, 10);
+      turn(left, 90, 5); // 180
+   } 
+
+   // Go into the rings
+   drive(forward, 12, 10);
+
+   // Turn towards the stacks of ring
+   if (allianceIsRed)
+   {
+      turn(left, 50, 5); // 180
    }
+   else
+   {
+      turn(right, 50, 5); // 180
+   } 
 
-   // Forward
-   stopAccumulator();
-   spinAccumulator(reverse, 100);
-   drive(forward, 55, 10); //50
-   // wait(1, seconds);
-   stopAccumulator();
-   spinAccumulator(forward, 100);
-   wait(1, seconds);
-   drive(reverse, 10, 10);
-
+   drive(forward, 2, 10);
 }
 
 int driver()
@@ -214,6 +227,9 @@ int driver()
 void usercontrol(void)
 {
    thread driverThread = thread(driver);
+
+   // Start the thread
+   thread ejectThread = thread(eject);
 }
 
 int main()
@@ -224,10 +240,6 @@ int main()
 
    // Run the pre-autonomous function.
    pre_auton();
-
-   // Start the thread
-   thread ejectThread = thread(eject);
-   optical1.setLight(ledState::on);
 
    // Prevent main from exiting with an infinite loop.
    while (true)
