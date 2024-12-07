@@ -54,7 +54,7 @@ void autonomous(void)
    // Go forward, turn left, and clamp mobile goal
    drive(forward, 10, 10); // 9
    turn(left, 90, 10);
-   drive(reverse, 20, 10); // into mogo
+   drive(reverse, 18, 10); // into mogo
    clamp();
 
    // Turn right to face the red ring and grab it
@@ -105,7 +105,7 @@ void autonomous(void)
    drive(forward, 12, 10);
 
    // Put goal in corner
-   turn(right, 105, 10);
+   turn(right, 95, 10); //105
    drive(reverse, 15, 10);
    stopAccumulator();
    clamp();
