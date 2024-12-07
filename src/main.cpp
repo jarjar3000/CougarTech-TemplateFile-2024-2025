@@ -83,31 +83,6 @@ void autonomous(void)
    wait(0.25, seconds);
    stopAccumulator();
    spinAccumulator(forward, 100);
-
-   // Turn towards the stacks of ring
-   if (allianceIsRed)
-   {
-      turn(right, 90, 5); // 180
-   }
-   else
-   {
-      turn(left, 90, 5); // 180
-   } 
-
-   // Go into the rings
-   drive(forward, 12, 10);
-
-   // Turn towards the stacks of ring
-   if (allianceIsRed)
-   {
-      turn(left, 50, 5); // 180
-   }
-   else
-   {
-      turn(right, 50, 5); // 180
-   } 
-
-   drive(forward, 2, 10);
 }
 
 int driver()
