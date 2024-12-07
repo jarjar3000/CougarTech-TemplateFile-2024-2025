@@ -36,14 +36,15 @@ void autonomous(void)
       Change the boolean depending if we are on the red side or not.
    */
    bool red = allianceIsRed;
-   inertial1.calibrate();
-   while (inertial1.isCalibrating())
-   {
-      wait(200, msec);
-   }
+   // inertial1.calibrate();
+   // while (inertial1.isCalibrating())
+   // {
+   //    wait(200, msec);
+   // }
 
    inertial1.setRotation(0, degrees);
    inertial1.resetRotation();
+   skills.clear();
 
    // Put ring on alliance stake
    spinAccumulator(forward, 90);
@@ -51,7 +52,7 @@ void autonomous(void)
    stopAccumulator();
 
    // Go forward, turn left, and clamp mobile goal
-   drive(forward, 9, 10);
+   drive(forward, 10, 10); // 9
    turn(left, 90, 10);
    drive(reverse, 20, 10); // into mogo
    clamp();
@@ -67,15 +68,55 @@ void autonomous(void)
 
    // Turn towards the 2 rings alligned straight and grab them
    turn(right, 90, 10);
-   drive(forward, 40, 10);
+   drive(forward, 35, 10);
 
-   // Put the goal into the corner
-   turn(right, 125, 10);
+   // Turn to grab other ring
+   turn(left, 120, 10);
+   drive(forward, 12, 10);
+
+   // Put goal in corner
+   turn(left, 105, 10);
    drive(reverse, 12, 10);
    stopAccumulator();
    clamp();
 
-   // Next move is to go towrads the other side
+   // Release the goal, drive to the other side and get the goal
+   drive(forward, 10, 10);
+   turn(right, 128, 10); //130
+   drive(reverse, 70, 10);
+   clamp();
+
+   // BEGINNING BUT OPPOSITE
+   // Turn right to face the red ring and grab it
+   turn(left, 90, 5);
+   spinAccumulator(forward, 90);
+   drive(forward, 25, 10); //25
+
+   // Turn towards the next ring and grab it
+   turn(left, 85, 10);
+   drive(forward, 25, 10);
+
+   // Turn towards the 2 rings alligned straight and grab them
+   turn(left, 90, 10);
+   drive(forward, 35, 10);
+
+   // Turn to grab other ring
+   turn(right, 120, 10);
+   drive(forward, 12, 10);
+
+   // Put goal in corner
+   turn(right, 105, 10);
+   drive(reverse, 15, 10);
+   stopAccumulator();
+   clamp();
+
+   // LITERALLY TWO SECONDS BRUH HANG!
+   hang();
+   setLeftSpeed(100);
+   setRightSpeed(100);
+   drive(forward);
+   waitUntil(skills.time(seconds) >= 59);
+   hang();
 }
 
 int driver()

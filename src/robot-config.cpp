@@ -54,6 +54,7 @@ digital_out ejector = digital_out(Brain.ThreeWirePort.D);
 digital_out tipper = digital_out(Brain.ThreeWirePort.E);
 
 timer failsafe = timer();
+timer skills = timer();
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

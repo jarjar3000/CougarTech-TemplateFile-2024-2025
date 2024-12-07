@@ -34,6 +34,7 @@ extern digital_out tipper;
 extern digital_out ejector;
 
 extern timer failsafe;
+extern timer skills;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
