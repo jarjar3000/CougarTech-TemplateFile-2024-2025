@@ -7,15 +7,8 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
-/*
-   This file will configure a robot with a four motor drive, two motor arm, and 1 motor claw.
-   Given everything is plugged into the right ports, it will function.
-   If you are branching from this file, delete what you don't need.
-*/
-
 #include "vex.h"
-#include "robot-config.h"
-#include "1-functions.h"
+#include "robot.h"
 
 using namespace vex;
 
@@ -36,9 +29,9 @@ void autonomous(void)
 int driver()
 {
    // Set up all pneumatic callbacks
-   controller1.ButtonX.pressed(clamp);
-   controller1.ButtonUp.pressed(hang);
-   controller1.ButtonLeft.pressed(toggleTipper);
+   controller1.ButtonX.pressed(robot::clamp);
+   controller1.ButtonUp.pressed(robot::hang);
+   controller1.ButtonLeft.pressed(robot::toggleTipper);
 
    // Set the drive motors to coast
    leftF.setStopping(coast);
@@ -75,21 +68,21 @@ int driver()
       if (fabs(leftMotorSpeed) < deadband)
       {
          // Set the speed to 0
-         setLeftSpeed(0);
+         robot::setLeftSpeed(0);
       }
       else
       {
-         if (leftMotorSpeed >= MAX_DRIVE_SPEED)
+         if (leftMotorSpeed >= robot::MAX_DRIVE_SPEED)
          {
-            setLeftSpeed(MAX_DRIVE_SPEED);
+            robot::setLeftSpeed(robot::MAX_DRIVE_SPEED);
          }
-         else if (leftMotorSpeed <= -MAX_DRIVE_SPEED)
+         else if (leftMotorSpeed <= -robot::MAX_DRIVE_SPEED)
          {
-            setLeftSpeed(-MAX_DRIVE_SPEED);
+            robot::setLeftSpeed(-robot::MAX_DRIVE_SPEED);
          }
          else
          {
-            setLeftSpeed(leftMotorSpeed);
+            robot::setLeftSpeed(robot::MAX_DRIVE_SPEED);
          }
       }
 
@@ -101,21 +94,21 @@ int driver()
       if (fabs(rightMotorSpeed) < deadband)
       {
          // Set the speed to 0
-         setRightSpeed(0);
+         robot::setRightSpeed(0);
       }
       else
       {
-         if (rightMotorSpeed >= MAX_DRIVE_SPEED)
+         if (rightMotorSpeed >= robot::MAX_DRIVE_SPEED)
          {
-            setRightSpeed(MAX_DRIVE_SPEED);
+            robot::setRightSpeed(robot::MAX_DRIVE_SPEED);
          }
-         else if (rightMotorSpeed <= -MAX_DRIVE_SPEED)
+         else if (rightMotorSpeed <= -robot::MAX_DRIVE_SPEED)
          {
-            setRightSpeed(-MAX_DRIVE_SPEED);
+            robot::setRightSpeed(-robot::MAX_DRIVE_SPEED);
          }
          else
          {
-            setRightSpeed(rightMotorSpeed);
+            robot::setRightSpeed(rightMotorSpeed);
          }
       }
 
@@ -139,7 +132,7 @@ int driver()
       }
 
       // Make the drive motors spin so the robot moves
-      drive(forward);
+      robot::drive(forward);
 
       // Wait to conserve brain resources
       this_thread::sleep_for(20);
@@ -154,6 +147,8 @@ void usercontrol(void)
 
 int main()
 {
+   vexcodeInit();
+
    // Set up callbacks for autonomous and driver control periods.
    Competition.autonomous(autonomous);
    Competition.drivercontrol(usercontrol);
@@ -162,7 +157,7 @@ int main()
    pre_auton();
 
    // Start the thread
-   thread ejectThread = thread(eject);
+   thread ejectThread = thread(robot::eject);
    optical1.setLight(ledState::on);
 
    // Prevent main from exiting with an infinite loop.
