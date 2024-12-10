@@ -44,15 +44,15 @@ motor topAccumulator = motor(PORT10, ratio18_1, true);
 //Sensors
 inertial inertial1 = inertial(PORT18);
 optical optical1 = optical(PORT6);
-limit limit1 = limit(Brain.ThreeWirePort.G);
 
-// Pneumatics
+// Three-Wires
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
-digital_out clamp2 = digital_out(Brain.ThreeWirePort.F);
-digital_out hang1 = digital_out(Brain.ThreeWirePort.B);
-digital_out hang2 = digital_out(Brain.ThreeWirePort.C);
-digital_out ejector = digital_out(Brain.ThreeWirePort.D);
+digital_out clamp2 = digital_out(Brain.ThreeWirePort.B);
+digital_out hang1 = digital_out(Brain.ThreeWirePort.C);
+digital_out hang2 = digital_out(Brain.ThreeWirePort.D);
 digital_out tipper = digital_out(Brain.ThreeWirePort.E);
+limit limit1 = limit(Brain.ThreeWirePort.F);
+encoder backWheel = encoder(Brain.ThreeWirePort.G);
 
 timer failsafe = timer();
 

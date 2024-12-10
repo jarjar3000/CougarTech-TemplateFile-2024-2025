@@ -33,7 +33,7 @@ extern digital_out hang1;
 extern digital_out hang2;
 extern digital_out tipper;
 extern digital_out ejector;
-
+extern encoder backWheel;
 extern timer failsafe;
 
 /**

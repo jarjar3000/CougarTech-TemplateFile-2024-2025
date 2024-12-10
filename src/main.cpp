@@ -160,6 +160,9 @@ int main()
    thread ejectThread = thread(robot::eject);
    optical1.setLight(ledState::on);
 
+   // Start the odometry tracking thread
+   thread odometryTracking = thread(robot::calculateRobotPosition);
+
    // Prevent main from exiting with an infinite loop.
    while (true)
    {

@@ -10,6 +10,18 @@ using namespace vex;
 class robot
 {
     private:
+        // Odometry Variables
+        static inline double x = 0; // IN INCHES!
+        static inline double y = 0; // IN INCHES!
+        static inline double heading = 0; // IN DEGREES!
+
+        // The distance between the right and left tracking wheels
+        static const double L_R_WHEEL_DISTANCE = 5; // IN INCHES!
+
+        // The distance between the back tracking wheel and the center of the robot
+        static const double BACK_WHEEL_DISTANCE = 2; // IN INCHES!
+
+        // PID Variables
         static const double kP = 7;
         static const double kI = 3;
         static const double kD = 6;
@@ -32,7 +44,6 @@ class robot
         static const double TURN_ERROR_TOLERANCE = 0.5;
         static const double WHEEL_DIAMETER = 3.25; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
-        static inline double heading = 0;
 
     public:
         // Driving Variables
@@ -382,5 +393,54 @@ class robot
         {
             bottomAccumulator.stop();
             topAccumulator.stop();
+        }
+
+        /**
+         * @brief A function intended to be ran in a seperate thrad that will calculate the position of the robot using odometry
+         * @return 0, but if a value is returned, it means a fatal error has happened, since the thread should never end.
+         * @note The robot's heading should be 0 in the positive x direction.
+         */
+        static int calculateRobotPosition()
+        {
+            // Initialize all variables (previous x, etc...)
+            double leftEncoder, rightEncoder, backEncoder = 0; 0; 0; // These variables can start at 0 because the encoders start at 0 in the beginning
+            double prevLeftEncoder, prevRightEncoder, prevBackEncoder = 0; 0; 0; // These variables can start at 0 because the encoders start at 0 in the beginning
+            double prevHeading = heading; // The previous heading is where we start
+
+            while(true)
+            {
+                // Get and store encoder values
+                leftEncoder = leftE.position(degrees);
+                rightEncoder = rightE.position(degrees);
+                backEncoder = backWheel.position(degrees);
+
+                // Get the robot's current heading using the encoders
+                double deltaLeft = leftEncoder - prevLeftEncoder;
+                double deltaRight = rightEncoder - prevRightEncoder;
+                double deltaHeading = (deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE; // In radians
+                heading = prevHeading + deltaHeading;
+                deltaHeading = heading - prevHeading; // This may not be necessary, if the math checks out, this value shouldn't have changed from what it was before
+
+                // Calculate the forward and strafe deltas
+                double deltaForward = (deltaLeft + deltaRight) / 2; // The average of the two encoders (This form works because the distance between our left and right wheels from the center are the same)
+                double deltaStrafe = (backEncoder - prevBackEncoder) - BACK_WHEEL_DISTANCE * deltaHeading;
+
+                // Calculate the change in x and y coords (Linear for now)
+                double deltaX = deltaForward * cos(heading) - deltaStrafe * sin(heading);
+                double deltaY; deltaStrafe * cos(heading) + deltaForward * sin(heading);
+
+                // Update the global x and y values
+                x += deltaX;
+                y += deltaY;
+
+                // Save current data to become previous data in the next iteration
+                prevLeftEncoder = leftEncoder;
+                prevRightEncoder = rightEncoder;
+                prevBackEncoder = backEncoder;
+                prevHeading = heading;
+
+                // Wait to not consume all of the CPU's resources
+                wait(10, msec); // Refresh rate of 100Hz
+            }
         }
 };
