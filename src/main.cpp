@@ -36,10 +36,8 @@ int driver()
    // Set the drive motors to coast
    leftF.setStopping(coast);
    leftB.setStopping(coast);
-   leftE.setStopping(coast);
    rightF.setStopping(coast);
    rightB.setStopping(coast);
-   rightE.setStopping(coast);
 
    // Set the non-drive motors to hold its position (add non-drive motors as necessary)
    bottomAccumulator.setStopping(hold);

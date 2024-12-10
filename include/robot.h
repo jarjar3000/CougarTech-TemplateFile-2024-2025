@@ -43,7 +43,8 @@ class robot
         static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
         static const double TURN_ERROR_TOLERANCE = 0.5;
         static const double WHEEL_DIAMETER = 3.25; // in inches
-        static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
+        static const double WHEEL_GEAR_RATIO = (double) 60 / 36;
+        static const double ENCODER_TICKS_PER_REVOLUTION = 300; // Speed motor is 300, Normal is 900, Torque is 1800
 
     public:
         // Driving Variables
@@ -62,7 +63,6 @@ class robot
         {
             leftB.setVelocity(vel, percent);
             leftF.setVelocity(vel, percent);
-            leftE.setVelocity(vel, percent);
         }
 
         /**
@@ -73,7 +73,6 @@ class robot
         {
             rightB.setVelocity(vel, percent);
             rightF.setVelocity(vel, percent);
-            rightE.setVelocity(vel, percent);
         }
 
         /**
@@ -87,19 +86,15 @@ class robot
             case vex::directionType::fwd:
                 leftF.spin(forward);
                 leftB.spin(forward);
-                leftE.spin(forward);
                 rightF.spin(forward);
                 rightB.spin(forward);
-                rightE.spin(forward);
                 break;
 
             case vex::directionType::rev:
                 leftF.spin(reverse);
                 leftB.spin(reverse);
-                leftE.spin(reverse);
                 rightF.spin(reverse);
                 rightB.spin(reverse);
-                rightE.spin(reverse);
                 break;
 
             case vex::directionType::undefined:
@@ -114,10 +109,8 @@ class robot
         {
             leftF.stop();
             leftB.stop();
-            leftE.stop();
             rightF.stop();
             rightB.stop();
-            rightE.stop();
         }
 
         /**
@@ -268,7 +261,7 @@ class robot
                 avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
 
                 // The distance in inches minus the distance traveled (wheel circumfrence times rotations)
-                error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / 360) * WHEEL_GEAR_RATIO;
+                error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
 
                 // Integral
                 integral += error;
@@ -410,8 +403,8 @@ class robot
             while(true)
             {
                 // Get and store encoder values
-                leftEncoder = leftE.position(degrees);
-                rightEncoder = rightE.position(degrees);
+                leftEncoder = leftF.position(degrees);
+                rightEncoder = rightF.position(degrees);
                 backEncoder = backWheel.position(degrees);
 
                 // Get the robot's current heading using the encoders
@@ -429,7 +422,7 @@ class robot
                 double deltaX = deltaForward * cos(heading) - deltaStrafe * sin(heading);
                 double deltaY; deltaStrafe * cos(heading) + deltaForward * sin(heading);
 
-                // Update the global x and y values
+                // Update the global x and y values and convert deltaX and deltaY to inches
                 x += deltaX;
                 y += deltaY;
 
