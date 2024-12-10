@@ -442,5 +442,35 @@ class robot
                 // Wait to not consume all of the CPU's resources
                 wait(10, msec); // Refresh rate of 100Hz
             }
+
+            // If a value is return, something bad happened
+            return 1;
+        }
+        
+        /**
+         * @brief Function intended to be run in a thread to print helpful information to the controller screen.
+         */
+        static int printInfoToController()
+        {
+            while(true)
+            {
+                // Clear the screen
+                controller1.Screen.clearScreen();
+
+                // Set the cursor for printing
+                controller1.Screen.setCursor(0, 0);
+
+                // Print X, Y, and Heading Values
+                controller1.Screen.print("X: %.2f. Y: %.2f. Hdg: %.2f\n", x, y, heading);
+
+                // Print Drivetrain and intake temperatures
+                controller1.Screen.print("DT: %.2f. IT: %.2f\n", leftF.temperature(fahrenheit), topAccumulator.temperature(fahrenheit));
+                
+                // Print Battery Percentage
+                controller1.Screen.print("Battery: %.2f\%", Brain.Battery.capacity());
+                
+                wait(20, msec);
+            }
+            return 1;
         }
 };
