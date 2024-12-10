@@ -410,19 +410,25 @@ class robot
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
                 double deltaRight = rightEncoder - prevRightEncoder;
-                double deltaHeading = (deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE; // In radians
+                double deltaHeading = ((deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE) * (180.0 / M_PI); // In degrees
                 heading = prevHeading + deltaHeading;
                 deltaHeading = heading - prevHeading; // This may not be necessary, if the math checks out, this value shouldn't have changed from what it was before
 
-                // Calculate the forward and strafe deltas
+                // Calculate the forward and strafe deltas (Degrees, ie. rotation)
                 double deltaForward = (deltaLeft + deltaRight) / 2; // The average of the two encoders (This form works because the distance between our left and right wheels from the center are the same)
                 double deltaStrafe = (backEncoder - prevBackEncoder) - BACK_WHEEL_DISTANCE * deltaHeading;
 
-                // Calculate the change in x and y coords (Linear for now)
-                double deltaX = deltaForward * cos(heading) - deltaStrafe * sin(heading);
-                double deltaY; deltaStrafe * cos(heading) + deltaForward * sin(heading);
+                // Convert deltaForward and deltaStrafe to inches
+                deltaForward = (WHEEL_DIAMETER * M_PI) * (deltaForward / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
+                deltaStrafe = (WHEEL_DIAMETER * M_PI) * (deltaStrafe / ENCODER_TICKS_PER_REVOLUTION); // There isn't a gear ratio to account for, it is free spinning
 
-                // Update the global x and y values and convert deltaX and deltaY to inches
+                // Calculate the change in x and y coords (Linear for now)
+                // Question: do cos and sin require the heading to be a radian value, or is a degree value fine?
+                double deltaX = deltaForward * cos(heading) - deltaStrafe * sin(heading);
+                double deltaY = deltaStrafe * cos(heading) + deltaForward * sin(heading);
+                // By here, the deltaX and deltaY values should be in inches
+
+                // Update the global x and y values
                 x += deltaX;
                 y += deltaY;
 

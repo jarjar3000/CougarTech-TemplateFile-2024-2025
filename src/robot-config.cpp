@@ -28,10 +28,10 @@ controller controller1 = controller(primary);
   - RightF: Front right motor
   - RightB: Back right motor
 */
-motor leftF = motor(PORT11, ratio18_1, false);
-motor leftB = motor(PORT12, ratio18_1, false);
-motor rightF = motor(PORT17, ratio18_1, true);
-motor rightB = motor(PORT15, ratio18_1, true);
+motor leftF = motor(PORT11, ratio6_1, false);
+motor leftB = motor(PORT12, ratio6_1, false);
+motor rightF = motor(PORT17, ratio6_1, true);
+motor rightB = motor(PORT15, ratio6_1, true);
 
 /*
   Accumulator
