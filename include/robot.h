@@ -186,9 +186,6 @@ class robot
             // The first ring that passes the sensor will be the alliance color (since it's the preload), so this can dictate the alliance color.
             while (1)
             {
-                controller1.Screen.clearScreen();
-                controller1.Screen.setCursor(1, 1);
-                controller1.Screen.print("Optical Hue: %.2f", optical1.hue());
                 // Search for the color opposite the alliance color
                 if ((optical1.hue() >= 100 && allianceIsRed) || (optical1.color() == red && !allianceIsRed))
                 {
@@ -321,15 +318,11 @@ class robot
             failsafe.clear();
 
             // Start the PID turn
-            controller1.Screen.print("right before the loop");
             drive(forward);
             do
             {
                 // Proportional (abs the rotation so both directions are the same)
                 error = (deg - fabs(inertial1.rotation(degrees)));
-                controller1.Screen.clearScreen();
-                controller1.Screen.setCursor(0, 0);
-                controller1.Screen.print("Error: %.2f", error);
 
                 // Integral
                 integral += error;
@@ -389,6 +382,30 @@ class robot
         }
 
         /**
+         * @brief A function that sets the motors to spin to turn in a direction
+         * @param d The direction to turn in
+         */
+        static void turn(vex::turnType d)
+        {
+            switch(d)
+            {
+                case vex::turnType::left:
+                leftF.spin(reverse);
+                leftB.spin(reverse);
+                rightF.spin(forward);
+                rightB.spin(forward);
+                break;
+
+                case vex::turnType::right:
+                leftF.spin(forward);
+                leftB.spin(forward);
+                rightF.spin(reverse);
+                rightB.spin(reverse);
+                break;
+            }
+        }
+
+        /**
          * @brief A function intended to be ran in a seperate thrad that will calculate the position of the robot using odometry
          * @return 0, but if a value is returned, it means a fatal error has happened, since the thread should never end.
          * @note The robot's heading should be 0 in the positive x direction.
@@ -420,7 +437,7 @@ class robot
 
                 // Convert deltaForward and deltaStrafe to inches
                 deltaForward = (WHEEL_DIAMETER * M_PI) * (deltaForward / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
-                deltaStrafe = (WHEEL_DIAMETER * M_PI) * (deltaStrafe / ENCODER_TICKS_PER_REVOLUTION); // There isn't a gear ratio to account for, it is free spinning
+                deltaStrafe = (WHEEL_DIAMETER * M_PI) * (deltaStrafe / ENCODER_TICKS_PER_REVOLUTION); // There isn't a gear ratio to account for, it is free spinning. The ticks per rev may be different
 
                 // Calculate the change in x and y coords (Linear for now)
                 // Question: do cos and sin require the heading to be a radian value, or is a degree value fine?
@@ -445,6 +462,77 @@ class robot
             // If a value is return, something bad happened
             return 1;
         }
+
+        /**
+         * @brief Function to turn to a heading, using the absolute robot heading
+         * @param targetHeading The heading to turn to
+         */
+        static void turnTo(double targetHeading)
+        {
+            // Initialize the PID variables
+            double error = 0, integral = 0, derivative = 0, prevError = heading;
+            double motorSpeed = 0;
+            
+            error = targetHeading - heading;
+            
+            /*
+                This attempts to counter the issue when turning to heading 0. 
+                Scenario 1: when turning from heading 270 to 0, the current error calculation would put it at 270.
+                This edge case needs to be solved. It will occur whenever heading 0 is involved in the turn.
+            */
+            if (error > 180)
+            {
+                error -= 180;
+            }
+
+            // Determine the direction to turn
+            // Calculate with both a right and left turn. Whichever value is less is the one we want to use.
+            // If the values are equal (180 degree turn), turn right.
+            if (error < 0)
+            {
+                // Turn left
+                turn(left);
+            }
+            else
+            {
+                // Turn right
+                turn(right);
+            }
+
+            // Do the turn
+            do
+            {
+                // Proportional
+                error = targetHeading - heading;
+
+                // Integral - only integrate when motor speed is less than 100 so integral doesn't wind
+                if (motorSpeed <= 100)
+                {
+                    integral += error;
+                }
+
+                // Derivative
+                derivative = error - prevError;
+                prevError = error;
+
+                // Change motor speed
+                motorSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+                setLeftSpeed(motorSpeed);
+                setRightSpeed(motorSpeed);
+
+            } while (true);
+        }
+
+        /**
+         * @brief Function to go to a point, (x, y), on the field
+         * @param targetX The X value the robot should go to
+         * @param targetY The Y value the robot should go to
+         * @param reverse Whether the robot should drive in reverse to get to the point. Default is false
+         */
+        static void goTo(double targetX, double targetY, bool reverse = false)
+        {
+
+        }
         
         /**
          * @brief Function intended to be run in a thread to print helpful information to the controller screen.
@@ -463,9 +551,11 @@ class robot
                 controller1.Screen.print("X: %.2f. Y: %.2f. Hdg: %.2f\n", x, y, heading);
 
                 // Print Drivetrain and intake temperatures
+                controller1.Screen.setCursor(1, 0);
                 controller1.Screen.print("DT: %.2f. IT: %.2f\n", leftF.temperature(fahrenheit), topAccumulator.temperature(fahrenheit));
                 
                 // Print Battery Percentage
+                controller1.Screen.setCursor(2, 0);
                 controller1.Screen.print("Battery: %.2f\%", Brain.Battery.capacity());
                 
                 wait(20, msec);
