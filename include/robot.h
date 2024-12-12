@@ -413,8 +413,8 @@ class robot
         static int calculateRobotPosition()
         {
             // Initialize all variables (previous x, etc...)
-            double leftEncoder, rightEncoder, backEncoder = 0; 0; 0; // These variables can start at 0 because the encoders start at 0 in the beginning
-            double prevLeftEncoder, prevRightEncoder, prevBackEncoder = 0; 0; 0; // These variables can start at 0 because the encoders start at 0 in the beginning
+            double leftEncoder = 0, rightEncoder = 0, backEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
+            double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double prevHeading = heading; // The previous heading is where we start
 
             while(true)
@@ -428,20 +428,22 @@ class robot
                 double deltaLeft = leftEncoder - prevLeftEncoder;
                 double deltaRight = rightEncoder - prevRightEncoder;
                 double deltaHeading = ((deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE) * (M_PI / 180);
+
+                // Convert deltas to distances
+                deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
+                deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
+                backEncoder = (WHEEL_DIAMETER * M_PI) * (backEncoder / ENCODER_TICKS_PER_REVOLUTION);
                 heading = (prevHeading + deltaHeading);
+                heading = fmod(heading, 360); // heading % 360
 
                 // Calculate the forward and strafe deltas (Degrees, ie. rotation)
                 double deltaForward = (deltaLeft + deltaRight) / 2; // The average of the two encoders (This form works because the distance between our left and right wheels from the center are the same)
                 double deltaStrafe = (backEncoder - prevBackEncoder) - BACK_WHEEL_DISTANCE * deltaHeading;
 
-                // Convert deltaForward and deltaStrafe to inches
-                deltaForward = (WHEEL_DIAMETER * M_PI) * (deltaForward / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
-                deltaStrafe = (WHEEL_DIAMETER * M_PI) * (deltaStrafe / ENCODER_TICKS_PER_REVOLUTION); // There isn't a gear ratio to account for, it is free spinning. The ticks per rev may be different
-
                 // Calculate the change in x and y coords (Linear for now)
                 // Question: do cos and sin require the heading to be a radian value, or is a degree value fine?
                 double deltaX = deltaForward * cos(heading * (M_PI / 180)) - deltaStrafe * sin(heading * (M_PI / 180));
-                double deltaY = deltaStrafe * cos(heading * (M_PI / 180)) + deltaForward * sin(heading * (M_PI / 180));
+                double deltaY = -deltaStrafe * cos(heading * (M_PI / 180)) - deltaForward * sin(heading * (M_PI / 180));
                 // By here, the deltaX and deltaY values should be in inches
 
                 // Update the global x and y values
