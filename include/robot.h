@@ -13,13 +13,13 @@ class robot
         // Odometry Variables
         static inline double x = 0; // IN INCHES!
         static inline double y = 0; // IN INCHES!
-        static inline double heading = 0; // IN DEGREES!
+        static inline double heading = 0; // IN RADIANS!
 
         // The distance between the right and left tracking wheels
         static const double L_R_WHEEL_DISTANCE = 12.25; // IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = -5; // IN INCHES!
+        static const double BACK_WHEEL_DISTANCE = 5; // IN INCHES!
 
         // PID Variables
         static const double kP = 7;
@@ -408,7 +408,7 @@ class robot
         /**
          * @brief A function intended to be ran in a seperate thrad that will calculate the position of the robot using odometry
          * @return 0, but if a value is returned, it means a fatal error has happened, since the thread should never end.
-         * @note The robot's heading should be 0 in the positive x direction.
+         * @note The robot's heading should be 0 in the positive Y direction.
          */
         static int calculateRobotPosition()
         {
@@ -421,63 +421,39 @@ class robot
             {
                 // Get and store encoder values
                 leftEncoder = leftF.position(degrees);
-                rightEncoder = rightF.position(degrees) * 1; // Negative?
+                rightEncoder = rightF.position(degrees); // Negative?
                 backEncoder = backWheel.position(degrees) * -1; // Negative?
 
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
                 double deltaRight = rightEncoder - prevRightEncoder;
-                double deltaHeading = ((deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE);
-                // Right turn produces negative values
+                double deltaBack = backEncoder - prevBackEncoder;
 
-                // Convert deltas to distances
+                // Convert the degree values of the deltas to a linear measurement (inches) so it works with the heading equation
                 deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
                 deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
-                backEncoder = (WHEEL_DIAMETER * M_PI) * (backEncoder / ENCODER_TICKS_PER_REVOLUTION);
-                heading = (prevHeading + deltaHeading);
-                heading = fmod(heading, 360); // heading % 360
+                deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
 
-                // Calculate the forward and strafe deltas (Degrees, ie. rotation)
-                double deltaForward = (deltaLeft + deltaRight) / 2; // The average of the two encoders (This form works because the distance between our left and right wheels from the center are the same)
-                double deltaStrafe = (backEncoder - prevBackEncoder) - BACK_WHEEL_DISTANCE * deltaHeading;
+                // Equation takes in linear unit (in) and radian value and outputs a distance
+                double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
+                heading += deltaHeading; // Add to the running total heading
 
-                // Calculate the change in x and y coords (Linear for now)
-                // Question: do cos and sin require the heading to be a radian value, or is a degree value fine?
-                double deltaX = deltaForward * cos(heading) - deltaStrafe * sin(heading);
-                double deltaY = deltaStrafe * cos(heading) + deltaForward * sin(heading);
-                // By here, the deltaX and deltaY values should be in inches
+                // Calculate deltaX and deltaY (Why don't these use deltaForward and deltaStrafe?)
+                double deltaX = 2 * ((deltaBack / heading) + (BACK_WHEEL_DISTANCE)) * (sin(heading / 2));
+                double deltaY = 2 * ((deltaRight / heading) + (L_R_WHEEL_DISTANCE / 2)) * (sin(heading / 2)); // Why does the Y only use the right wheel?
 
-                // Update the global x and y values
+                // Update x and y
                 x += deltaX;
                 y += deltaY;
-
+                
                 // Save current data to become previous data in the next iteration
                 prevLeftEncoder = leftEncoder;
                 prevRightEncoder = rightEncoder;
                 prevBackEncoder = backEncoder;
                 prevHeading = heading;
 
-                // Clear the screen
-                controller1.Screen.clearScreen();
-
-                // Set the cursor for printing
-                controller1.Screen.setCursor(1, 0);
-
-                // Print X, Y, and Heading Values
-                controller1.Screen.print("DL: %.2f. DR: %.2f.", backEncoder, deltaHeading);
-
-                // // Print Drivetrain and intake temperatures
-                // controller1.Screen.setCursor(2, 0);
-                // controller1.Screen.print("DHdg: %.2f", deltaHeading);
-                // // controller1.Screen.print("DT: %.2f. IT: %.2f\n", leftF.temperature(fahrenheit), topAccumulator.temperature(fahrenheit));
-                
-                // // Print Battery Percentage
-                // controller1.Screen.setCursor(3, 0);
-                // controller1.Screen.print("BackW: %.2f\%", backWheel);
-                
-
                 // Wait to not consume all of the CPU's resources
-                wait(100, msec); // Refresh rate of 100Hz
+                wait(10, msec); // Refresh rate of 100Hz
             }
 
             // If a value is return, something bad happened
@@ -485,8 +461,8 @@ class robot
         }
 
         /**
-         * @brief Function to turn to a heading, using the absolute robot heading
-         * @param targetHeading The heading to turn to
+         * @brief Function to turn to a heading, using the absolute robot heading.
+         * @param targetHeading The heading to turn to, in degrees.
          */
         static void turnTo(double targetHeading)
         {
