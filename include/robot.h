@@ -16,10 +16,10 @@ class robot
         static inline double heading = 0; // IN DEGREES!
 
         // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 5; // IN INCHES!
+        static const double L_R_WHEEL_DISTANCE = 12.25; // IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 2; // IN INCHES!
+        static const double BACK_WHEEL_DISTANCE = -5; // IN INCHES!
 
         // PID Variables
         static const double kP = 7;
@@ -44,7 +44,7 @@ class robot
         static const double TURN_ERROR_TOLERANCE = 0.5;
         static const double WHEEL_DIAMETER = 3.25; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 60 / 36;
-        static const double ENCODER_TICKS_PER_REVOLUTION = 300; // Speed motor is 300, Normal is 900, Torque is 1800
+        static const double ENCODER_TICKS_PER_REVOLUTION = 360; // Speed motor is 300, Normal is 900, Torque is 1800
 
     public:
         // Driving Variables
@@ -421,15 +421,14 @@ class robot
             {
                 // Get and store encoder values
                 leftEncoder = leftF.position(degrees);
-                rightEncoder = rightF.position(degrees);
-                backEncoder = backWheel.position(degrees);
+                rightEncoder = rightF.position(degrees) * -1; // Negative?
+                backEncoder = backWheel.position(degrees) * -1; // Negative?
 
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
                 double deltaRight = rightEncoder - prevRightEncoder;
-                double deltaHeading = ((deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE) * (180.0 / M_PI); // In degrees
-                heading = prevHeading + deltaHeading;
-                deltaHeading = heading - prevHeading; // This may not be necessary, if the math checks out, this value shouldn't have changed from what it was before
+                double deltaHeading = ((deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE) * (M_PI / 180);
+                heading = (prevHeading + deltaHeading);
 
                 // Calculate the forward and strafe deltas (Degrees, ie. rotation)
                 double deltaForward = (deltaLeft + deltaRight) / 2; // The average of the two encoders (This form works because the distance between our left and right wheels from the center are the same)
@@ -441,8 +440,8 @@ class robot
 
                 // Calculate the change in x and y coords (Linear for now)
                 // Question: do cos and sin require the heading to be a radian value, or is a degree value fine?
-                double deltaX = deltaForward * cos(heading) - deltaStrafe * sin(heading);
-                double deltaY = deltaStrafe * cos(heading) + deltaForward * sin(heading);
+                double deltaX = deltaForward * cos(heading * (M_PI / 180)) - deltaStrafe * sin(heading * (M_PI / 180));
+                double deltaY = deltaStrafe * cos(heading * (M_PI / 180)) + deltaForward * sin(heading * (M_PI / 180));
                 // By here, the deltaX and deltaY values should be in inches
 
                 // Update the global x and y values
@@ -545,20 +544,21 @@ class robot
                 controller1.Screen.clearScreen();
 
                 // Set the cursor for printing
-                controller1.Screen.setCursor(0, 0);
+                controller1.Screen.setCursor(1, 0);
 
                 // Print X, Y, and Heading Values
                 controller1.Screen.print("X: %.2f. Y: %.2f. Hdg: %.2f\n", x, y, heading);
 
                 // Print Drivetrain and intake temperatures
-                controller1.Screen.setCursor(1, 0);
-                controller1.Screen.print("DT: %.2f. IT: %.2f\n", leftF.temperature(fahrenheit), topAccumulator.temperature(fahrenheit));
+                controller1.Screen.setCursor(2, 0);
+                controller1.Screen.print("Hdg: %.2f", heading);
+                // controller1.Screen.print("DT: %.2f. IT: %.2f\n", leftF.temperature(fahrenheit), topAccumulator.temperature(fahrenheit));
                 
                 // Print Battery Percentage
-                controller1.Screen.setCursor(2, 0);
-                controller1.Screen.print("Battery: %.2f\%", Brain.Battery.capacity());
+                controller1.Screen.setCursor(3, 0);
+                controller1.Screen.print("Battery: %.2f\%", Brain.Battery.capacity(percent));
                 
-                wait(20, msec);
+                wait(2000, msec);
             }
             return 1;
         }

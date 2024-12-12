@@ -42,10 +42,12 @@ int driver()
    // Set the non-drive motors to hold its position (add non-drive motors as necessary)
    bottomAccumulator.setStopping(hold);
    topAccumulator.setStopping(hold);
+   rightArm.setStopping(hold);
 
    // Set the velocity of the non-drive motors (add non-drive motors as necessary)
    bottomAccumulator.setVelocity(100, percent);
    topAccumulator.setVelocity(100, percent);
+   rightArm.setVelocity(100, percent);
    
    while (true)
    {
@@ -74,13 +76,13 @@ int driver()
          {
             robot::setLeftSpeed(robot::MAX_DRIVE_SPEED);
          }
-         else if (leftMotorSpeed <= -robot::MAX_DRIVE_SPEED)
+         else if (leftMotorSpeed <= -(robot::MAX_DRIVE_SPEED))
          {
-            robot::setLeftSpeed(-robot::MAX_DRIVE_SPEED);
+            robot::setLeftSpeed(-(robot::MAX_DRIVE_SPEED));
          }
          else
          {
-            robot::setLeftSpeed(robot::MAX_DRIVE_SPEED);
+            robot::setLeftSpeed(leftMotorSpeed);
          }
       }
 
@@ -100,9 +102,9 @@ int driver()
          {
             robot::setRightSpeed(robot::MAX_DRIVE_SPEED);
          }
-         else if (rightMotorSpeed <= -robot::MAX_DRIVE_SPEED)
+         else if (rightMotorSpeed <= -(robot::MAX_DRIVE_SPEED))
          {
-            robot::setRightSpeed(-robot::MAX_DRIVE_SPEED);
+            robot::setRightSpeed(-(robot::MAX_DRIVE_SPEED));
          }
          else
          {
@@ -129,11 +131,27 @@ int driver()
          topAccumulator.stop();
       }
 
+      /*
+         Arm
+      */
+      if (controller1.ButtonL1.pressing())
+      {
+         rightArm.spin(forward);
+      }
+      else if (controller1.ButtonL2.pressing())
+      {
+         rightArm.spin(reverse);
+      }
+      else
+      {
+         rightArm.stop();
+      }
+
       // Make the drive motors spin so the robot moves
       robot::drive(forward);
 
       // Wait to conserve brain resources
-      this_thread::sleep_for(20);
+      wait(20, msec);
    }
    return 0;
 }

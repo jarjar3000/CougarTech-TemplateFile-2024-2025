@@ -28,16 +28,21 @@ controller controller1 = controller(primary);
   - RightF: Front right motor
   - RightB: Back right motor
 */
-motor leftF = motor(PORT11, ratio6_1, false);
-motor leftB = motor(PORT12, ratio6_1, false);
-motor rightF = motor(PORT17, ratio6_1, true);
-motor rightB = motor(PORT15, ratio6_1, true);
+motor leftB = motor(PORT11, ratio6_1, false);
+motor leftF = motor(PORT12, ratio6_1, false);
+motor rightB = motor(PORT13, ratio6_1, true);
+motor rightF = motor(PORT14, ratio6_1, true);
 
 /*
   Accumulator
 */
 motor bottomAccumulator = motor(PORT20, ratio18_1, true);
 motor topAccumulator = motor(PORT10, ratio18_1, true);
+
+/*
+  Fish mech motors
+*/
+motor rightArm = motor(PORT15, ratio36_1, false);
 
 //Sensors
 inertial inertial1 = inertial(PORT18);
