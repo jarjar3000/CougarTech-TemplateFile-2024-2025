@@ -421,13 +421,14 @@ class robot
             {
                 // Get and store encoder values
                 leftEncoder = leftF.position(degrees);
-                rightEncoder = rightF.position(degrees) * -1; // Negative?
+                rightEncoder = rightF.position(degrees) * 1; // Negative?
                 backEncoder = backWheel.position(degrees) * -1; // Negative?
 
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
                 double deltaRight = rightEncoder - prevRightEncoder;
-                double deltaHeading = ((deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE) * (M_PI / 180);
+                double deltaHeading = ((deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE);
+                // Right turn produces negative values
 
                 // Convert deltas to distances
                 deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
@@ -442,8 +443,8 @@ class robot
 
                 // Calculate the change in x and y coords (Linear for now)
                 // Question: do cos and sin require the heading to be a radian value, or is a degree value fine?
-                double deltaX = deltaForward * cos(heading * (M_PI / 180)) - deltaStrafe * sin(heading * (M_PI / 180));
-                double deltaY = -deltaStrafe * cos(heading * (M_PI / 180)) - deltaForward * sin(heading * (M_PI / 180));
+                double deltaX = deltaForward * cos(heading) - deltaStrafe * sin(heading);
+                double deltaY = deltaStrafe * cos(heading) + deltaForward * sin(heading);
                 // By here, the deltaX and deltaY values should be in inches
 
                 // Update the global x and y values
@@ -456,8 +457,27 @@ class robot
                 prevBackEncoder = backEncoder;
                 prevHeading = heading;
 
+                // Clear the screen
+                controller1.Screen.clearScreen();
+
+                // Set the cursor for printing
+                controller1.Screen.setCursor(1, 0);
+
+                // Print X, Y, and Heading Values
+                controller1.Screen.print("DL: %.2f. DR: %.2f.", backEncoder, deltaHeading);
+
+                // // Print Drivetrain and intake temperatures
+                // controller1.Screen.setCursor(2, 0);
+                // controller1.Screen.print("DHdg: %.2f", deltaHeading);
+                // // controller1.Screen.print("DT: %.2f. IT: %.2f\n", leftF.temperature(fahrenheit), topAccumulator.temperature(fahrenheit));
+                
+                // // Print Battery Percentage
+                // controller1.Screen.setCursor(3, 0);
+                // controller1.Screen.print("BackW: %.2f\%", backWheel);
+                
+
                 // Wait to not consume all of the CPU's resources
-                wait(10, msec); // Refresh rate of 100Hz
+                wait(100, msec); // Refresh rate of 100Hz
             }
 
             // If a value is return, something bad happened
@@ -560,7 +580,7 @@ class robot
                 controller1.Screen.setCursor(3, 0);
                 controller1.Screen.print("Battery: %.2f\%", Brain.Battery.capacity(percent));
                 
-                wait(2000, msec);
+                wait(20, msec);
             }
             return 1;
         }
