@@ -16,10 +16,10 @@ class robot
         static inline double heading = 0; // IN RADIANS!
 
         // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 12.25; // IN INCHES!
+        static const double L_R_WHEEL_DISTANCE = 12; // IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 5; // IN INCHES!
+        static const double BACK_WHEEL_DISTANCE = 5.25; // IN INCHES!
 
         // PID Variables
         static const double kP = 7;
@@ -43,7 +43,7 @@ class robot
         static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
         static const double TURN_ERROR_TOLERANCE = 0.5;
         static const double WHEEL_DIAMETER = 3.25; // in inches
-        static const double WHEEL_GEAR_RATIO = (double) 60 / 36;
+        static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
         static const double ENCODER_TICKS_PER_REVOLUTION = 360; // Speed motor is 300, Normal is 900, Torque is 1800
 
     public:
@@ -415,14 +415,13 @@ class robot
             // Initialize all variables (previous x, etc...)
             double leftEncoder = 0, rightEncoder = 0, backEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
-            double prevHeading = heading; // The previous heading is where we start
 
             while(true)
             {
                 // Get and store encoder values
                 leftEncoder = leftF.position(degrees);
                 rightEncoder = rightF.position(degrees); // Negative?
-                backEncoder = backWheel.position(degrees) * -1; // Negative?
+                backEncoder = backWheel.position(degrees); // Negative?
 
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
@@ -430,8 +429,8 @@ class robot
                 double deltaBack = backEncoder - prevBackEncoder;
 
                 // Convert the degree values of the deltas to a linear measurement (inches) so it works with the heading equation
-                deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
-                deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
+                deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION);
+                deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION);
                 deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
 
                 // Equation takes in linear unit (in) and radian value and outputs a distance
@@ -450,7 +449,6 @@ class robot
                 prevLeftEncoder = leftEncoder;
                 prevRightEncoder = rightEncoder;
                 prevBackEncoder = backEncoder;
-                prevHeading = heading;
 
                 // Wait to not consume all of the CPU's resources
                 wait(10, msec); // Refresh rate of 100Hz
@@ -549,7 +547,7 @@ class robot
 
                 // Print Drivetrain and intake temperatures
                 controller1.Screen.setCursor(2, 0);
-                controller1.Screen.print("Hdg: %.2f", heading);
+                controller1.Screen.print("Hdg: %.2f", heading * (180/M_PI));
                 // controller1.Screen.print("DT: %.2f. IT: %.2f\n", leftF.temperature(fahrenheit), topAccumulator.temperature(fahrenheit));
                 
                 // Print Battery Percentage
