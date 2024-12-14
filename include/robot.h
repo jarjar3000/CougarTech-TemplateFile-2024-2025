@@ -424,7 +424,7 @@ class robot
             {
                 // Get and store encoder values
                 leftEncoder = leftF.position(degrees);
-                rightEncoder = rightF.position(degrees) * -1; // Flip signs
+                rightEncoder = rightF.position(degrees); // Flip signs
                 backEncoder = backWheel.position(degrees); // Negative?
 
                 // Get the robot's current heading using the encoders
@@ -439,24 +439,58 @@ class robot
 
                 // Equation takes in linear unit (in) and radian value and outputs a distance
                 double deltaHeading = (deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
-                heading += deltaHeading; // Add to the running total heading
+                robot::heading += deltaHeading; // Add to the running total heading
 
                 // Calculate deltaFwd and deltaStrafe
                 double deltaFwd = (deltaRight + deltaLeft) / 2;
                 double deltaStrafe = deltaBack - (BACK_WHEEL_DISTANCE * deltaHeading);
 
+                // PROBLEM
                 // Calculate deltaX and deltaY
-                double deltaX = (deltaFwd / deltaHeading) * sin(heading) - (deltaStrafe - deltaHeading) * (1 - cos(deltaHeading));
-                double deltaY = (deltaStrafe / deltaHeading) * sin(heading) - (deltaFwd - deltaHeading) * (1 - cos(deltaHeading));
+
+                double deltaX, deltaY;
+
+                if (fabs(deltaHeading) < 1e-6)
+                {
+                    deltaX = deltaFwd * cos(heading) - deltaStrafe * sin(heading);
+                    deltaY = deltaStrafe * cos(heading) + deltaFwd * sin(heading);
+                }   
+                else
+                {
+                    deltaX = (deltaFwd / deltaHeading) * sin(heading) - (deltaStrafe - deltaHeading) * (1 - cos(deltaHeading));
+                    deltaY = (deltaStrafe / deltaHeading) * sin(heading) - (deltaFwd - deltaHeading) * (1 - cos(deltaHeading));
+                }
+                
 
                 // Update x and y
-                x = x + (deltaX * cos(heading) - deltaY * sin(heading));
-                y = y + (deltaY * cos(heading) + deltaX * sin(heading));
+                double rotatedX = (deltaX * cos(heading) - deltaY * sin(heading));
+                double rotatedY = (deltaY * cos(heading) + deltaX * sin(heading));
+
+                // PROBLEM
+
+                robot::x += rotatedX;
+                robot::y += rotatedY;
                 
                 // Save current data to become previous data in the next iteration
                 prevLeftEncoder = leftEncoder;
                 prevRightEncoder = rightEncoder;
                 prevBackEncoder = backEncoder;
+
+                // Brain 
+                Brain.Screen.setCursor(1, 1);
+                Brain.Screen.print("X: %.2f, dX: %.2f, Y: %.2f, dY: %.2f", robot::x, deltaX, robot::y, deltaY);
+
+                Brain.Screen.setCursor(2, 1);
+                Brain.Screen.print("dL: %.2f, dR: %.2f, dB: %.2f", deltaLeft, deltaRight, deltaBack);
+
+                Brain.Screen.setCursor(3, 1);
+                Brain.Screen.print("Rotated X: %.2f, Rotated Y: %.2f", rotatedX, rotatedY);
+
+                Brain.Screen.setCursor(4, 1);
+                Brain.Screen.print("dFwd: %.2f, dStr: %.2f", deltaFwd, deltaStrafe);
+
+                Brain.Screen.setCursor(5, 1);
+                Brain.Screen.print("Hdg: %.2f, dHdg: %.2f", heading * (180/M_PI), deltaHeading * (180/M_PI));
 
                 // Clear the screen
                 controller1.Screen.clearScreen();
@@ -465,7 +499,13 @@ class robot
                 controller1.Screen.setCursor(1, 0);
 
                 // Print X, Y, and Heading Values
-                controller1.Screen.print("rotation: %.2f", (deltaX * cos(heading) - deltaY * sin(heading)));
+                controller1.Screen.print("x: %.2f, dX: %.2f", robot::x, deltaX);
+
+                // Set the cursor for printing
+                controller1.Screen.setCursor(2, 0);
+
+                // Print X, Y, and Heading Values
+                controller1.Screen.print("dL: %.2f, dR: %.2f", deltaLeft, deltaRight);
 
                 // Wait to not consume all of the CPU's resources
                 wait(20, msec); // Refresh rate of 100Hz
