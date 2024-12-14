@@ -7,6 +7,7 @@ using namespace vex;
  * A class that represents the robot.
  * @note Since there is only one robot, the class is only comprised of static data and methods.
  */
+
 class robot
 {
     private:
@@ -445,21 +446,25 @@ class robot
                 double deltaY = 2 * ((deltaRight / heading) + (L_R_WHEEL_DISTANCE / 2)) * (sin(heading / 2)); // Why does the Y only use the right wheel?
 
                 // Update x and y
-                x += deltaX;
-                y += deltaY;
+                x = deltaX;
+                y = deltaY;
                 
                 // Save current data to become previous data in the next iteration
                 prevLeftEncoder = leftEncoder;
                 prevRightEncoder = rightEncoder;
                 prevBackEncoder = backEncoder;
 
-                // Write to the SD Card
-                uint8_t *data;
-                
-                Brain.SDcard.savefile("test.csv", data, sizeof(data));
+                // Clear the screen
+                controller1.Screen.clearScreen();
+
+                // Set the cursor for printing
+                controller1.Screen.setCursor(1, 0);
+
+                // Print X, Y, and Heading Values
+                controller1.Screen.print("X: %.2f. Y: %.2f\n", x, y);
 
                 // Wait to not consume all of the CPU's resources
-                wait(10, msec); // Refresh rate of 100Hz
+                wait(20, msec); // Refresh rate of 100Hz
             }
 
             // If a value is return, something bad happened
