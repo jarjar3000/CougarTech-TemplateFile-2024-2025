@@ -411,7 +411,7 @@ class robot
         /**
          * @brief A function intended to be ran in a seperate thrad that will calculate the position of the robot using odometry
          * @return 0, but if a value is returned, it means a fatal error has happened, since the thread should never end.
-         * @note The robot's heading should be 0 in the positive Y direction.
+         * @note The robot's heading should be 0 in the positive X direction.
          */
         static int calculateRobotPosition()
         {
@@ -424,8 +424,8 @@ class robot
             {
                 // Get and store encoder values
                 leftEncoder = leftF.position(degrees);
-                rightEncoder = rightF.position(degrees); // Flip signs
-                backEncoder = backWheel.position(degrees); // Negative?
+                rightEncoder = rightF.position(degrees); 
+                backEncoder = backWheel.position(degrees) * -1;
 
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
@@ -438,7 +438,7 @@ class robot
                 deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
 
                 // Equation takes in linear unit (in) and radian value and outputs a distance
-                double deltaHeading = (deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
+                double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS // R - L
                 robot::heading += deltaHeading; // Add to the running total heading
 
                 // Calculate deltaFwd and deltaStrafe
@@ -448,28 +448,29 @@ class robot
                 // PROBLEM
                 // Calculate deltaX and deltaY
 
-                double deltaX, deltaY;
+                double deltaX, deltaY, rotatedX, rotatedY;
 
-                if (fabs(deltaHeading) < 1e-6)
+                // The rotation may be incorrect, based on "Intro to Odometry, Part 1"
+                if (fabs(deltaHeading) < 1e-6 || true)
                 {
-                    deltaX = deltaFwd * cos(heading) - deltaStrafe * sin(heading);
-                    deltaY = deltaStrafe * cos(heading) + deltaFwd * sin(heading);
-                }   
+                    deltaX = deltaFwd * cos(heading) + deltaStrafe * sin(heading);
+                    deltaY = deltaStrafe * cos(heading) - deltaFwd * sin(heading);
+                    robot::x += deltaX;
+                    robot::y += deltaY;
+                }
                 else
                 {
                     deltaX = (deltaFwd / deltaHeading) * sin(heading) - (deltaStrafe - deltaHeading) * (1 - cos(deltaHeading));
                     deltaY = (deltaStrafe / deltaHeading) * sin(heading) - (deltaFwd - deltaHeading) * (1 - cos(deltaHeading));
+                    rotatedX = (deltaX * cos(heading) - deltaY * sin(heading));
+                    rotatedY = (deltaY * cos(heading) + deltaX * sin(heading));
+                    robot::x += rotatedX;
+                    robot::y += rotatedY;
                 }
                 
-
-                // Update x and y
-                double rotatedX = (deltaX * cos(heading) - deltaY * sin(heading));
-                double rotatedY = (deltaY * cos(heading) + deltaX * sin(heading));
-
+                // Update x and y (I think this part isn't needed cause the rotation already happened)
+                
                 // PROBLEM
-
-                robot::x += rotatedX;
-                robot::y += rotatedY;
                 
                 // Save current data to become previous data in the next iteration
                 prevLeftEncoder = leftEncoder;
