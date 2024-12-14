@@ -424,7 +424,7 @@ class robot
             {
                 // Get and store encoder values
                 leftEncoder = leftF.position(degrees);
-                rightEncoder = rightF.position(degrees); // Negative?
+                rightEncoder = rightF.position(degrees) * -1; // Flip signs
                 backEncoder = backWheel.position(degrees); // Negative?
 
                 // Get the robot's current heading using the encoders
@@ -438,16 +438,20 @@ class robot
                 deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
 
                 // Equation takes in linear unit (in) and radian value and outputs a distance
-                double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
+                double deltaHeading = (deltaRight - deltaLeft) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
                 heading += deltaHeading; // Add to the running total heading
 
-                // Calculate deltaX and deltaY (Why don't these use deltaForward and deltaStrafe?)
-                double deltaX = 2 * ((deltaBack / heading) + (BACK_WHEEL_DISTANCE)) * (sin(heading / 2));
-                double deltaY = 2 * ((deltaRight / heading) + (L_R_WHEEL_DISTANCE / 2)) * (sin(heading / 2)); // Why does the Y only use the right wheel?
+                // Calculate deltaFwd and deltaStrafe
+                double deltaFwd = (deltaRight + deltaLeft) / 2;
+                double deltaStrafe = deltaBack - (BACK_WHEEL_DISTANCE * deltaHeading);
+
+                // Calculate deltaX and deltaY
+                double deltaX = (deltaFwd / deltaHeading) * sin(heading) - (deltaStrafe - deltaHeading) * (1 - cos(deltaHeading));
+                double deltaY = (deltaStrafe / deltaHeading) * sin(heading) - (deltaFwd - deltaHeading) * (1 - cos(deltaHeading));
 
                 // Update x and y
-                x = deltaX;
-                y = deltaY;
+                x = x + (deltaX * cos(heading) - deltaY * sin(heading));
+                y = y + (deltaY * cos(heading) + deltaX * sin(heading));
                 
                 // Save current data to become previous data in the next iteration
                 prevLeftEncoder = leftEncoder;
@@ -461,7 +465,7 @@ class robot
                 controller1.Screen.setCursor(1, 0);
 
                 // Print X, Y, and Heading Values
-                controller1.Screen.print("X: %.2f. Y: %.2f\n", x, y);
+                controller1.Screen.print("rotation: %.2f", (deltaX * cos(heading) - deltaY * sin(heading)));
 
                 // Wait to not consume all of the CPU's resources
                 wait(20, msec); // Refresh rate of 100Hz
