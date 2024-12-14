@@ -368,7 +368,8 @@ class robot
          */
         static void spinAccumulator(vex::directionType d, double vel)
         {
-            bottomAccumulator.spin(d, vel, percent);
+            bottomLeftAccumulator.spin(d, vel, percent);
+            bottomRightAccumulator.spin(d, vel, percent);
             topAccumulator.spin(d, vel, percent);
         }
 
@@ -377,7 +378,8 @@ class robot
          */
         static void stopAccumulator()
         {
-            bottomAccumulator.stop();
+            bottomLeftAccumulator.stop();
+            bottomRightAccumulator.stop();
             topAccumulator.stop();
         }
 
@@ -415,6 +417,7 @@ class robot
             // Initialize all variables (previous x, etc...)
             double leftEncoder = 0, rightEncoder = 0, backEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
+            Brain.resetTimer();
 
             while(true)
             {
@@ -449,6 +452,11 @@ class robot
                 prevLeftEncoder = leftEncoder;
                 prevRightEncoder = rightEncoder;
                 prevBackEncoder = backEncoder;
+
+                // Write to the SD Card
+                uint8_t *data;
+                
+                Brain.SDcard.savefile("test.csv", data, sizeof(data));
 
                 // Wait to not consume all of the CPU's resources
                 wait(10, msec); // Refresh rate of 100Hz

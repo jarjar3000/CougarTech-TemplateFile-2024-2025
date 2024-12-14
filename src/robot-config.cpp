@@ -36,7 +36,8 @@ motor rightF = motor(PORT14, ratio6_1, true);
 /*
   Accumulator
 */
-motor bottomAccumulator = motor(PORT20, ratio18_1, true);
+motor bottomLeftAccumulator = motor(PORT19, ratio6_1, true);
+motor bottomRightAccumulator = motor(PORT20, ratio6_1, false);
 motor topAccumulator = motor(PORT10, ratio18_1, true);
 
 /*

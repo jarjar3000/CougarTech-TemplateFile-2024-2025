@@ -17,7 +17,8 @@ extern motor rightF;
 extern motor rightB;
 
 //Accumulator
-extern motor bottomAccumulator;
+extern motor bottomLeftAccumulator;
+extern motor bottomRightAccumulator;
 extern motor topAccumulator;
 
 // Arm
