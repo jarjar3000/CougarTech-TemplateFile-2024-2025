@@ -17,10 +17,10 @@ class robot
         static inline double heading = 0; // IN RADIANS!
 
         // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 12; // IN INCHES!
+        static const double L_R_WHEEL_DISTANCE = 12.39497403; // IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 5.25; // IN INCHES!
+        static const double BACK_WHEEL_DISTANCE = 3.660259389; // IN INCHES! 5.25
 
         // PID Variables
         static const double kP = 7;
@@ -420,6 +420,8 @@ class robot
             double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             Brain.resetTimer();
 
+            double sumBack = 0;
+
             while(true)
             {
                 // Get and store encoder values
@@ -437,41 +439,37 @@ class robot
                 deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION);
                 deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
 
-                // Equation takes in linear unit (in) and radian value and outputs a distance
-                double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS // R - L
+                // Calculate deltaHeading
+                double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
+
+                // Update heading and put it back in range 0-360
                 robot::heading += deltaHeading; // Add to the running total heading
+                // robot::heading = fmod(robot::heading, (2 * M_PI)); // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
 
                 // Calculate deltaFwd and deltaStrafe
                 double deltaFwd = (deltaRight + deltaLeft) / 2;
                 double deltaStrafe = deltaBack - (BACK_WHEEL_DISTANCE * deltaHeading);
 
-                // New issue: heading doesn't wrap around and can also be a negative number
-                // Calculate deltaX and deltaY
-                double deltaX, deltaY, rotatedX, rotatedY;
-
-                // Linear works within margins of error
+                // Calculate deltaX and deltaY linearly or arc-based
+                double deltaX, deltaY;
                 if (fabs(deltaHeading) < 1e-6 || false)
                 {
                     deltaX = deltaFwd * cos(heading) + deltaStrafe * sin(heading);
                     deltaY = deltaStrafe * cos(heading) - deltaFwd * sin(heading);
-                    robot::x += deltaX;
-                    robot::y += deltaY;
                 }
                 // Arc now works within margins of error (The x seems to have a much larger error than the y)
                 else
                 {
                     deltaX = (deltaFwd / deltaHeading) * sin(deltaHeading) - (deltaStrafe / deltaHeading) * (1 - cos(deltaHeading));
                     deltaY = (deltaStrafe / deltaHeading) * sin(deltaHeading) - (deltaFwd / deltaHeading) * (1 - cos(deltaHeading));
-                    rotatedX = (deltaX * cos(heading) + deltaY * sin(heading));
-                    rotatedY = (deltaY * cos(heading) - deltaX * sin(heading));
-                    robot::x += rotatedX;
-                    robot::y += rotatedY;
                 }
                 
-                // Update x and y (I think this part isn't needed cause the rotation already happened)
-                
-                // PROBLEM
-                
+                // Update x and y 
+                robot::x += (deltaX * cos(heading) + deltaY * sin(heading));
+                robot::y += (deltaY * cos(heading) - deltaX * sin(heading));
+
+                sumBack += deltaBack;
+                                
                 // Save current data to become previous data in the next iteration
                 prevLeftEncoder = leftEncoder;
                 prevRightEncoder = rightEncoder;
@@ -485,31 +483,16 @@ class robot
                 Brain.Screen.print("dL: %.2f, dR: %.2f, dB: %.2f", deltaLeft, deltaRight, deltaBack);
 
                 Brain.Screen.setCursor(3, 1);
-                Brain.Screen.print("Rotated X: %.2f, Rotated Y: %.2f", rotatedX, rotatedY);
-
-                Brain.Screen.setCursor(4, 1);
                 Brain.Screen.print("dFwd: %.2f, dStr: %.2f", deltaFwd, deltaStrafe);
 
-                Brain.Screen.setCursor(5, 1);
+                Brain.Screen.setCursor(4, 1);
                 Brain.Screen.print("Hdg: %.2f, dHdg: %.2f", heading * (180/M_PI), deltaHeading * (180/M_PI));
 
-                // Clear the screen
-                controller1.Screen.clearScreen();
-
-                // Set the cursor for printing
-                controller1.Screen.setCursor(1, 0);
-
-                // Print X, Y, and Heading Values
-                controller1.Screen.print("x: %.2f, dX: %.2f", robot::x, deltaX);
-
-                // Set the cursor for printing
-                controller1.Screen.setCursor(2, 0);
-
-                // Print X, Y, and Heading Values
-                controller1.Screen.print("dL: %.2f, dR: %.2f", deltaLeft, deltaRight);
+                Brain.Screen.setCursor(5, 1);
+                Brain.Screen.print("Back Wheel Distance: %f", sumBack / heading);
 
                 // Wait to not consume all of the CPU's resources
-                wait(20, msec); // Refresh rate of 100Hz
+                wait(10, msec); // Refresh rate of 100Hz
             }
 
             // If a value is return, something bad happened
@@ -601,7 +584,7 @@ class robot
                 controller1.Screen.setCursor(1, 0);
 
                 // Print X, Y, and Heading Values
-                controller1.Screen.print("X: %.2f. Y: %.2f. Hdg: %.2f\n", x, y, heading);
+                controller1.Screen.print("X: %.2f. Y: %.2f.", x, y);
 
                 // Print Drivetrain and intake temperatures
                 controller1.Screen.setCursor(2, 0);
@@ -612,7 +595,7 @@ class robot
                 controller1.Screen.setCursor(3, 0);
                 controller1.Screen.print("Battery: %.2f\%", Brain.Battery.capacity(percent));
                 
-                wait(20, msec);
+                wait(100, msec);
             }
             return 1;
         }
