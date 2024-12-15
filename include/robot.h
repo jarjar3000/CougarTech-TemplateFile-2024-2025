@@ -445,25 +445,25 @@ class robot
                 double deltaFwd = (deltaRight + deltaLeft) / 2;
                 double deltaStrafe = deltaBack - (BACK_WHEEL_DISTANCE * deltaHeading);
 
-                // PROBLEM
+                // New issue: heading doesn't wrap around and can also be a negative number
                 // Calculate deltaX and deltaY
-
                 double deltaX, deltaY, rotatedX, rotatedY;
 
-                // The rotation may be incorrect, based on "Intro to Odometry, Part 1"
-                if (fabs(deltaHeading) < 1e-6 || true)
+                // Linear works within margins of error
+                if (fabs(deltaHeading) < 1e-6 || false)
                 {
                     deltaX = deltaFwd * cos(heading) + deltaStrafe * sin(heading);
                     deltaY = deltaStrafe * cos(heading) - deltaFwd * sin(heading);
                     robot::x += deltaX;
                     robot::y += deltaY;
                 }
+                // Arc now works within margins of error (The x seems to have a much larger error than the y)
                 else
                 {
-                    deltaX = (deltaFwd / deltaHeading) * sin(heading) - (deltaStrafe - deltaHeading) * (1 - cos(deltaHeading));
-                    deltaY = (deltaStrafe / deltaHeading) * sin(heading) - (deltaFwd - deltaHeading) * (1 - cos(deltaHeading));
-                    rotatedX = (deltaX * cos(heading) - deltaY * sin(heading));
-                    rotatedY = (deltaY * cos(heading) + deltaX * sin(heading));
+                    deltaX = (deltaFwd / deltaHeading) * sin(deltaHeading) - (deltaStrafe / deltaHeading) * (1 - cos(deltaHeading));
+                    deltaY = (deltaStrafe / deltaHeading) * sin(deltaHeading) - (deltaFwd / deltaHeading) * (1 - cos(deltaHeading));
+                    rotatedX = (deltaX * cos(heading) + deltaY * sin(heading));
+                    rotatedY = (deltaY * cos(heading) - deltaX * sin(heading));
                     robot::x += rotatedX;
                     robot::y += rotatedY;
                 }
