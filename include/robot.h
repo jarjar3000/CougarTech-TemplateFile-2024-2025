@@ -56,6 +56,9 @@ class robot
         */
         static inline bool allianceIsRed = true;
 
+        // Boolean to dictate if data should be printed to the screen (not via the thread)
+        static const bool PRINT_DATA = false;
+
         /**
          * @brief Function to set speed of left side of the drive
          * @param vel The speed to set the left side to.
@@ -321,21 +324,24 @@ class robot
                 prevRightEncoder = rightEncoder;
                 prevBackEncoder = backEncoder;
 
-                // Brain 
-                Brain.Screen.setCursor(1, 1);
-                Brain.Screen.print("X: %.2f, dX: %.2f, Y: %.2f, dY: %.2f", robot::x, deltaX, robot::y, deltaY);
+                // Printing data to the screen
+                if (PRINT_DATA)
+                {
+                    Brain.Screen.setCursor(1, 1);
+                    Brain.Screen.print("X: %.2f, dX: %.2f, Y: %.2f, dY: %.2f", robot::x, deltaX, robot::y, deltaY);
 
-                Brain.Screen.setCursor(2, 1);
-                Brain.Screen.print("dL: %.2f, dR: %.2f, dB: %.2f", deltaLeft, deltaRight, deltaBack);
+                    Brain.Screen.setCursor(2, 1);
+                    Brain.Screen.print("dL: %.2f, dR: %.2f, dB: %.2f", deltaLeft, deltaRight, deltaBack);
 
-                Brain.Screen.setCursor(3, 1);
-                Brain.Screen.print("dFwd: %.2f, dStr: %.2f", deltaFwd, deltaStrafe);
+                    Brain.Screen.setCursor(3, 1);
+                    Brain.Screen.print("dFwd: %.2f, dStr: %.2f", deltaFwd, deltaStrafe);
 
-                Brain.Screen.setCursor(4, 1);
-                Brain.Screen.print("Hdg: %.2f, dHdg: %.2f", heading * (180/M_PI), deltaHeading * (180/M_PI));
+                    Brain.Screen.setCursor(4, 1);
+                    Brain.Screen.print("Hdg: %.2f, dHdg: %.2f", heading * (180/M_PI), deltaHeading * (180/M_PI));
 
-                Brain.Screen.setCursor(5, 1);
-                Brain.Screen.print("Back Wheel Distance: %f", sumBack / heading);
+                    Brain.Screen.setCursor(5, 1);
+                    Brain.Screen.print("Back Wheel Distance: %f", sumBack / heading);
+                } 
 
                 // Wait to not consume all of the CPU's resources
                 wait(10, msec); // Refresh rate of 100Hz
@@ -356,7 +362,10 @@ class robot
 
             // Make a local variable to store the heading in degrees (This shadows the other heading, which is in radians)
             // We fabs the heading here because it has already been calculated.
-            double heading = fabs(robot::heading * (180/M_PI));
+            double heading = fabs(robot::heading);
+
+            // Change the targetHeading to radians, since we use radians internally
+            targetHeading *= (M_PI / 180);
 
             // Initialize the PID variables
             double error = 0, integral = 0, derivative = 0, prevError = heading;
@@ -369,20 +378,13 @@ class robot
             do
             {
                 // Keep pulling the updated heading
-                heading = fabs(robot::heading * (180/M_PI));
+                heading = fabs(robot::heading);
 
                 // Proportional
-                error = targetHeading - heading;
+                error = targetHeading - heading; // Raw input
 
-                // Ensure the error is within 0-359 (add 360 for negative numbers)
-                error = fmod(error + 360, 360); 
-
-                // Find the shortest path
-                if (error > 180)
-                {
-                    // Example (0 to 270): 270 - 360 = -90 (left 90)
-                    error -= 360;
-                }
+                // Normalize error to [-pi, pi] (-180, 180)
+                error = atan2(sin(error), cos(error)); // No need to negate since direction is already handled
 
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
@@ -399,19 +401,25 @@ class robot
                 setLeftSpeed(motorSpeed);
                 setRightSpeed(-motorSpeed);
 
-                // Print some data
-                Brain.Screen.setCursor(6, 1);
-                Brain.Screen.print("E: %.2f, I: %.2f, D: %.2f", error * turnKP, integral * turnKI, derivative * turnKD);
+                // Data
+                if (PRINT_DATA)
+                {
+                    Brain.Screen.setCursor(6, 1);
+                    Brain.Screen.print("E: %.2f, I: %.2f, D: %.2f", error * turnKP, integral * turnKI, derivative * turnKD);
 
-                controller1.Screen.clearScreen();
-                controller1.Screen.setCursor(1,1);
-                controller1.Screen.print("%.2f, %.2f, %.2f", error * turnKP, integral * turnKI, derivative * turnKD);
-                controller1.Screen.setCursor(2,1);
-                controller1.Screen.print("%d", (motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))));
+                    controller1.Screen.clearScreen();
+                    controller1.Screen.setCursor(1,1);
+                    controller1.Screen.print("%.2f, %.2f, %.2f", error * turnKP, integral * turnKI, derivative * turnKD);
+                    controller1.Screen.setCursor(2,1);
+                    controller1.Screen.print("%d", (motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))));
+                }
 
                 // Don't consume all of the CPU's resources
                 wait(timestep, seconds);
-            } while (true); // Need to find a way to see if the move is completed
+            } while (true); // If the derivative is near-0? Ideally, when the robot's speed is barely changing, the move is done
+
+            // Stop motion
+            stopDrive();
         }
 
         /**
@@ -421,19 +429,8 @@ class robot
          */
         static void turnToPoint(double targetX, double targetY)
         {
-            // See where we are and calculate the change in heading
-
-            // Make a right triangle with a new hypotenuse using the x and y
-            double deltaX = robot::x - targetX;
-            double deltaY = robot::y - targetY;
-            double hyp = sqrt(pow(deltaX, 2) + pow(deltaY, 2));
-
-            // Use the Law of Sines to find the required change in angle
-            double deltaHeading = asin(hyp / deltaY);
-            deltaHeading *= (180 / M_PI); // Rad to deg
-
-            // Find the heading that would result from the change in angle (- is left, + is right)
-            double targetHeading = fabs(deltaHeading - 180);
+            // Use atan2 to calculate the heading
+            double targetHeading = -atan2(targetY - robot::y, targetX - robot::x);
             turnTo(targetHeading);
         }
 
@@ -443,9 +440,32 @@ class robot
          * @param targetY The Y value the robot should go to
          * @param reverse Whether the robot should drive in reverse to get to the point. Default is false
          */
-        static void goTo(double targetX, double targetY, bool reverse = false)
+        static void goTo(double targetX, double targetY, bool driveReverse = false)
         {
+            // Turn to the target point. If reverse is true, turn towards the negation of the point, so the robot drives in reverse
+            if (driveReverse)
+            {
+                turnToPoint(-targetX, -targetY);
+                drive(reverse);
+            }
+            else
+            {
+                turnToPoint(targetX, targetY);
+                drive(forward);
+            }
 
+            // Initialize the PID variables
+            double error = 0, integral = 0, derivative = 0, prevError = heading;
+            double motorSpeed = 0;
+            
+            // Drive towards the target point
+            do
+            {
+                // 2 errors?
+            } while (true);
+
+            // Stop driving
+            stopDrive();
         }
         
         /**
@@ -462,16 +482,17 @@ class robot
                 controller1.Screen.setCursor(1, 0);
 
                 // Print X, Y, and Heading Values
-                controller1.Screen.print("X: %.2f. Y: %.2f.", x, y);
+                controller1.Screen.print("(%.2f, %.2f) %.2f°", x, y, heading * (180/M_PI));
 
                 // Print Drivetrain and intake temperatures
                 controller1.Screen.setCursor(2, 0);
-                controller1.Screen.print("Hdg: %.2f", heading * (180/M_PI));
-                // controller1.Screen.print("DT: %.2f. IT: %.2f\n", leftF.temperature(fahrenheit), topAccumulator.temperature(fahrenheit));
+                double avgDriveTemp = (leftF.temperature(fahrenheit) + leftB.temperature(fahrenheit) + rightF.temperature(fahrenheit) + rightB.temperature(fahrenheit)) / 4.0;
+                double avgAccumulatorTemp = (topAccumulator.temperature(fahrenheit) + bottomLeftAccumulator.temperature(fahrenheit) + bottomRightAccumulator.temperature(fahrenheit)) / 3.0;
+                controller1.Screen.print("D: %.2f°F. I: %.2f°F", avgDriveTemp, avgAccumulatorTemp);
                 
                 // Print Battery Percentage
                 controller1.Screen.setCursor(3, 0);
-                controller1.Screen.print("Battery: %.2f\%", Brain.Battery.capacity(percent));
+                controller1.Screen.print("Battery: %d percent", Brain.Battery.capacity(percent));
                 
                 wait(100, msec);
             }
