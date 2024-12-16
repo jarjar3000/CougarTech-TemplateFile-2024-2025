@@ -18,12 +18,13 @@ competition Competition;
 // Pre-auton
 void pre_auton(void)
 {
+   
 }
 
 // Autonomous
 void autonomous(void)
-{
-   
+{   
+   robot::turnTo(90);
 }
 
 int driver()
@@ -177,6 +178,9 @@ int main()
    // Run the pre-autonomous function.
    pre_auton();
 
+   // Set the starting position
+   robot::init(0, 0, 0);
+
    // Start the thread
    thread ejectThread = thread(robot::eject);
    optical1.setLight(ledState::on);
@@ -185,7 +189,7 @@ int main()
    thread odometryTracking = thread(robot::calculateRobotPosition);
 
    // Start the printing thread
-   thread controllerInfo = thread(robot::printInfoToController);
+   // thread controllerInfo = thread(robot::printInfoToController);
 
    // Prevent main from exiting with an infinite loop.
    while (true)

@@ -27,9 +27,9 @@ class robot
         static const double kI = 3;
         static const double kD = 6;
 
-        static const double turnKP = 0.6;
-        static const double turnKI = 0.3;
-        static const double turnKD = 0.5;
+        static const double turnKP = 0.4; // 0.2 works with no ocilation and other values at 0
+        static const double turnKI = 0;
+        static const double turnKD = 0;
 
         static inline double error = 0;
         static inline double integral = 0;
@@ -211,158 +211,6 @@ class robot
         }
 
         /**
-         * @brief Drive the robot in a direction for a certain distance in inches. Used in autonomous.
-         * @param d The direction to drive in.
-         * @param distance The distance the robot should drive in inches.
-         * @param failsafeTime The amount of time that needs to pass before the robot automatically stops moving.
-         */
-        static void drive(vex::directionType d, double distance, double failsafeTime)
-        {
-            // Reset all motors + encoders
-            leftF.setPosition(0, degrees);
-            leftB.setPosition(0, degrees);
-            rightF.setPosition(0, degrees);
-            rightB.setPosition(0, degrees);
-
-            // Reset PID variables
-            double avgPosition = 0;
-            integral = 0;
-            prevError = 0;
-
-            // Reset failsafe timer
-            failsafe.clear();
-
-            // Set initial velocity
-            setRightSpeed(80);
-            setLeftSpeed(80);
-            
-            switch (d)
-            {
-            case vex::directionType::fwd:
-                // Start driving forward
-                drive(forward);
-                break;
-
-            case vex::directionType::rev:
-                // Start driving backwards
-                drive(reverse);
-                break;
-
-            case vex::directionType::undefined:
-                break;
-            }
-
-            // Both Cases
-            do
-            {
-                // Error (Proportional)
-                avgPosition = fabs((leftF.position(degrees) + rightF.position(degrees)) / 2);
-
-                // The distance in inches minus the distance traveled (wheel circumfrence times rotations)
-                error = distance - (WHEEL_DIAMETER * M_PI) * (avgPosition / ENCODER_TICKS_PER_REVOLUTION) * WHEEL_GEAR_RATIO;
-
-                // Integral
-                integral += error;
-
-                // Prevent integral windup
-                if (error > DRIVE_INTEGRAL_WINDUP)
-                {
-                    integral = 0;
-                }
-
-                // Derivative
-                derivative = error - prevError;
-                prevError = error;
-
-                // Calculate
-                leftSpeed = error * kP + integral * kI + derivative * kD;
-                rightSpeed = error * kP + integral * kI + derivative * kD;
-
-                // Change motor speed (or switch on d)
-                if (d == vex::directionType::fwd)
-                {
-                    setLeftSpeed(leftSpeed);
-                    setRightSpeed(rightSpeed);
-                }
-                else if (d == vex::directionType::rev)
-                {
-                    setLeftSpeed(-leftSpeed);
-                    setRightSpeed(-rightSpeed);
-                }
-
-                // Conserve brain resources
-                wait(20, msec);
-            }
-            while ((error < -DRIVE_ERROR_TOLERANCE || error > DRIVE_ERROR_TOLERANCE) && failsafe.time(seconds) <= failsafeTime);
-
-            // Stop motors
-            stopDrive();
-
-            // Wait
-            wait(500, msec);
-        }
-
-        /**
-         * @brief Turns the robot in a direction for a specific amount of degrees
-         * @param d The direction to turn in
-         * @param deg The amount of degrees to turn in
-         * @param failsafeTime Amount of time, in seconds, until the robot automatically stops the move
-         */
-        static void turn(vex::turnType d, double deg, double failsafeTime)
-        {
-            // Reset PID variables
-            inertial1.setRotation(0, degrees);
-            integral = 0;
-            prevError = 0;
-
-            // Reset failsafe timer
-            failsafe.clear();
-
-            // Start the PID turn
-            drive(forward);
-            do
-            {
-                // Proportional (abs the rotation so both directions are the same)
-                error = (deg - fabs(inertial1.rotation(degrees)));
-
-                // Integral
-                integral += error;
-
-                if (integral > TURN_INTEGRAL_WINDUP)
-                {
-                    integral = 0;
-                }
-
-                // Derivative
-                derivative = error - prevError;
-                prevError = error;
-
-                // Change Motor Speed
-                leftSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-                rightSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
-                switch (d)
-                {
-                case vex::turnType::left:
-                    setLeftSpeed(-leftSpeed);
-                    setRightSpeed(rightSpeed);
-                    break;
-
-                case vex::turnType::right:
-                    setLeftSpeed(leftSpeed);
-                    setRightSpeed(-rightSpeed);
-                    break;
-                }
-                wait(20, msec);
-            } while ((error > TURN_ERROR_TOLERANCE || error < -TURN_ERROR_TOLERANCE) && failsafe.time(seconds) <= failsafeTime);
-
-            // Stop the robot
-            stopDrive();
-
-            // Wait
-            wait(500, msec);
-        }
-
-        /**
          * @brief Spin the accumulator in a direction
          * @param d The direction to spin the accumulator in
          * @param vel The velocity to spin the accumulator at
@@ -418,8 +266,6 @@ class robot
             // Initialize all variables (previous x, etc...)
             double leftEncoder = 0, rightEncoder = 0, backEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
-            Brain.resetTimer();
-
             double sumBack = 0;
 
             while(true)
@@ -444,7 +290,7 @@ class robot
 
                 // Update heading and put it back in range 0-360
                 robot::heading += deltaHeading; // Add to the running total heading
-                // robot::heading = fmod(robot::heading, (2 * M_PI)); // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
+                robot::heading = fmod(robot::heading, (2 * M_PI)); // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
 
                 // Calculate deltaFwd and deltaStrafe
                 double deltaFwd = (deltaRight + deltaLeft) / 2;
@@ -505,62 +351,94 @@ class robot
          */
         static void turnTo(double targetHeading)
         {
+            // Store the timestep in a variable
+            const double timestep = 0.02; // In seconds
+
+            // Make a local variable to store the heading in degrees (This shadows the other heading, which is in radians)
+            // We fabs the heading here because it has already been calculated.
+            double heading = fabs(robot::heading * (180/M_PI));
+
             // Initialize the PID variables
             double error = 0, integral = 0, derivative = 0, prevError = heading;
             double motorSpeed = 0;
-            
-            error = targetHeading - heading;
-            
-            /*
-                This attempts to counter the issue when turning to heading 0. 
-                Scenario 1: when turning from heading 270 to 0, the current error calculation would put it at 270.
-                This edge case needs to be solved. It will occur whenever heading 0 is involved in the turn.
-            */
-            if (error > 180)
-            {
-                error -= 180;
-            }
 
-            // Determine the direction to turn
-            // Calculate with both a right and left turn. Whichever value is less is the one we want to use.
-            // If the values are equal (180 degree turn), turn right.
-            if (error < 0)
-            {
-                // Turn left
-                turn(left);
-            }
-            else
-            {
-                // Turn right
-                turn(right);
-            }
+            // Set motors to drive
+            drive(forward);
 
             // Do the turn
             do
             {
+                // Keep pulling the updated heading
+                heading = fabs(robot::heading * (180/M_PI));
+
                 // Proportional
                 error = targetHeading - heading;
 
-                // Integral - only integrate when motor speed is less than 100 so integral doesn't wind
-                if (motorSpeed <= 100)
+                // Ensure the error is within 0-359 (add 360 for negative numbers)
+                error = fmod(error + 360, 360); 
+
+                // Find the shortest path
+                if (error > 180)
                 {
-                    integral += error;
+                    // Example (0 to 270): 270 - 360 = -90 (left 90)
+                    error -= 360;
+                }
+
+                // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
+                if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
+                {
+                    integral += (error * timestep);
                 }
 
                 // Derivative
-                derivative = error - prevError;
+                derivative = (error - prevError) / timestep;
                 prevError = error;
 
                 // Change motor speed
                 motorSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
                 setLeftSpeed(motorSpeed);
-                setRightSpeed(motorSpeed);
+                setRightSpeed(-motorSpeed);
 
-            } while (true);
+                // Print some data
+                Brain.Screen.setCursor(6, 1);
+                Brain.Screen.print("E: %.2f, I: %.2f, D: %.2f", error * turnKP, integral * turnKI, derivative * turnKD);
+
+                controller1.Screen.clearScreen();
+                controller1.Screen.setCursor(1,1);
+                controller1.Screen.print("%.2f, %.2f, %.2f", error * turnKP, integral * turnKI, derivative * turnKD);
+                controller1.Screen.setCursor(2,1);
+                controller1.Screen.print("%d", (motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))));
+
+                // Don't consume all of the CPU's resources
+                wait(timestep, seconds);
+            } while (true); // Need to find a way to see if the move is completed
         }
 
         /**
-         * @brief Function to go to a point, (x, y), on the field
+         * @brief Function to turn towards a point, (x, y), on the field
+         * @param targetX The X value of the point
+         * @param targetY The Y value of the point
+         */
+        static void turnToPoint(double targetX, double targetY)
+        {
+            // See where we are and calculate the change in heading
+
+            // Make a right triangle with a new hypotenuse using the x and y
+            double deltaX = robot::x - targetX;
+            double deltaY = robot::y - targetY;
+            double hyp = sqrt(pow(deltaX, 2) + pow(deltaY, 2));
+
+            // Use the Law of Sines to find the required change in angle
+            double deltaHeading = asin(hyp / deltaY);
+            deltaHeading *= (180 / M_PI); // Rad to deg
+
+            // Find the heading that would result from the change in angle (- is left, + is right)
+            double targetHeading = fabs(deltaHeading - 180);
+            turnTo(targetHeading);
+        }
+
+        /**
+         * @brief Function to go to a point, (x, y), on the field by turning towards it and driving to it
          * @param targetX The X value the robot should go to
          * @param targetY The Y value the robot should go to
          * @param reverse Whether the robot should drive in reverse to get to the point. Default is false
@@ -598,5 +476,24 @@ class robot
                 wait(100, msec);
             }
             return 1;
+        }
+
+        /**
+         * @brief Set the robot's starting position and heading; Reset all the encoders
+         * @param x The robot's starting X value
+         * @param y The robot's starting Y value
+         * @param heading The robot's starting heading, in degrees
+         */
+        static void init(double x, double y, double heading)
+        {
+            // Set the starting position
+            robot::x = x;
+            robot::y = y;
+            robot::heading = heading * (M_PI / 180); // Convert deg to rad
+
+            // Reset all of the encoders
+            leftF.setPosition(0, degrees);
+            rightF.setPosition(0, degrees);
+            backWheel.setPosition(0, degrees);
         }
 };
