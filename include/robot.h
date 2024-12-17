@@ -20,16 +20,18 @@ class robot
         static const double L_R_WHEEL_DISTANCE = 12.39497403; // IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 3.660259389; // IN INCHES! 5.25
+        static const double BACK_WHEEL_DISTANCE = 3.160259389; // IN INCHES! 5.25
 
         // PID Variables
         static const double kP = 7;
         static const double kI = 3;
         static const double kD = 6;
 
-        static const double turnKP = 0.4; // 0.2 works with no ocilation and other values at 0
+        static const double turnKP = 12; // 0.2 works with no ocilation and other values at 0
         static const double turnKI = 0;
         static const double turnKD = 0;
+
+        static const double PID_TIMESTEP = 0.02; // Measured in seconds
 
         static inline double error = 0;
         static inline double integral = 0;
@@ -208,7 +210,7 @@ class robot
                     topAccumulator.setVelocity(80, percent);
                 }
                 // Sleep thread to not consume all of CPU resources
-                // this_thread::sleep_for(20);
+                wait(20, msec);
             }
             return 0;
         }
@@ -233,30 +235,6 @@ class robot
             bottomLeftAccumulator.stop();
             bottomRightAccumulator.stop();
             topAccumulator.stop();
-        }
-
-        /**
-         * @brief A function that sets the motors to spin to turn in a direction
-         * @param d The direction to turn in
-         */
-        static void turn(vex::turnType d)
-        {
-            switch(d)
-            {
-                case vex::turnType::left:
-                leftF.spin(reverse);
-                leftB.spin(reverse);
-                rightF.spin(forward);
-                rightB.spin(forward);
-                break;
-
-                case vex::turnType::right:
-                leftF.spin(forward);
-                leftB.spin(forward);
-                rightF.spin(reverse);
-                rightB.spin(reverse);
-                break;
-            }
         }
 
         /**
@@ -293,7 +271,7 @@ class robot
 
                 // Update heading and put it back in range 0-360
                 robot::heading += deltaHeading; // Add to the running total heading
-                robot::heading = fmod(robot::heading, (2 * M_PI)); // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
+                // robot::heading = fmod(robot::heading, (2 * M_PI)); // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
 
                 // Calculate deltaFwd and deltaStrafe
                 double deltaFwd = (deltaRight + deltaLeft) / 2;
@@ -457,11 +435,39 @@ class robot
             // Initialize the PID variables
             double error = 0, integral = 0, derivative = 0, prevError = heading;
             double motorSpeed = 0;
+
+            // Calculate the required distance
+            double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
+            const double timestep = 0.02; // In seconds
             
             // Drive towards the target point
             do
             {
-                // 2 errors?
+                // Error
+                double currentDistance = sqrt(pow(robot::x, 2) + pow(robot::y, 2));
+                error = targetDistance - currentDistance;
+
+                // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
+                if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
+                {
+                    integral += (error * timestep);
+                }
+
+                // Derivative
+                derivative = (error - prevError) / timestep;
+                prevError = error;
+
+                // Change motor speed based on the drive direction
+                motorSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+                if (driveReverse)
+                {
+                    motorSpeed *= -1;
+                } 
+                setLeftSpeed(motorSpeed);
+                setRightSpeed(motorSpeed);
+
+                // Don't hog CPU
+                wait(timestep, seconds);
             } while (true);
 
             // Stop driving
