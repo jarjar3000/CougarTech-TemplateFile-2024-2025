@@ -27,11 +27,9 @@ class robot
         static const double kI = 3;
         static const double kD = 6;
 
-        static const double turnKP = 12; // 0.2 works with no ocilation and other values at 0
+        static const double turnKP = 12; 
         static const double turnKI = 0;
         static const double turnKD = 0;
-
-        static const double PID_TIMESTEP = 0.02; // Measured in seconds
 
         static inline double error = 0;
         static inline double integral = 0;
@@ -41,16 +39,20 @@ class robot
         static inline double rightSpeed = 0;
 
         // Constants
-        static const double DRIVE_INTEGRAL_WINDUP = 2;
-        static const double TURN_INTEGRAL_WINDUP = 10;
         static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
-        static const double TURN_ERROR_TOLERANCE = 0.5;
+        static const double TURN_ERROR_TOLERANCE = 0.5; // in RADIANS!
+        static const double PID_TIMESTEP = 0.02; // Measured in seconds
+        static const double TIME_STABLE_TO_BREAK = 0.1; // Measured in seconds
+        static const double VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
+
         static const double WHEEL_DIAMETER = 3.25; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
         static const double ENCODER_TICKS_PER_REVOLUTION = 360; // Speed motor is 300, Normal is 900, Torque is 1800
-        static inline bool CALIBRATE = true;
 
     public:
+        // Is the robot calibrating?
+        static const bool CALIBRATE = true;
+        
         // Driving Variables
         static const double MAX_DRIVE_SPEED = 50;
 
@@ -337,11 +339,8 @@ class robot
          * @brief Function to turn to a heading, using the absolute robot heading.
          * @param targetHeading The heading to turn to, in degrees.
          */
-        static void turnTo(double targetHeading)
+        static void turnToHeading(double targetHeading)
         {
-            // Store the timestep in a variable
-            const double timestep = 0.02; // In seconds
-
             // Make a local variable to store the heading in degrees (This shadows the other heading, which is in radians)
             // We fabs the heading here because it has already been calculated.
             double heading = fabs(robot::heading);
@@ -371,11 +370,11 @@ class robot
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
                 {
-                    integral += (error * timestep);
+                    integral += (error * PID_TIMESTEP);
                 }
 
                 // Derivative
-                derivative = (error - prevError) / timestep;
+                derivative = (error - prevError) / PID_TIMESTEP;
                 prevError = error;
 
                 // Change motor speed
@@ -396,9 +395,24 @@ class robot
                     controller1.Screen.print("%d", (motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))));
                 }
 
+                // Check for completion with error check and velocity check.
+                if (fabs(error) < TURN_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
+                {
+                    // Use the brain's timer to see if the condition above has been held for sufficient length
+                    if (Brain.Timer.value() > TIME_STABLE_TO_BREAK)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    // Clear the timer for use when within margins
+                    Brain.resetTimer();
+                }
+
                 // Don't consume all of the CPU's resources
-                wait(timestep, seconds);
-            } while (true); // If the derivative is near-0? Ideally, when the robot's speed is barely changing, the move is done
+                wait(PID_TIMESTEP, seconds);
+            } while (true); 
 
             // Stop motion
             stopDrive();
@@ -413,7 +427,7 @@ class robot
         {
             // Use atan2 to calculate the heading
             double targetHeading = -atan2(targetY - robot::y, targetX - robot::x);
-            turnTo(targetHeading);
+            turnToHeading(targetHeading);
         }
 
         /**
@@ -442,7 +456,6 @@ class robot
 
             // Calculate the required distance
             double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
-            const double timestep = 0.02; // In seconds
             
             // Drive towards the target point
             do
@@ -454,11 +467,11 @@ class robot
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
                 {
-                    integral += (error * timestep);
+                    integral += (error * PID_TIMESTEP);
                 }
 
                 // Derivative
-                derivative = (error - prevError) / timestep;
+                derivative = (error - prevError) / PID_TIMESTEP;
                 prevError = error;
 
                 // Change motor speed based on the drive direction
@@ -470,8 +483,23 @@ class robot
                 setLeftSpeed(motorSpeed);
                 setRightSpeed(motorSpeed);
 
+                // Check for completion with error check and velocity check.
+                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
+                {
+                    // Use the brain's timer to see if the condition above has been held for sufficient length
+                    if (Brain.Timer.value() > TIME_STABLE_TO_BREAK)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    // Clear the timer for use when within margins
+                    Brain.resetTimer();
+                }
+
                 // Don't hog CPU
-                wait(timestep, seconds);
+                wait(PID_TIMESTEP, seconds);
             } while (true);
 
             // Stop driving

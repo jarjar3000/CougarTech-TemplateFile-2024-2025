@@ -23,9 +23,12 @@ void pre_auton(void)
 
 // Autonomous
 void autonomous(void)
-{   
-   // robot::turnTo(90);
-   // robot::calibrate();
+{
+   // Initialize robot and encoders
+   robot::init(0, 0, 0);
+
+   // Turn 90 degrees
+   robot::turnToHeading(90);
 }
 
 int driver()
@@ -155,18 +158,21 @@ int driver()
       }
 
       /**
-       * Odometry button
+       * Odometry button, if calibrate is true
        */
-      if (controller1.ButtonRight.pressing())
+      if (robot::CALIBRATE)
       {
-         robot::setLeftSpeed(robot::MAX_DRIVE_SPEED);
-         robot::setRightSpeed(-robot::MAX_DRIVE_SPEED);
-      }
+         if (controller1.ButtonRight.pressing())
+         {
+            robot::setLeftSpeed(robot::MAX_DRIVE_SPEED);
+            robot::setRightSpeed(-robot::MAX_DRIVE_SPEED);
+         }
 
-      if (controller1.ButtonLeft.pressing())
-      {
-         robot::setLeftSpeed(-robot::MAX_DRIVE_SPEED);
-         robot::setRightSpeed(robot::MAX_DRIVE_SPEED);
+         if (controller1.ButtonLeft.pressing())
+         {
+            robot::setLeftSpeed(-robot::MAX_DRIVE_SPEED);
+            robot::setRightSpeed(robot::MAX_DRIVE_SPEED);
+         }
       }
 
       // Make the drive motors spin so the robot moves
