@@ -17,7 +17,7 @@ class robot
         static inline double heading = 0; // IN RADIANS!
 
         // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 12.39497403; // IN INCHES!
+        static const double L_R_WHEEL_DISTANCE = 12.30394713; // IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
         static const double BACK_WHEEL_DISTANCE = 3.160259389; // IN INCHES! 5.25
@@ -48,11 +48,11 @@ class robot
         static const double WHEEL_DIAMETER = 3.25; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
         static const double ENCODER_TICKS_PER_REVOLUTION = 360; // Speed motor is 300, Normal is 900, Torque is 1800
-        static inline bool CALIBRATE = false;
+        static inline bool CALIBRATE = true;
 
     public:
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 100;
+        static const double MAX_DRIVE_SPEED = 50;
 
         /*
             This boolean MUST be changed and the program must be redownloaded based on the alliance color.
@@ -320,6 +320,9 @@ class robot
 
                     Brain.Screen.setCursor(4, 1);
                     Brain.Screen.print("Hdg: %.2f, dHdg: %.2f", heading * (180/M_PI), deltaHeading * (180/M_PI));
+                    
+                    Brain.Screen.setCursor(5, 1);
+                    Brain.Screen.print("Back Wheel Distance: %f", sumBack / robot::heading);
                 } 
 
                 // Wait to not consume all of the CPU's resources
@@ -523,48 +526,5 @@ class robot
             leftF.setPosition(0, degrees);
             rightF.setPosition(0, degrees);
             backWheel.setPosition(0, degrees);
-        }
-
-        /**
-         * @brief Calculate the robot's left-right wheel distance and back wheel distance based on a 3600 degree turn and prints the new distance to the brain screen.
-         * @note Robot's heading must be somewhat accurate (within one turn) for this calibration to work. See Brain screen for usage.
-         */
-        static void calibrate()
-        {
-            // This makes the heading not wrap
-            robot::CALIBRATE = true;
-            robot::PRINT_DATA = false;
-
-            // Ask user to set up robot in correct position before calibrating
-            Brain.Screen.clearScreen();
-            Brain.Screen.setCursor(1, 1);
-            Brain.Screen.print("Please set up the robot to be perfectly alligned at heading 0, and not touching anything.");
-            Brain.Screen.setCursor(2, 1);
-            Brain.Screen.print("When you are ready, press the Brain Screen.");
-            waitUntil(Brain.Screen.pressing());
-            wait(2, seconds);
-            
-            // Make sure the robot's starting heading is 0
-            init(0, 0, 0);
-
-            // Turn 3600 degrees
-            turnTo(3600);
-
-            // Wait for the person to turn the robot to true heading 0
-            Brain.Screen.clearScreen();
-            Brain.Screen.setCursor(1, 1);
-            Brain.Screen.print("Please turn the robot to true heading 0. Afterwards, press the brain screen.");
-            waitUntil(Brain.Screen.pressing());
-
-            // Get the new distances
-            double newLRDistance = (robot::L_R_WHEEL_DISTANCE * (robot::heading * (180/M_PI))) / 3600.0;
-            double newBackDistance = ((WHEEL_DIAMETER * M_PI) * (backWheel.position(degrees) / ENCODER_TICKS_PER_REVOLUTION)) / robot::heading;
-
-            // Print it to the screen
-            Brain.Screen.clearScreen();
-            Brain.Screen.setCursor(1, 1);
-            Brain.Screen.print("New L-R Distance: %f", newLRDistance);
-            Brain.Screen.setCursor(2, 1);
-            Brain.Screen.print("New Back Distance: %f", newBackDistance);
         }
 };
