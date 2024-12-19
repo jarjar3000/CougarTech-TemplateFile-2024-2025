@@ -54,7 +54,7 @@ class robot
         static const bool CALIBRATE = false;
         
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 100;
+        static const double MAX_DRIVE_SPEED = 10;
 
         /*
             This boolean MUST be changed and the program must be redownloaded based on the alliance color.
@@ -62,7 +62,7 @@ class robot
         static inline bool allianceIsRed = true;
 
         // Boolean to dictate if data should be printed to the screen (not via the thread)
-        static inline bool PRINT_DATA = false;
+        static inline bool PRINT_DATA = true;
 
         /**
          * @brief Function to set speed of left side of the drive
@@ -285,21 +285,22 @@ class robot
 
                 // Calculate deltaX and deltaY linearly or arc-based
                 double deltaX, deltaY;
-                if (fabs(deltaHeading) < 1e-6 || false)
+                if (fabs(deltaHeading) < 1e-6)
                 {
                     deltaX = deltaFwd * cos(heading) + deltaStrafe * sin(heading);
                     deltaY = deltaStrafe * cos(heading) - deltaFwd * sin(heading);
+                    robot::x += deltaX;
+                    robot::y += deltaY;
                 }
                 // Arc now works within margins of error (The x seems to have a much larger error than the y)
                 else
                 {
                     deltaX = (deltaFwd / deltaHeading) * sin(deltaHeading) - (deltaStrafe / deltaHeading) * (1 - cos(deltaHeading));
                     deltaY = (deltaStrafe / deltaHeading) * sin(deltaHeading) - (deltaFwd / deltaHeading) * (1 - cos(deltaHeading));
+                    // Update x and y 
+                    robot::x += (deltaX * cos(heading) + deltaY * sin(heading));
+                    robot::y += (deltaY * cos(heading) - deltaX * sin(heading));
                 }
-                
-                // Update x and y 
-                robot::x += (deltaX * cos(heading) + deltaY * sin(heading));
-                robot::y += (deltaY * cos(heading) - deltaX * sin(heading));
 
                 sumBack += deltaBack;
                                 
@@ -460,6 +461,7 @@ class robot
          */
         static void goTo(double targetX, double targetY, bool driveReverse = false)
         {
+            turnToPoint(targetX, targetY);
             drive(forward);
             setLeftSpeed(25);
             setRightSpeed(25);

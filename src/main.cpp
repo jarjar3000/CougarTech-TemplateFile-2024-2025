@@ -213,10 +213,7 @@ int main()
    thread odometryTracking = thread(robot::calculateRobotPosition);
 
    // Start the printing thread
-   if (!robot::PRINT_DATA)
-   {
-      thread controllerInfo = thread(robot::printInfoToController);
-   }
+   thread controllerInfo = thread(robot::printInfoToController);
 
    // Prevent main from exiting with an infinite loop.
    while (true)
