@@ -18,17 +18,19 @@ competition Competition;
 // Pre-auton
 void pre_auton(void)
 {
-   
+
 }
 
 // Autonomous
 void autonomous(void)
 {
    // Initialize robot and encoders
-   robot::init(0, 0, 0);
 
-   // Turn 90 degrees
-   robot::turnToHeading(90);
+   // Drive to (0, 1)
+   robot::goTo(110, 0);
+   robot::goTo(110, -110);
+   robot::goTo(110, 0);
+   robot::goTo(0, 0);
 }
 
 int driver()

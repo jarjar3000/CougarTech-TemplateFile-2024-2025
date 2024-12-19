@@ -42,7 +42,7 @@ class robot
         static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
         static const double TURN_ERROR_TOLERANCE = 0.5; // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
-        static const double TIME_STABLE_TO_BREAK = 0.1; // Measured in seconds
+        static const double TIME_STABLE_TO_BREAK = 10; // Measured in seconds
         static const double VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
 
         static const double WHEEL_DIAMETER = 3.25; // in inches
@@ -51,10 +51,10 @@ class robot
 
     public:
         // Is the robot calibrating?
-        static const bool CALIBRATE = true;
+        static const bool CALIBRATE = false;
         
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 50;
+        static const double MAX_DRIVE_SPEED = 100;
 
         /*
             This boolean MUST be changed and the program must be redownloaded based on the alliance color.
@@ -341,6 +341,27 @@ class robot
          */
         static void turnToHeading(double targetHeading)
         {
+            spinAccumulator(forward, 100);
+            double error = targetHeading - heading; // Raw input
+            // Normalize error to [-pi, pi] (-180, 180)
+            error = atan2(sin(error), cos(error)); // No need to negate since direction is already handled
+
+            drive(forward);
+            if (error < 0)
+            {
+                setLeftSpeed(-25);
+                setRightSpeed(25);
+            }
+            else
+            {
+                setLeftSpeed(25);
+                setRightSpeed(-25);
+            }
+            
+            waitUntil(robot::heading > targetHeading);
+            stopDrive();
+            stopAccumulator();
+            /*
             // Make a local variable to store the heading in degrees (This shadows the other heading, which is in radians)
             // We fabs the heading here because it has already been calculated.
             double heading = fabs(robot::heading);
@@ -416,6 +437,7 @@ class robot
 
             // Stop motion
             stopDrive();
+            */
         }
 
         /**
@@ -438,6 +460,18 @@ class robot
          */
         static void goTo(double targetX, double targetY, bool driveReverse = false)
         {
+            drive(forward);
+            setLeftSpeed(25);
+            setRightSpeed(25);
+            double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
+            do
+            {
+                double currentDistance = sqrt(pow(robot::x, 2) + pow(robot::y, 2));
+                double error = targetDistance - currentDistance;
+            }
+            while (fabs(error) > 2);
+            stopDrive();
+            /*
             // Turn to the target point. If reverse is true, turn towards the negation of the point, so the robot drives in reverse
             if (driveReverse)
             {
@@ -504,6 +538,7 @@ class robot
 
             // Stop driving
             stopDrive();
+            */
         }
         
         /**
@@ -552,7 +587,9 @@ class robot
 
             // Reset all of the encoders
             leftF.setPosition(0, degrees);
+            leftB.setPosition(0, degrees);
             rightF.setPosition(0, degrees);
+            rightB.setPosition(0, degrees);
             backWheel.setPosition(0, degrees);
         }
 };
