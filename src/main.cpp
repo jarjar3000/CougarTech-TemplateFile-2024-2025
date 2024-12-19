@@ -28,9 +28,9 @@ void autonomous(void)
 
    // Drive to (0, 1)
    robot::goTo(110, 0);
-   robot::goTo(110, -110);
-   robot::goTo(110, 0);
-   robot::goTo(0, 0);
+   // robot::goTo(110, -110);
+   // robot::goTo(110, 0);
+   // robot::goTo(0, 0);
 }
 
 int driver()

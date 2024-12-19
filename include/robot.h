@@ -23,13 +23,13 @@ class robot
         static const double BACK_WHEEL_DISTANCE = 3.160259389; // IN INCHES! 5.25
 
         // PID Variables
-        static const double kP = 7;
-        static const double kI = 3;
-        static const double kD = 6;
+        static const double kP = 3;
+        static const double kI = 2;
+        static const double kD = 1;
 
-        static const double turnKP = 12; 
-        static const double turnKI = 0;
-        static const double turnKD = 0;
+        static const double turnKP = 6; 
+        static const double turnKI = 4;
+        static const double turnKD = 2;
 
         static inline double error = 0;
         static inline double integral = 0;
@@ -54,7 +54,7 @@ class robot
         static const bool CALIBRATE = false;
         
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 10;
+        static const double MAX_DRIVE_SPEED = 50;
 
         /*
             This boolean MUST be changed and the program must be redownloaded based on the alliance color.
@@ -62,7 +62,7 @@ class robot
         static inline bool allianceIsRed = true;
 
         // Boolean to dictate if data should be printed to the screen (not via the thread)
-        static inline bool PRINT_DATA = true;
+        static inline bool PRINT_DATA = false;
 
         /**
          * @brief Function to set speed of left side of the drive
@@ -251,7 +251,6 @@ class robot
             double leftEncoder = 0, rightEncoder = 0, backEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double sumBack = 0;
-
             while(true)
             {
                 // Get and store encoder values
@@ -285,7 +284,7 @@ class robot
 
                 // Calculate deltaX and deltaY linearly or arc-based
                 double deltaX, deltaY;
-                if (fabs(deltaHeading) < 1e-6)
+                if (fabs(deltaHeading) < 1e-3)
                 {
                     deltaX = deltaFwd * cos(heading) + deltaStrafe * sin(heading);
                     deltaY = deltaStrafe * cos(heading) - deltaFwd * sin(heading);
@@ -342,27 +341,27 @@ class robot
          */
         static void turnToHeading(double targetHeading)
         {
-            spinAccumulator(forward, 100);
-            double error = targetHeading - heading; // Raw input
-            // Normalize error to [-pi, pi] (-180, 180)
-            error = atan2(sin(error), cos(error)); // No need to negate since direction is already handled
+            // spinAccumulator(forward, 100);
+            // double error = targetHeading - heading; // Raw input
+            // // Normalize error to [-pi, pi] (-180, 180)
+            // error = atan2(sin(error), cos(error)); // No need to negate since direction is already handled
 
-            drive(forward);
-            if (error < 0)
-            {
-                setLeftSpeed(-25);
-                setRightSpeed(25);
-            }
-            else
-            {
-                setLeftSpeed(25);
-                setRightSpeed(-25);
-            }
+            // drive(forward);
+            // if (error < 0)
+            // {
+            //     setLeftSpeed(-25);
+            //     setRightSpeed(25);
+            // }
+            // else
+            // {
+            //     setLeftSpeed(25);
+            //     setRightSpeed(-25);
+            // }
             
-            waitUntil(robot::heading > targetHeading);
-            stopDrive();
-            stopAccumulator();
-            /*
+            // waitUntil(robot::heading > targetHeading);
+            // stopDrive();
+            // stopAccumulator();
+            
             // Make a local variable to store the heading in degrees (This shadows the other heading, which is in radians)
             // We fabs the heading here because it has already been calculated.
             double heading = fabs(robot::heading);
@@ -438,7 +437,7 @@ class robot
 
             // Stop motion
             stopDrive();
-            */
+            
         }
 
         /**
@@ -461,19 +460,19 @@ class robot
          */
         static void goTo(double targetX, double targetY, bool driveReverse = false)
         {
-            turnToPoint(targetX, targetY);
-            drive(forward);
-            setLeftSpeed(25);
-            setRightSpeed(25);
-            double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
-            do
-            {
-                double currentDistance = sqrt(pow(robot::x, 2) + pow(robot::y, 2));
-                double error = targetDistance - currentDistance;
-            }
-            while (fabs(error) > 2);
-            stopDrive();
-            /*
+            // turnToPoint(targetX, targetY);
+            // drive(forward);
+            // setLeftSpeed(25);
+            // setRightSpeed(25);
+            // double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
+            // do
+            // {
+            //     double currentDistance = sqrt(pow(robot::x, 2) + pow(robot::y, 2));
+            //     double error = targetDistance - currentDistance;
+            // }
+            // while (fabs(error) > 2);
+            // stopDrive();
+            
             // Turn to the target point. If reverse is true, turn towards the negation of the point, so the robot drives in reverse
             if (driveReverse)
             {
@@ -540,7 +539,7 @@ class robot
 
             // Stop driving
             stopDrive();
-            */
+            
         }
         
         /**
