@@ -47,14 +47,12 @@ int driver()
    rightB.setStopping(coast);
 
    // Set the non-drive motors to hold its position (add non-drive motors as necessary)
-   bottomLeftAccumulator.setStopping(hold);
-   bottomRightAccumulator.setStopping(hold);
+   bottomAccumulator.setStopping(hold);
    topAccumulator.setStopping(hold);
    rightArm.setStopping(hold);
 
    // Set the velocity of the non-drive motors (add non-drive motors as necessary)
-   bottomLeftAccumulator.setVelocity(100, percent);
-   bottomRightAccumulator.setVelocity(100, percent);
+   bottomAccumulator.setVelocity(100, percent);
    topAccumulator.setVelocity(100, percent);
    rightArm.setVelocity(100, percent);
    
@@ -126,20 +124,17 @@ int driver()
       */
       if (controller1.ButtonR1.pressing())
       {
-         bottomLeftAccumulator.spin(forward);
-         bottomRightAccumulator.spin(forward);
+         bottomAccumulator.spin(forward);
          topAccumulator.spin(forward);
       }
       else if (controller1.ButtonR2.pressing())
       {
-         bottomLeftAccumulator.spin(reverse);
-         bottomRightAccumulator.spin(reverse);
+         bottomAccumulator.spin(reverse);
          topAccumulator.spin(reverse);
       }
       else
       {
-         bottomLeftAccumulator.stop();
-         bottomRightAccumulator.stop();
+         bottomAccumulator.stop();
          topAccumulator.stop();
       }
 

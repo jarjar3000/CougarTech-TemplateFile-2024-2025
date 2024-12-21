@@ -40,7 +40,7 @@ class robot
 
         // Constants
         static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
-        static const double TURN_ERROR_TOLERANCE = 0.5; // in RADIANS!
+        static const double TURN_ERROR_TOLERANCE = 0.0174533; // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
         static const double TIME_STABLE_TO_BREAK = 10; // Measured in seconds
         static const double VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
@@ -54,7 +54,7 @@ class robot
         static const bool CALIBRATE = false;
         
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 50;
+        static const double MAX_DRIVE_SPEED = 100;
 
         /*
             This boolean MUST be changed and the program must be redownloaded based on the alliance color.
@@ -223,10 +223,9 @@ class robot
          * @param d The direction to spin the accumulator in
          * @param vel The velocity to spin the accumulator at
          */
-        static void spinAccumulator(vex::directionType d, double vel)
+        static void spinAccumulator(vex::directionType d, double vel = 100)
         {
-            bottomLeftAccumulator.spin(d, vel, percent);
-            bottomRightAccumulator.spin(d, vel, percent);
+            bottomAccumulator.spin(d, vel, percent);
             topAccumulator.spin(d, vel, percent);
         }
 
@@ -235,8 +234,7 @@ class robot
          */
         static void stopAccumulator()
         {
-            bottomLeftAccumulator.stop();
-            bottomRightAccumulator.stop();
+            bottomAccumulator.stop();
             topAccumulator.stop();
         }
 
@@ -337,31 +335,10 @@ class robot
 
         /**
          * @brief Function to turn to a heading, using the absolute robot heading.
-         * @param targetHeading The heading to turn to, in degrees.
+         * @param targetHeading The heading to turn to, in DEGREES.
          */
         static void turnToHeading(double targetHeading)
         {
-            // spinAccumulator(forward, 100);
-            // double error = targetHeading - heading; // Raw input
-            // // Normalize error to [-pi, pi] (-180, 180)
-            // error = atan2(sin(error), cos(error)); // No need to negate since direction is already handled
-
-            // drive(forward);
-            // if (error < 0)
-            // {
-            //     setLeftSpeed(-25);
-            //     setRightSpeed(25);
-            // }
-            // else
-            // {
-            //     setLeftSpeed(25);
-            //     setRightSpeed(-25);
-            // }
-            
-            // waitUntil(robot::heading > targetHeading);
-            // stopDrive();
-            // stopAccumulator();
-            
             // Make a local variable to store the heading in degrees (This shadows the other heading, which is in radians)
             // We fabs the heading here because it has already been calculated.
             double heading = fabs(robot::heading);
@@ -448,8 +425,13 @@ class robot
         static void turnToPoint(double targetX, double targetY)
         {
             // Use atan2 to calculate the heading
-            double targetHeading = -atan2(targetY - robot::y, targetX - robot::x);
-            turnToHeading(targetHeading);
+            double targetHeading = -atan2(targetY - robot::y, targetX - robot::x); // This outputs radians
+
+            // Only turn if we need to
+            if (fabs(robot::heading) >= TURN_ERROR_TOLERANCE)
+            {
+                turnToHeading(targetHeading * (M_PI / 180)); // This function takes in degrees
+            }
         }
 
         /**
@@ -460,19 +442,6 @@ class robot
          */
         static void goTo(double targetX, double targetY, bool driveReverse = false)
         {
-            // turnToPoint(targetX, targetY);
-            // drive(forward);
-            // setLeftSpeed(25);
-            // setRightSpeed(25);
-            // double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
-            // do
-            // {
-            //     double currentDistance = sqrt(pow(robot::x, 2) + pow(robot::y, 2));
-            //     double error = targetDistance - currentDistance;
-            // }
-            // while (fabs(error) > 2);
-            // stopDrive();
-            
             // Turn to the target point. If reverse is true, turn towards the negation of the point, so the robot drives in reverse
             if (driveReverse)
             {
@@ -486,11 +455,15 @@ class robot
             }
 
             // Initialize the PID variables
-            double error = 0, integral = 0, derivative = 0, prevError = heading;
-            double motorSpeed = 0;
+            double error = 0, integral = 0, derivative = 0, prevError = 0;
+            double strError = 0, strIntegral = 0, strDerivative = 0, strPrevError = 0;
+            double motorSpeed = 0, strMotorSpeed = 0;
 
             // Calculate the required distance
             double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
+
+            // Get the heading that is required to go to the point (the current heading)
+            double targetHeading = robot::heading;
             
             // Drive towards the target point
             do
@@ -509,14 +482,29 @@ class robot
                 derivative = (error - prevError) / PID_TIMESTEP;
                 prevError = error;
 
+                // Calculate an error, integral, and derivative for the heading to prevent deviation from the path
+                strError = targetHeading - robot::heading;
+
+                // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
+                if (!(motorSpeed >= 100 && (int) (-strError / fabs(strError)) == (int) (-motorSpeed / fabs(motorSpeed))))
+                {
+                    strIntegral += (strError * PID_TIMESTEP);
+                }
+
+                // Derivative
+                strDerivative = (strError - strPrevError) / PID_TIMESTEP;
+                strPrevError = strError;
+
                 // Change motor speed based on the drive direction
-                motorSpeed = error * turnKP + integral * turnKI + derivative * turnKD;
+                motorSpeed = (error * kP + integral * kI + derivative * kD);
+                strMotorSpeed = (strError * turnKP + strIntegral * turnKI + strDerivative * turnKD);
                 if (driveReverse)
                 {
                     motorSpeed *= -1;
                 } 
-                setLeftSpeed(motorSpeed);
-                setRightSpeed(motorSpeed);
+                // Account for the str drift; negative strErrors are to the left
+                setLeftSpeed(motorSpeed + strMotorSpeed);
+                setRightSpeed(motorSpeed - strMotorSpeed);
 
                 // Check for completion with error check and velocity check.
                 if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
@@ -561,7 +549,7 @@ class robot
                 // Print Drivetrain and intake temperatures
                 controller1.Screen.setCursor(2, 0);
                 double avgDriveTemp = (leftF.temperature(fahrenheit) + leftB.temperature(fahrenheit) + rightF.temperature(fahrenheit) + rightB.temperature(fahrenheit)) / 4.0;
-                double avgAccumulatorTemp = (topAccumulator.temperature(fahrenheit) + bottomLeftAccumulator.temperature(fahrenheit) + bottomRightAccumulator.temperature(fahrenheit)) / 3.0;
+                double avgAccumulatorTemp = (topAccumulator.temperature(fahrenheit) + bottomAccumulator.temperature(fahrenheit)) / 2.0;
                 controller1.Screen.print("D: %.2f°F. I: %.2f°F", avgDriveTemp, avgAccumulatorTemp);
                 
                 // Print Battery Percentage
