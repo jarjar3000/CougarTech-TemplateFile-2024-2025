@@ -273,7 +273,12 @@ class robot
                 robot::heading += deltaHeading; // Add to the running total heading
                 if (!CALIBRATE)
                 {
-                    robot::heading = fmod(robot::heading, (2 * M_PI)); // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
+                    // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
+                    robot::heading = fmod(robot::heading, (2 * M_PI)); 
+                    if (robot::heading < 0) 
+                    {
+                        heading += 2 * M_PI; // Make sure negative headings properly wrap into range
+                    }
                 }
 
                 // Calculate deltaFwd and deltaStrafe
@@ -284,20 +289,19 @@ class robot
                 double deltaX, deltaY;
                 if (fabs(deltaHeading) < 1e-3)
                 {
-                    deltaX = deltaFwd * cos(heading) + deltaStrafe * sin(heading);
-                    deltaY = deltaStrafe * cos(heading) - deltaFwd * sin(heading);
-                    robot::x += deltaX;
-                    robot::y += deltaY;
+                    deltaX = deltaFwd;
+                    deltaY = deltaStrafe;
                 }
                 // Arc now works within margins of error (The x seems to have a much larger error than the y)
                 else
                 {
                     deltaX = (deltaFwd / deltaHeading) * sin(deltaHeading) - (deltaStrafe / deltaHeading) * (1 - cos(deltaHeading));
                     deltaY = (deltaStrafe / deltaHeading) * sin(deltaHeading) - (deltaFwd / deltaHeading) * (1 - cos(deltaHeading));
-                    // Update x and y 
-                    robot::x += (deltaX * cos(heading) + deltaY * sin(heading));
-                    robot::y += (deltaY * cos(heading) - deltaX * sin(heading));
                 }
+
+                // Update x and y 
+                robot::x += (deltaX * cos(heading) + deltaY * sin(heading));
+                robot::y += (deltaY * cos(heading) - deltaX * sin(heading));
 
                 sumBack += deltaBack;
                                 
