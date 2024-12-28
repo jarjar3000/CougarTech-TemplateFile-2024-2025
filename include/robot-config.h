@@ -26,6 +26,9 @@ extern motor rightArm;
 extern inertial inertial1;
 extern optical optical1;
 extern limit limit1;
+extern rotation leftTracking;
+extern rotation rightTracking;
+extern rotation centerTracking;
 
 // Pneumatics
 extern digital_out clamp1;
@@ -34,7 +37,6 @@ extern digital_out hang1;
 extern digital_out hang2;
 extern digital_out tipper;
 extern digital_out ejector;
-extern encoder backWheel;
 extern timer failsafe;
 
 /**

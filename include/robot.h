@@ -252,9 +252,9 @@ class robot
             while(true)
             {
                 // Get and store encoder values
-                leftEncoder = leftF.position(degrees);
-                rightEncoder = rightF.position(degrees); 
-                backEncoder = backWheel.position(degrees) * -1;
+                leftEncoder = leftTracking.position(degrees);
+                rightEncoder = rightTracking.position(degrees); 
+                backEncoder = centerTracking.position(degrees) * -1;
 
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
@@ -579,10 +579,8 @@ class robot
             robot::heading = heading * (M_PI / 180); // Convert deg to rad
 
             // Reset all of the encoders
-            leftF.setPosition(0, degrees);
-            leftB.setPosition(0, degrees);
-            rightF.setPosition(0, degrees);
-            rightB.setPosition(0, degrees);
-            backWheel.setPosition(0, degrees);
+            leftTracking.setPosition(0, degrees);
+            rightTracking.setPosition(0, degrees);
+            centerTracking.setPosition(0, degrees);
         }
 };

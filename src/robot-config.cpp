@@ -37,16 +37,19 @@ motor rightF = motor(PORT14, ratio18_1, false);
   Accumulator
 */
 motor bottomAccumulator = motor(PORT19, ratio6_1, true);
-motor topAccumulator = motor(PORT10, ratio18_1, true);
+motor topAccumulator = motor(PORT10, ratio18_1, false);
 
 /*
   Arm motors
 */
-motor rightArm = motor(PORT15, ratio36_1, false);
+motor rightArm = motor(PORT9, ratio36_1, false);
 
 //Sensors
 inertial inertial1 = inertial(PORT18);
 optical optical1 = optical(PORT6);
+rotation leftTracking = rotation(PORT1, false);
+rotation rightTracking = rotation(PORT2, false);
+rotation centerTracking = rotation(PORT3, false);
 
 // Three-Wires
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
@@ -55,7 +58,6 @@ digital_out hang1 = digital_out(Brain.ThreeWirePort.C);
 digital_out hang2 = digital_out(Brain.ThreeWirePort.D);
 digital_out tipper = digital_out(Brain.ThreeWirePort.E);
 limit limit1 = limit(Brain.ThreeWirePort.F);
-encoder backWheel = encoder(Brain.ThreeWirePort.G);
 
 timer failsafe = timer();
 
