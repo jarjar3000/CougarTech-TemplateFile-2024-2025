@@ -17,10 +17,10 @@ class robot
         static inline double heading = 0; // IN RADIANS!
 
         // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 12.30394713; // IN INCHES!
+        static const double L_R_WHEEL_DISTANCE = 5.25; // IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 3.160259389; // IN INCHES! 5.25
+        static const double BACK_WHEEL_DISTANCE = 2; // IN INCHES! 5.25
 
         // PID Variables
         static const double kP = 3;
@@ -45,7 +45,7 @@ class robot
         static const double TIME_STABLE_TO_BREAK = 10; // Measured in seconds
         static const double VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
 
-        static const double WHEEL_DIAMETER = 3.25; // in inches
+        static const double WHEEL_DIAMETER = 2; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
         static const double ENCODER_TICKS_PER_REVOLUTION = 360; // Speed motor is 300, Normal is 900, Torque is 1800
 
