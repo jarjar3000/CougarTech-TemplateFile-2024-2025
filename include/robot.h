@@ -2,6 +2,7 @@ using namespace vex;
 
 #include "robot-config.h"
 #include "vex.h"
+#include "matrix.h"
 
 /**
  * A class that represents the robot.
