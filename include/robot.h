@@ -23,6 +23,9 @@ class robot
         // The distance between the back tracking wheel and the center of the robot
         static const double BACK_WHEEL_DISTANCE = 2; // IN INCHES! 5.25
 
+        // Complementary filter tuning value, between 0 and 1. Values closer to 1 represents a greater trust in the odometry
+        static const double ALPHA = 0.95; 
+
         // PID Variables
         static const double kP = 3;
         static const double kI = 2;
@@ -255,7 +258,7 @@ class robot
                 // Get and store encoder values
                 leftEncoder = leftTracking.position(degrees);
                 rightEncoder = rightTracking.position(degrees); 
-                backEncoder = centerTracking.position(degrees) * -1;
+                backEncoder = centerTracking.position(degrees);
 
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
@@ -280,6 +283,8 @@ class robot
                     {
                         heading += 2 * M_PI; // Make sure negative headings properly wrap into range
                     }
+                    // Use the complementary filter to merge the odom and inertial
+                    robot::heading = (robot::heading * ALPHA) + (1 - ALPHA) * (inertial1.heading(degrees) * (M_PI / 180));
                 }
 
                 // Calculate deltaFwd and deltaStrafe
@@ -583,5 +588,6 @@ class robot
             leftTracking.setPosition(0, degrees);
             rightTracking.setPosition(0, degrees);
             centerTracking.setPosition(0, degrees);
+            inertial1.setHeading(heading, degrees);
         }
 };
