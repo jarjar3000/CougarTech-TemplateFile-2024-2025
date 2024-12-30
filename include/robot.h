@@ -297,7 +297,7 @@ class robot
             positionCalculationTimer.clear();
             
             // Calculate the first few points for LIP
-            for (int i = DEGREE_OF_LIP_POLYNOMIAL - 1; i >= 0; i--)
+            while(true)
             {
                 // Get and store encoder values
                 leftEncoder = leftTracking.position(degrees);
@@ -360,12 +360,6 @@ class robot
                 prevRightEncoder = rightEncoder;
                 prevBackEncoder = backEncoder;
 
-                // Save LIP data
-                prevTime[i] = positionCalculationTimer.time(seconds);
-                prevDeltaX[i] = deltaX;
-                prevDeltaY[i] = deltaY;
-                prevHeading[i] = robot::heading;
-
                 // Printing data to the screen
                 if (PRINT_DATA)
                 {
@@ -387,39 +381,6 @@ class robot
 
                 // Wait to not consume all of the CPU's resources
                 wait(10, msec); // Refresh rate of 100Hz
-            }
-
-            // LIP Odometry Calculation
-            while (true)
-            {
-                double currTime = positionCalculationTimer.time(seconds);
-
-                // Calculate heading
-                robot::heading = calculateLIP(prevTime, prevHeading, currTime);
-
-                // Calculate deltaX and deltaY
-                double deltaX = calculateLIP(prevTime, prevDeltaX, currTime);
-                double deltaY = calculateLIP(prevTime, prevDeltaY, currTime);
-
-                // Update X and Y
-                robot::x += (deltaX * cos(heading) + deltaY * sin(heading));
-                robot::y += (deltaY * cos(heading) - deltaX * sin(heading));
-
-                // Update LIP data for next iteration
-                for (int i = DEGREE_OF_LIP_POLYNOMIAL - 1; i > 0; i--)
-                {
-                    prevTime[i] = prevTime[i - 1];
-                    prevDeltaX[i] = prevDeltaX[i - 1];
-                    prevDeltaY[i] = prevDeltaY[i - 1];
-                    prevHeading[i] = prevHeading[i - 1];
-                }
-                prevTime[0] = currTime;
-                prevDeltaX[0] = deltaX;
-                prevDeltaY[0] = deltaY;
-                prevHeading[0] = robot::heading;
-
-                // Refresh rate of 100hz
-                wait(10, msec);
             }
 
             // If a value is return, something bad happened
