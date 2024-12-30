@@ -53,6 +53,40 @@ class robot
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
         static const double ENCODER_TICKS_PER_REVOLUTION = 360; // Speed motor is 300, Normal is 900, Torque is 1800
 
+        // Degree of LIP calculations
+        static const int DEGREE_OF_LIP_POLYNOMIAL = 3;
+
+        /**
+         * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
+         * @param x An array holding the x values of the points
+         * @param y An array holding the y values of the points
+         * @param input The value to put into the LIP
+         * @return The Y value (output) of the given X (input)
+         */
+        static double calculateLIP(const double x[], const double y[], double input)
+        {
+            // Make a variable to hold the output
+            double output = 0;
+
+            // Sum of capital PI (products)
+            for (int i = 0; i < DEGREE_OF_LIP_POLYNOMIAL; i++)
+            {
+                // Find polynomial that passes through one point and is 0 at others
+                double term = y[i];
+                for (int j = 0; j < DEGREE_OF_LIP_POLYNOMIAL; j++)
+                {
+                    if (j != i)
+                    {
+                        term *= (input - x[i]) / (x[j] - x[i]);
+                    }
+                }
+                // Add result of repeated multiplication
+                output += term;
+            }
+
+            return output;
+        }
+
     public:
         // Is the robot calibrating?
         static const bool CALIBRATE = false;
@@ -253,6 +287,15 @@ class robot
             double leftEncoder = 0, rightEncoder = 0, backEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double sumBack = 0;
+
+            // Previous values used for LIP calculation
+            double prevTime[DEGREE_OF_LIP_POLYNOMIAL];
+            double prevDeltaX[DEGREE_OF_LIP_POLYNOMIAL];
+            double prevDeltaY[DEGREE_OF_LIP_POLYNOMIAL];
+            double prevHeading[DEGREE_OF_LIP_POLYNOMIAL];
+
+            positionCalculationTimer.clear();
+            
             while(true)
             {
                 // Get and store encoder values

@@ -60,6 +60,7 @@ digital_out tipper = digital_out(Brain.ThreeWirePort.E);
 limit limit1 = limit(Brain.ThreeWirePort.F);
 
 timer failsafe = timer();
+timer positionCalculationTimer = timer();
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
