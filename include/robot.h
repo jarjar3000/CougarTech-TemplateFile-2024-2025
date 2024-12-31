@@ -24,7 +24,7 @@ class robot
         static const double BACK_WHEEL_DISTANCE = 2; // IN INCHES! 5.25
 
         // Complementary filter tuning value, between 0 and 1. Values closer to 1 represents a greater trust in the odometry
-        static const double ALPHA = 0.95; 
+        static const double ALPHA = 0.6; 
 
         // PID Variables
         static const double kP = 3;
