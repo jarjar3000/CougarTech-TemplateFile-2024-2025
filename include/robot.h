@@ -300,7 +300,6 @@ class robot
             double odomUncertainty = 0.1; // Tune this, lower represents greater trust
             double inertialUncertainty = 0.1; // lower is greater trust
             double stateUncertainty = 1; // lower is greater trust
-            double odomPrediction = robot::heading;
             
             // Calculate the first few points for LIP
             while(true)
@@ -323,25 +322,42 @@ class robot
                 // Calculate deltaHeading
                 double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
 
-                // Update heading and put it back in range 0-360
-                odomPrediction += deltaHeading; // Add to the running total heading
-                if (!CALIBRATE)
+                // Special version for calibration to tune odometry wheel distances
+                if (CALIBRATE)
                 {
-                    // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
-                    odomPrediction = fmod(odomPrediction, (2 * M_PI)); 
-                    if (odomPrediction < 0) 
+                    robot::heading += deltaHeading;
+                }
+                // Kalman Filter
+                else
+                {
+                    // Predict next heading with odometry
+                    robot::heading += deltaHeading;
+
+                    // Normalize the heading
+                    robot::heading = fmod(robot::heading, (2 * M_PI)); 
+                    if (robot::heading < 0) 
                     {
-                        odomPrediction += 2 * M_PI; // Make sure negative headings properly wrap into range
+                        heading += 2 * M_PI; // Make sure negative headings properly wrap into range
                     }
 
+                    // Predict state uncertainty
+                    stateUncertainty += odomUncertainty;
+                    
                     // Calculate Kalman Gain
                     double kalmanGain = stateUncertainty / (stateUncertainty + inertialUncertainty);
-                    // stateUncertainty += odomUncertainty; // Might be needed to add uncertainty to overall state
 
-                    // Estimate the heading
-                    robot::heading += kalmanGain * ((inertial1.heading(degrees) * (M_PI/180)) - odomPrediction);
+                    // Merge inertial sensor data
+                    double inertialHeading = inertial1.heading(degrees) * (M_PI / 180);
+                    robot::heading += kalmanGain * (inertialHeading - robot::heading);
 
-                    // Calculate new uncertainty in state
+                    // Normalize the heading again
+                    robot::heading = fmod(robot::heading, (2 * M_PI)); 
+                    if (robot::heading < 0) 
+                    {
+                        heading += 2 * M_PI; // Make sure negative headings properly wrap into range
+                    }
+
+                    // Update state uncertainty
                     stateUncertainty *= (1 - kalmanGain);
                 }
 
