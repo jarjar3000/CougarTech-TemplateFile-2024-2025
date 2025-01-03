@@ -56,6 +56,9 @@ class robot
         // Degree of LIP calculations
         static const int DEGREE_OF_LIP_POLYNOMIAL = 3;
 
+        // Toggle of if fish mech is active
+        static inline bool armActive = false;
+
         /**
          * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
          * @param x An array holding the x values of the points
@@ -89,10 +92,11 @@ class robot
 
     public:
         // Is the robot calibrating?
-        static const bool CALIBRATE = false;
+        static const bool CALIBRATE = true;
         
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 100;
+        static const double MAX_DRIVE_SPEED = 30;
+        static const double MAX_TOP_ACCUMULATOR_SPEED = 100;
 
         /*
             This boolean MUST be changed and the program must be redownloaded based on the alliance color.
@@ -101,6 +105,10 @@ class robot
 
         // Boolean to dictate if data should be printed to the screen (not via the thread)
         static inline bool PRINT_DATA = false;
+
+        // Blue and Red thresholds
+        static const double OPTICAL_BLUE_HUE = 200;
+        static const double OPTICAL_RED_HUE = 50;
 
         /**
          * @brief Function to set speed of left side of the drive
@@ -212,15 +220,15 @@ class robot
         /**
          * @brief Function to toggle alliance color. Default is red (true)
          */
-        static void changeAllianceColor()
+        static void armStopper()
         {
-            if (allianceIsRed)
+            if (armActive)
             {
-                allianceIsRed = false;
+                armActive = false;
             }
             else
             {
-                allianceIsRed = true;
+                armActive = true;
             }
         }
 
@@ -234,8 +242,9 @@ class robot
             while (1)
             {
                 // Search for the color opposite the alliance color
-                if ((optical1.hue() >= 100 && allianceIsRed) || (optical1.color() == red && !allianceIsRed))
+                if (((optical1.hue() >= OPTICAL_BLUE_HUE && allianceIsRed) || (optical1.hue() <= OPTICAL_RED_HUE && !allianceIsRed)) && !armActive)
                 {
+                    controller1.rumble(".");
                     waitUntil(limit1.pressing());
 
                     controller1.rumble(".");
@@ -248,12 +257,33 @@ class robot
                     // Wait until the ring ejects
                     wait(200, msec);
 
-                    topAccumulator.setVelocity(80, percent);
+                    topAccumulator.setVelocity(MAX_TOP_ACCUMULATOR_SPEED, percent);
                 }
                 // Sleep thread to not consume all of CPU resources
                 wait(20, msec);
             }
             return 0;
+        }
+
+        /**
+         * @brief Thread function to stop rings at the right place for the arm at the toggle of a button
+         */
+        static int armRingStop()
+        {
+            while (1)
+            {
+                if (armActive && limit1.pressing())
+                {
+                    controller1.rumble(".");
+                    topAccumulator.setVelocity(0, percent);
+                }
+                else
+                {
+                    topAccumulator.setVelocity(MAX_TOP_ACCUMULATOR_SPEED, percent);
+                    armActive = false;
+                }
+                wait(20, msec);
+            }
         }
 
         /**
@@ -298,7 +328,7 @@ class robot
 
             // Kalman Filter variables
             double odomUncertainty = 0.1; // Tune this, lower represents greater trust
-            double inertialUncertainty = 0.1; // lower is greater trust
+            double inertialUncertainty = 5; // lower is greater trust
             double stateUncertainty = 1; // lower is greater trust
             
             // Calculate the first few points for LIP
@@ -326,6 +356,19 @@ class robot
                 if (CALIBRATE)
                 {
                     robot::heading += deltaHeading;
+                }
+                // Odometry Only
+                else if (false)
+                {
+                    // Add to running total
+                    robot::heading += deltaHeading;
+
+                    // Normalize the heading
+                    robot::heading = fmod(robot::heading, (2 * M_PI)); 
+                    if (robot::heading < 0) 
+                    {
+                        heading += 2 * M_PI; // Make sure negative headings properly wrap into range
+                    }
                 }
                 // Kalman Filter
                 else
@@ -627,8 +670,18 @@ class robot
                 // Set the cursor for printing
                 controller1.Screen.setCursor(1, 0);
 
+                char allianceColor;
+                if (armActive)
+                {
+                    allianceColor = 'Y';
+                }
+                else
+                {
+                    allianceColor = 'N';
+                }
+
                 // Print X, Y, and Heading Values
-                controller1.Screen.print("(%.2f, %.2f) %.2f°", x, y, heading * (180/M_PI));
+                controller1.Screen.print("(%.2f, %.2f) %.2f°, %c", x, y, heading * (180/M_PI), allianceColor);
 
                 // Print Drivetrain and intake temperatures
                 controller1.Screen.setCursor(2, 0);

@@ -39,6 +39,7 @@ int driver()
    controller1.ButtonX.pressed(robot::clamp);
    controller1.ButtonUp.pressed(robot::hang);
    controller1.ButtonLeft.pressed(robot::toggleTipper);
+   controller1.ButtonY.pressed(robot::armStopper);
 
    // Set the drive motors to coast
    leftF.setStopping(coast);
@@ -53,7 +54,7 @@ int driver()
 
    // Set the velocity of the non-drive motors (add non-drive motors as necessary)
    bottomAccumulator.setVelocity(100, percent);
-   topAccumulator.setVelocity(100, percent);
+   topAccumulator.setVelocity(robot::MAX_TOP_ACCUMULATOR_SPEED, percent);
    rightArm.setVelocity(100, percent);
    
    while (true)
@@ -200,6 +201,17 @@ int main()
    // Set the starting position
    robot::init(0, 0, 0);
 
+   // Set the alliance color
+   wait(200, msec);
+   if (optical1.hue() <= robot::OPTICAL_RED_HUE)
+   {
+      robot::allianceIsRed = true;
+   }
+   else
+   {
+      robot::allianceIsRed = false;
+   }
+
    // Start the thread
    thread ejectThread = thread(robot::eject);
    optical1.setLight(ledState::on);
@@ -209,6 +221,9 @@ int main()
 
    // Start the printing thread
    thread controllerInfo = thread(robot::printInfoToController);
+
+   // Start the arm thread
+   thread arm = thread(robot::armRingStop);
 
    // Prevent main from exiting with an infinite loop.
    while (true)

@@ -31,6 +31,7 @@ extern rotation rightTracking;
 extern rotation centerTracking;
 
 // Pneumatics
+extern triport expander1;
 extern digital_out clamp1;
 extern digital_out clamp2;
 extern digital_out hang1;

@@ -46,18 +46,19 @@ motor rightArm = motor(PORT9, ratio36_1, false);
 
 //Sensors
 inertial inertial1 = inertial(PORT18);
-optical optical1 = optical(PORT6);
+optical optical1 = optical(PORT7);
 rotation leftTracking = rotation(PORT4, false);
 rotation rightTracking = rotation(PORT2, true);
 rotation centerTracking = rotation(PORT3, false);
 
 // Three-Wires
+triport expander1 = triport(PORT6); 
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
 digital_out clamp2 = digital_out(Brain.ThreeWirePort.B);
 digital_out hang1 = digital_out(Brain.ThreeWirePort.C);
 digital_out hang2 = digital_out(Brain.ThreeWirePort.D);
 digital_out tipper = digital_out(Brain.ThreeWirePort.E);
-limit limit1 = limit(Brain.ThreeWirePort.F);
+limit limit1 = limit(expander1.A);
 
 timer failsafe = timer();
 timer positionCalculationTimer = timer();
