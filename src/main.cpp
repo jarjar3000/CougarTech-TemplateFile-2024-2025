@@ -55,7 +55,7 @@ int driver()
    // Set the velocity of the non-drive motors (add non-drive motors as necessary)
    bottomAccumulator.setVelocity(100, percent);
    topAccumulator.setVelocity(robot::MAX_TOP_ACCUMULATOR_SPEED, percent);
-   rightArm.setVelocity(100, percent);
+   rightArm.setVelocity(60, percent);
    
    while (true)
    {
@@ -125,6 +125,7 @@ int driver()
       */
       if (controller1.ButtonR1.pressing())
       {
+         
          bottomAccumulator.spin(forward);
          topAccumulator.spin(forward);
       }

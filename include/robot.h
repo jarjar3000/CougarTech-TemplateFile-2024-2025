@@ -56,9 +56,6 @@ class robot
         // Degree of LIP calculations
         static const int DEGREE_OF_LIP_POLYNOMIAL = 3;
 
-        // Toggle of if fish mech is active
-        static inline bool armActive = false;
-
         /**
          * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
          * @param x An array holding the x values of the points
@@ -109,6 +106,9 @@ class robot
         // Blue and Red thresholds
         static const double OPTICAL_BLUE_HUE = 200;
         static const double OPTICAL_RED_HUE = 50;
+
+        // Toggle of if fish mech is active
+        static inline bool armActive = false;
 
         /**
          * @brief Function to set speed of left side of the drive
@@ -224,10 +224,12 @@ class robot
         {
             if (armActive)
             {
+                controller1.rumble(".");
                 armActive = false;
             }
             else
             {
+                controller1.rumble("...");
                 armActive = true;
             }
         }
@@ -274,11 +276,10 @@ class robot
             {
                 if (armActive && limit1.pressing())
                 {
-                    controller1.rumble(".");
+                    controller1.rumble("......");
                     topAccumulator.setVelocity(0, percent);
-                }
-                else
-                {
+
+                    waitUntil(!armActive || controller1.ButtonL1.pressing() || controller1.ButtonL2.pressing());
                     topAccumulator.setVelocity(MAX_TOP_ACCUMULATOR_SPEED, percent);
                     armActive = false;
                 }
@@ -681,7 +682,7 @@ class robot
                 }
 
                 // Print X, Y, and Heading Values
-                controller1.Screen.print("(%.2f, %.2f) %.2f°, %c", x, y, heading * (180/M_PI), allianceColor);
+                controller1.Screen.print("(%.2f, %.2f) %.2f°", x, y, heading * (180/M_PI));
 
                 // Print Drivetrain and intake temperatures
                 controller1.Screen.setCursor(2, 0);
@@ -691,7 +692,7 @@ class robot
                 
                 // Print Battery Percentage
                 controller1.Screen.setCursor(3, 0);
-                controller1.Screen.print("Battery: %d percent", Brain.Battery.capacity(percent));
+                controller1.Screen.print("Battery: %d, Arm: %c", Brain.Battery.capacity(percent), allianceColor);
                 
                 wait(100, msec);
             }
