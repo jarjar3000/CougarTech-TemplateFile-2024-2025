@@ -2,6 +2,7 @@ using namespace vex;
 
 #include "robot-config.h"
 #include "vex.h"
+#include "matrix.h"
 
 /**
  * A class that represents the robot.
@@ -21,6 +22,9 @@ class robot
 
         // The distance between the back tracking wheel and the center of the robot
         static const double BACK_WHEEL_DISTANCE = 2; // IN INCHES! 5.25
+
+        // Complementary filter tuning value, between 0 and 1. Values closer to 1 represents a greater trust in the odometry
+        static const double ALPHA = 0.6; 
 
         // PID Variables
         static const double kP = 3;
@@ -48,6 +52,40 @@ class robot
         static const double WHEEL_DIAMETER = 2; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
         static const double ENCODER_TICKS_PER_REVOLUTION = 360; // Speed motor is 300, Normal is 900, Torque is 1800
+
+        // Degree of LIP calculations
+        static const int DEGREE_OF_LIP_POLYNOMIAL = 3;
+
+        /**
+         * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
+         * @param x An array holding the x values of the points
+         * @param y An array holding the y values of the points
+         * @param input The value to put into the LIP
+         * @return The Y value (output) of the given X (input)
+         */
+        static double calculateLIP(const double x[], const double y[], double input)
+        {
+            // Make a variable to hold the output
+            double output = 0;
+
+            // Sum of capital PI (products)
+            for (int i = 0; i < DEGREE_OF_LIP_POLYNOMIAL; i++)
+            {
+                // Find polynomial that passes through one point and is 0 at others
+                double term = y[i];
+                for (int j = 0; j < DEGREE_OF_LIP_POLYNOMIAL; j++)
+                {
+                    if (j != i)
+                    {
+                        term *= (input - x[i]) / (x[j] - x[i]);
+                    }
+                }
+                // Add result of repeated multiplication
+                output += term;
+            }
+
+            return output;
+        }
 
     public:
         // Is the robot calibrating?
@@ -249,12 +287,27 @@ class robot
             double leftEncoder = 0, rightEncoder = 0, backEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0; // These variables can start at 0 because the encoders start at 0 in the beginning
             double sumBack = 0;
+
+            // Previous values used for LIP calculation
+            double prevTime[DEGREE_OF_LIP_POLYNOMIAL];
+            double prevDeltaX[DEGREE_OF_LIP_POLYNOMIAL];
+            double prevDeltaY[DEGREE_OF_LIP_POLYNOMIAL];
+            double prevHeading[DEGREE_OF_LIP_POLYNOMIAL];
+
+            positionCalculationTimer.clear();
+
+            // Kalman Filter variables
+            double odomUncertainty = 0.1; // Tune this, lower represents greater trust
+            double inertialUncertainty = 0.1; // lower is greater trust
+            double stateUncertainty = 1; // lower is greater trust
+            
+            // Calculate the first few points for LIP
             while(true)
             {
                 // Get and store encoder values
                 leftEncoder = leftTracking.position(degrees);
                 rightEncoder = rightTracking.position(degrees); 
-                backEncoder = centerTracking.position(degrees) * -1;
+                backEncoder = centerTracking.position(degrees);
 
                 // Get the robot's current heading using the encoders
                 double deltaLeft = leftEncoder - prevLeftEncoder;
@@ -269,16 +322,43 @@ class robot
                 // Calculate deltaHeading
                 double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
 
-                // Update heading and put it back in range 0-360
-                robot::heading += deltaHeading; // Add to the running total heading
-                if (!CALIBRATE)
+                // Special version for calibration to tune odometry wheel distances
+                if (CALIBRATE)
                 {
-                    // Ensure heading wraps from 0-360 degrees (which is 0-2pi radians)
+                    robot::heading += deltaHeading;
+                }
+                // Kalman Filter
+                else
+                {
+                    // Predict next heading with odometry
+                    robot::heading += deltaHeading;
+
+                    // Normalize the heading
                     robot::heading = fmod(robot::heading, (2 * M_PI)); 
                     if (robot::heading < 0) 
                     {
                         heading += 2 * M_PI; // Make sure negative headings properly wrap into range
                     }
+
+                    // Predict state uncertainty
+                    stateUncertainty += odomUncertainty;
+                    
+                    // Calculate Kalman Gain
+                    double kalmanGain = stateUncertainty / (stateUncertainty + inertialUncertainty);
+
+                    // Merge inertial sensor data
+                    double inertialHeading = inertial1.heading(degrees) * (M_PI / 180);
+                    robot::heading += kalmanGain * (inertialHeading - robot::heading);
+
+                    // Normalize the heading again
+                    robot::heading = fmod(robot::heading, (2 * M_PI)); 
+                    if (robot::heading < 0) 
+                    {
+                        heading += 2 * M_PI; // Make sure negative headings properly wrap into range
+                    }
+
+                    // Update state uncertainty
+                    stateUncertainty *= (1 - kalmanGain);
                 }
 
                 // Calculate deltaFwd and deltaStrafe
@@ -582,5 +662,6 @@ class robot
             leftTracking.setPosition(0, degrees);
             rightTracking.setPosition(0, degrees);
             centerTracking.setPosition(0, degrees);
+            inertial1.setHeading(heading, degrees);
         }
 };

@@ -38,6 +38,7 @@ extern digital_out hang2;
 extern digital_out tipper;
 extern digital_out ejector;
 extern timer failsafe;
+extern timer positionCalculationTimer;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

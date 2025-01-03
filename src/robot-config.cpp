@@ -47,7 +47,7 @@ motor rightArm = motor(PORT9, ratio36_1, false);
 //Sensors
 inertial inertial1 = inertial(PORT18);
 optical optical1 = optical(PORT6);
-rotation leftTracking = rotation(PORT1, false);
+rotation leftTracking = rotation(PORT4, false);
 rotation rightTracking = rotation(PORT2, true);
 rotation centerTracking = rotation(PORT3, false);
 
@@ -60,6 +60,7 @@ digital_out tipper = digital_out(Brain.ThreeWirePort.E);
 limit limit1 = limit(Brain.ThreeWirePort.F);
 
 timer failsafe = timer();
+timer positionCalculationTimer = timer();
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
