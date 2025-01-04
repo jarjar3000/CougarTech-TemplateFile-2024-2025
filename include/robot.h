@@ -89,10 +89,10 @@ class robot
 
     public:
         // Is the robot calibrating?
-        static const bool CALIBRATE = true;
+        static const bool CALIBRATE = false;
         
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 30;
+        static const double MAX_DRIVE_SPEED = 100;
         static const double MAX_TOP_ACCUMULATOR_SPEED = 100;
 
         /*
