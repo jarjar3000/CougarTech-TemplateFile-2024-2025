@@ -284,7 +284,7 @@ class robot
         {
             while (1)
             {
-                if (armActive && limit1.pressing())
+                if (armActive && distance1.objectDistance(mm) <= 15)
                 {
                     controller1.rumble("......");
                     topAccumulator.setVelocity(0, percent);

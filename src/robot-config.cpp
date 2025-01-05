@@ -60,6 +60,7 @@ digital_out hang1 = digital_out(Brain.ThreeWirePort.C);
 digital_out hang2 = digital_out(Brain.ThreeWirePort.D);
 digital_out tipper = digital_out(Brain.ThreeWirePort.E);
 limit limit1 = limit(expander1.A);
+distance distance1 = distance(PORT8);
 
 timer failsafe = timer();
 timer positionCalculationTimer = timer();

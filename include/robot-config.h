@@ -30,6 +30,7 @@ extern limit limit1;
 extern rotation leftTracking;
 extern rotation rightTracking;
 extern rotation centerTracking;
+extern distance distance1;
 
 // Pneumatics
 extern triport expander1;
