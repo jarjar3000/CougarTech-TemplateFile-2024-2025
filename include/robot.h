@@ -3,6 +3,7 @@ using namespace vex;
 #include "robot-config.h"
 #include "vex.h"
 #include "matrix.h"
+#include <deque>
 
 /**
  * A class that represents the robot.
@@ -16,6 +17,15 @@ class robot
         static inline double x = 0; // IN INCHES!
         static inline double y = 0; // IN INCHES!
         static inline double heading = 0; // IN RADIANS!
+
+        // Struct to represent an (x,y) point
+        struct Point
+        {
+            double x, y;
+        };
+
+        // Lookahead distance for pure pursiut
+        static const double LOOKAHEAD_DISTANCE = 5; // IN INCHES!
 
         // The distance between the right and left tracking wheels
         static const double L_R_WHEEL_DISTANCE = 5.25; // IN INCHES!
@@ -294,7 +304,8 @@ class robot
          */
         static void spinAccumulator(vex::directionType d, double vel = 100)
         {
-            bottomAccumulator.spin(d, vel, percent);
+            bottomAccumulatorL.spin(d, vel, percent);
+            bottomAccumulatorR.spin(d, vel, percent);
             topAccumulator.spin(d, vel, percent);
         }
 
@@ -303,7 +314,8 @@ class robot
          */
         static void stopAccumulator()
         {
-            bottomAccumulator.stop();
+            bottomAccumulatorL.stop();
+            bottomAccumulatorR.stop();
             topAccumulator.stop();
         }
 
@@ -687,7 +699,7 @@ class robot
                 // Print Drivetrain and intake temperatures
                 controller1.Screen.setCursor(2, 0);
                 double avgDriveTemp = (leftF.temperature(fahrenheit) + leftB.temperature(fahrenheit) + rightF.temperature(fahrenheit) + rightB.temperature(fahrenheit)) / 4.0;
-                double avgAccumulatorTemp = (topAccumulator.temperature(fahrenheit) + bottomAccumulator.temperature(fahrenheit)) / 2.0;
+                double avgAccumulatorTemp = (topAccumulator.temperature(fahrenheit) + bottomAccumulatorL.temperature(fahrenheit)) / 2.0;
                 controller1.Screen.print("D: %.2f°F. I: %.2f°F", avgDriveTemp, avgAccumulatorTemp);
                 
                 // Print Battery Percentage
@@ -717,5 +729,14 @@ class robot
             rightTracking.setPosition(0, degrees);
             centerTracking.setPosition(0, degrees);
             inertial1.setHeading(heading, degrees);
+        }
+
+        /**
+         * @brief Function to follow a set of points
+         * @param points The list of points to follow
+         */
+        static void followPoints(std::deque<Point> points)
+        {
+            
         }
 };
