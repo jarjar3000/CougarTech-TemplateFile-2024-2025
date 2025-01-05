@@ -228,7 +228,7 @@ class robot
         }
 
         /**
-         * @brief Function to toggle alliance color. Default is red (true)
+         * @brief Function to toggle arm mode
          */
         static void armStopper()
         {
@@ -241,6 +241,23 @@ class robot
             {
                 controller1.rumble("...");
                 armActive = true;
+            }
+        }
+
+        /**
+         * @brief Function to toggle alliance color.
+         */
+        static void toggleAllianceColor()
+        {
+            if (robot::allianceIsRed)
+            {
+                controller1.rumble("....");
+                robot::allianceIsRed = false;
+            }
+            else
+            {
+                controller1.rumble("....");
+                robot::allianceIsRed = true;
             }
         }
 
@@ -284,7 +301,7 @@ class robot
         {
             while (1)
             {
-                if (armActive && distance1.objectDistance(mm) <= 15)
+                if (armActive && distance1.objectDistance(mm) <= 12)
                 {
                     controller1.rumble("......");
                     topAccumulator.setVelocity(0, percent);
@@ -683,14 +700,24 @@ class robot
                 // Set the cursor for printing
                 controller1.Screen.setCursor(1, 0);
 
-                char allianceColor;
+                char armStatus;
                 if (armActive)
                 {
-                    allianceColor = 'Y';
+                    armStatus = 'Y';
                 }
                 else
                 {
-                    allianceColor = 'N';
+                    armStatus = 'N';
+                }
+
+                char allianceColor;
+                if (allianceIsRed)
+                {
+                    allianceColor = 'R';
+                }
+                else
+                {
+                    allianceColor = 'B';
                 }
 
                 // Print X, Y, and Heading Values
@@ -704,7 +731,7 @@ class robot
                 
                 // Print Battery Percentage
                 controller1.Screen.setCursor(3, 0);
-                controller1.Screen.print("Battery: %d, Arm: %c", Brain.Battery.capacity(percent), allianceColor);
+                controller1.Screen.print("By: %d, Arm: %c, AC: %c", Brain.Battery.capacity(percent), armStatus, allianceColor);
                 
                 wait(100, msec);
             }

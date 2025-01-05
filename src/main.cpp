@@ -40,6 +40,7 @@ int driver()
    controller1.ButtonUp.pressed(robot::hang);
    controller1.ButtonLeft.pressed(robot::toggleTipper);
    controller1.ButtonY.pressed(robot::armStopper);
+   controller1.ButtonDown.pressed(robot::toggleAllianceColor);
 
    // Set the drive motors to coast
    leftF.setStopping(coast);
