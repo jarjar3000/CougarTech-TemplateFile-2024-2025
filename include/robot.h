@@ -815,24 +815,62 @@ class robot
                         return num >= min && num <= max;
                     };
 
+                    // Booleans if solutions are valid
+                    bool solution1Valid = isInRange(solution1.x, minX, maxX) && isInRange(solution1.y, minY, maxY);
+                    bool solution2Valid = isInRange(solution2.x, minX, maxX) && isInRange(solution2.y, minY, maxY);
+
                     // If any solution is valid
-                    if ((isInRange(solution1.x, minX, maxX) && isInRange(solution1.y, minY, maxY)) || (isInRange(solution2.x, minX, maxX) && isInRange(solution2.y, minY, maxY)))
+                    if (solution1Valid || solution2Valid)
                     {
-                        // Check which solution is valid
-                        
+                        // Euclidean Distance calculator function
+                        auto getDistance = [](Point pt1, Point pt2)
+                        {
+                            return sqrt(pow(pt2.x - pt1.x, 2) + pow(pt2.y - pt1.y, 2));
+                        };
+
+                        // If both solutions are valid, check which one is better and set that to be the goal point
+                        if (solution1Valid && solution2Valid)
+                        {
+                            // Whichever point is closer to next point in path is the goal point
+                            if (getDistance(solution1, points[2]) < getDistance({robot::x, robot::y}, points[2]))
+                            {
+                                // Goal is point 1
+                            }
+                            else
+                            {
+                                // Goal is point 2
+                            }
+                        }
+                        // If not, the one in range is the goal point
+                        else
+                        {
+                            if (solution1Valid)
+                            {
+                                // Goal is point 1
+                            }
+                            else
+                            {
+                                // Goal is point 2
+                            }
+                        }
+
+                        // If the goal point is closer to the next path point than the robot's distance from the next path point, then we're in business
+
+                        // Otherwise, the robot probably skipped points in its pathfollowing, keep searching
+
+                    }
+                    // Otherwise
+                    else
+                    {
+                        // Goal is the last goal point
                     }
                 }
 
-                // If intersection found
-                    // If robot at end of path
-                        // Move to point function (get heading right, etc)
-                        // break
-                    
-                    // Otherwise
-                        // Go towards the point found
+                // We have the goal point, now move to it
+
+                // PID to calculate angular velocity (linear can stay constant for now)
+
                 
-                // Otherwise
-                    // Follow point at last found index
             }
         }
 };
