@@ -28,7 +28,7 @@ class robot
         static const double LOOKAHEAD_DISTANCE = 5; // IN INCHES!
 
         // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 5.25; // IN INCHES!
+        static const double L_R_WHEEL_DISTANCE = 3.776445512; // IN INCHES! 3.564016282 12.30394713
 
         // The distance between the back tracking wheel and the center of the robot
         static const double BACK_WHEEL_DISTANCE = 2; // IN INCHES! 5.25
@@ -99,10 +99,10 @@ class robot
 
     public:
         // Is the robot calibrating?
-        static const bool CALIBRATE = false;
+        static const bool CALIBRATE = true;
         
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 100;
+        static const double MAX_DRIVE_SPEED = 30;
         static const double MAX_TOP_ACCUMULATOR_SPEED = 100;
 
         /*
@@ -297,7 +297,7 @@ class robot
         {
             while (1)
             {
-                if (armActive && distance1.objectDistance(mm) <= 12)
+                if (armActive && distance1.objectDistance(mm) <= 10) //12
                 {
                     controller1.rumble("......");
                     topAccumulator.setVelocity(0, percent);

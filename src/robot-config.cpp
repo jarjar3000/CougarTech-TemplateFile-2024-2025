@@ -28,7 +28,7 @@ controller controller1 = controller(primary);
   - RightF: Front right motor
   - RightB: Back right motor
 */
-motor leftB = motor(PORT11, ratio18_1, true);
+motor leftB = motor(PORT4, ratio18_1, true);
 motor leftF = motor(PORT12, ratio18_1, true);
 motor rightB = motor(PORT15, ratio18_1, false);
 motor rightF = motor(PORT14, ratio18_1, false);
@@ -48,8 +48,8 @@ motor rightArm = motor(PORT9, ratio36_1, false);
 //Sensors
 inertial inertial1 = inertial(PORT18);
 optical optical1 = optical(PORT7);
-rotation leftTracking = rotation(PORT4, false);
-rotation rightTracking = rotation(PORT2, true);
+rotation leftTracking = rotation(PORT11, false);
+rotation rightTracking = rotation(PORT2, false);
 rotation centerTracking = rotation(PORT3, false);
 
 // Three-Wires
