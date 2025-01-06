@@ -758,8 +758,81 @@ class robot
          * @brief Function to follow a set of points
          * @param points The list of points to follow
          */
-        static void followPoints(std::deque<Point> points)
+        static void followPath(std::deque<Point> points)
         {
-            
+            while (1)
+            {
+                // Find the intersection with the path
+
+                // Transform robot position to be at origin for easier math
+                double x1 = robot::x - points[0].x;
+                double x2 = robot::x - points[1].x;
+                double y1 = robot::y - points[0].y;
+                double y2 = robot::y - points[1].y;
+
+                // Find variables
+                double dx = x2 - x1;
+                double dy = y2 - y1;
+                double dr = sqrt(pow(dx, 2) + pow(dy, 2));
+                double D = x1 * y2 - x2 * y1;
+
+                // Use the discriminant to see if there are intersection points between the line and circle
+                double discriminant = pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2);
+
+                // = 0 is tangent, > 0 is intersection
+                if (discriminant >= 0)
+                {
+                    // Get the sign of dy
+                    int dySign;
+                    if (dy >= 0)
+                    {
+                        dySign = 1;
+                    }
+                    else
+                    {
+                        dySign = -1;
+                    }
+
+                    // Find possible solutions to quadratic
+                    double xSolution1 = (D * dy + dySign * dy * dx * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
+                    double xSolution2 = (D * dy - dySign * dy * dx * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
+                    double ySolution1 = (-D * dy + fabs(dy) * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
+                    double ySolution2 = (-D * dy - fabs(dy) * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
+
+                    // Offset solutions back to true position and store in a point
+                    Point solution1 = {xSolution1 + robot::x, ySolution1 + robot::y};
+                    Point solution2 = {xSolution2 + robot::x, ySolution2 + robot::y};
+
+                    // Verify if solutions are in the path
+                    double minX = std::min(x1, x2);
+                    double maxX = std::max(x1, x2);
+                    double minY = std::min(y1, y2);
+                    double maxY = std::max(y1, y2);
+
+                    // Is in range function
+                    auto isInRange = [](double num, double min, double max)
+                    {
+                        return num >= min && num <= max;
+                    };
+
+                    // If any solution is valid
+                    if ((isInRange(solution1.x, minX, maxX) && isInRange(solution1.y, minY, maxY)) || (isInRange(solution2.x, minX, maxX) && isInRange(solution2.y, minY, maxY)))
+                    {
+                        // Check which solution is valid
+                        
+                    }
+                }
+
+                // If intersection found
+                    // If robot at end of path
+                        // Move to point function (get heading right, etc)
+                        // break
+                    
+                    // Otherwise
+                        // Go towards the point found
+                
+                // Otherwise
+                    // Follow point at last found index
+            }
         }
 };
