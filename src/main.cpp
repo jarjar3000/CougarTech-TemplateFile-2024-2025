@@ -38,9 +38,9 @@ int driver()
    // Set up all pneumatic callbacks
    controller1.ButtonX.pressed(robot::clamp);
    controller1.ButtonUp.pressed(robot::hang);
-   controller1.ButtonLeft.pressed(robot::toggleTipper);
    controller1.ButtonY.pressed(robot::armStopper);
    controller1.ButtonDown.pressed(robot::toggleAllianceColor);
+   controller1.ButtonB.pressed(robot::intakeLift);
 
    // Set the drive motors to coast
    leftF.setStopping(coast);

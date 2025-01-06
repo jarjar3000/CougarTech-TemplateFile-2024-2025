@@ -181,17 +181,30 @@ class robot
         /**
          * @brief Function to toggle clamp. Starting position is up.
          */
+        static void intakeLift()
+        {
+            if (intakeLift1.value() == 0)
+            {
+                intakeLift1.set(true);
+            }
+            else
+            {
+                intakeLift1.set(false);
+            }
+        }
+
+        /**
+         * @brief Function to toggle intake lifter. Starting position is up.
+         */
         static void clamp()
         {
             if (clamp1.value() == 0)
             {
                 clamp1.set(true);
-                clamp2.set(true);
             }
             else
             {
                 clamp1.set(false);
-                clamp2.set(false);
             }
         }
 
@@ -203,27 +216,10 @@ class robot
             if (hang1.value() == 0)
             {
                 hang1.set(true);
-                hang2.set(true);
             }
             else
             {
                 hang1.set(false);
-                hang2.set(false);
-            }
-        }
-
-        /**
-         * @brief Function to toggle tipper. Starting position is up.
-         */
-        static void toggleTipper()
-        {
-            if (tipper.value() == 0)
-            {
-                tipper.set(true);
-            }
-            else
-            {
-                tipper.set(false);
             }
         }
 
