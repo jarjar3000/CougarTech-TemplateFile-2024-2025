@@ -912,8 +912,14 @@ class robot
                 // Normalize the angle error
                 angleError = atan2(sin(angleError), cos(angleError));
 
+                // Proportional for linear speed
+                double distanceToGoal = sqrt(pow(goalPoint.x - robot::x, 2) + pow(goalPoint.y - robot::y, 2));
+                double linearError = distanceToGoal;
+
                 // Integral for angular speed
                 double angleIntegral = 0;
+                // Integral for linear speed
+                double linearIntegral = 0;
 
                 // Windup prevention for angular speed
                 if (!(leftSpeed >= 100 && (int) (-angleError / fabs(angleError)) == (int) (-leftSpeed / fabs(leftSpeed))))
@@ -921,23 +927,18 @@ class robot
                     angleIntegral += (angleError * PID_TIMESTEP);
                 }
 
-                // Derivative for angular speed
-                double angleDerivative = (angleError - prevError) / PID_TIMESTEP;
-                prevError = angleError;
-
-                // Calculate the linear speed with PID
-                double distanceToGoal = sqrt(pow(goalPoint.x - robot::x, 2) + pow(goalPoint.y - robot::y, 2));
-                double linearError = distanceToGoal;
-                double linearIntegral = 0;
-                double linearPrevError = 0;
-
                 // Windup prevention for linear speed
                 if (!(leftSpeed >= 100 && (int) (-linearError / fabs(linearError)) == (int) (-leftSpeed / fabs(leftSpeed))))
                 {
                     linearIntegral += (linearError * PID_TIMESTEP);
                 }
 
+                // Derivative for angular speed
+                double angleDerivative = (angleError - prevError) / PID_TIMESTEP;
+                prevError = angleError;
+
                 // Derivative for linear speed
+                double linearPrevError = 0;
                 double linearDerivative = (linearError - linearPrevError) / PID_TIMESTEP;
                 linearPrevError = linearError;
 
@@ -952,8 +953,8 @@ class robot
                 // Saturation protection
                 double maxSpeed = std::max(fabs(leftMotorSpeed), fabs(rightMotorSpeed));
                 if (maxSpeed > 100) {
-                    leftMotorSpeed = (leftMotorSpeed / maxSpeed) * MAX_DRIVE_SPEED;
-                    rightMotorSpeed = (rightMotorSpeed / maxSpeed) * MAX_DRIVE_SPEED;
+                    leftMotorSpeed = (leftMotorSpeed / maxSpeed) * 100;
+                    rightMotorSpeed = (rightMotorSpeed / maxSpeed) * 100;
                 }
 
                 setLeftSpeed(leftMotorSpeed);
