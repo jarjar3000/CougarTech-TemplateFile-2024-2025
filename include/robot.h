@@ -769,6 +769,9 @@ class robot
             // Prev error for PID
             double prevError = 0;
 
+            // Spin the motors forward
+            drive(forward);
+
             // Loop dictates PID and path following
             while (1)
             {
@@ -778,8 +781,8 @@ class robot
 
                     // Transform robot position to be at origin for easier math
                     double x1 = robot::x - points[i].x;
-                    double x2 = robot::x - points[i].x;
-                    double y1 = robot::y - points[i+1].y;
+                    double x2 = robot::x - points[i+1].x;
+                    double y1 = robot::y - points[i].y;
                     double y2 = robot::y - points[i+1].y;
 
                     // Find variables
@@ -897,38 +900,64 @@ class robot
 
                 // We have the goal point, now move to it
 
-                // PID to calculate angular velocity (linear can stay constant for now)
+                // PID to calculate angular velocity and linear velocity
                 double angleToGoal = atan2(goalPoint.y - robot::y, goalPoint.x - robot::x);
 
                 // Normalize the angle
                 angleToGoal = atan2(sin(angleToGoal), cos(angleToGoal));
 
-                // Proportinal using turnKP
+                // Proportional using turnKP
                 double angleError = angleToGoal - robot::heading;
 
                 // Normalize the angle error
                 angleError = atan2(sin(angleError), cos(angleError));
 
-                // Integral
+                // Integral for angular speed
                 double angleIntegral = 0;
 
-                // Windup prevention
+                // Windup prevention for angular speed
                 if (!(leftSpeed >= 100 && (int) (-angleError / fabs(angleError)) == (int) (-leftSpeed / fabs(leftSpeed))))
                 {
                     angleIntegral += (angleError * PID_TIMESTEP);
                 }
 
-                // Derivative
+                // Derivative for angular speed
                 double angleDerivative = (angleError - prevError) / PID_TIMESTEP;
                 prevError = angleError;
-                
-                // Calculate the motor speed with constant linear velocity
-                double linearSpeed = 50;
+
+                // Calculate the linear speed with PID
+                double distanceToGoal = sqrt(pow(goalPoint.x - robot::x, 2) + pow(goalPoint.y - robot::y, 2));
+                double linearError = distanceToGoal;
+                double linearIntegral = 0;
+                double linearPrevError = 0;
+
+                // Windup prevention for linear speed
+                if (!(leftSpeed >= 100 && (int) (-linearError / fabs(linearError)) == (int) (-leftSpeed / fabs(leftSpeed))))
+                {
+                    linearIntegral += (linearError * PID_TIMESTEP);
+                }
+
+                // Derivative for linear speed
+                double linearDerivative = (linearError - linearPrevError) / PID_TIMESTEP;
+                linearPrevError = linearError;
+
+                // Calculate the motor speeds
+                double linearSpeed = linearError * kP + linearIntegral * kI + linearDerivative * kD;
                 double angularSpeed = angleError * turnKP + angleIntegral * turnKI + angleDerivative * turnKD;
 
-                // Apply the speeds to the motors
-                setLeftSpeed(linearSpeed + angularSpeed);
-                setRightSpeed(linearSpeed - angularSpeed);
+                // Apply the speeds to the motors with saturation protection
+                double leftMotorSpeed = linearSpeed + angularSpeed;
+                double rightMotorSpeed = linearSpeed - angularSpeed;
+
+                // Saturation protection
+                double maxSpeed = std::max(fabs(leftMotorSpeed), fabs(rightMotorSpeed));
+                if (maxSpeed > 100) {
+                    leftMotorSpeed = (leftMotorSpeed / maxSpeed) * MAX_DRIVE_SPEED;
+                    rightMotorSpeed = (rightMotorSpeed / maxSpeed) * MAX_DRIVE_SPEED;
+                }
+
+                setLeftSpeed(leftMotorSpeed);
+                setRightSpeed(rightMotorSpeed);
 
                 // Break if we're at the end of the path
                 if (lastFoundIndex == points.size() - 1)
@@ -939,5 +968,8 @@ class robot
                 // Wait to not consume all of the CPU's resources
                 wait(10, msec);
             }
+
+            // Stop the motors
+            stopDrive();
         }
 };
