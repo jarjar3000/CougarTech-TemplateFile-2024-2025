@@ -760,117 +760,184 @@ class robot
          */
         static void followPath(std::deque<Point> points)
         {
+            // Goal Point
+            Point goalPoint;
+
+            // Last found index
+            int lastFoundIndex;
+
+            // Prev error for PID
+            double prevError = 0;
+
+            // Loop dictates PID and path following
             while (1)
             {
-                // Find the intersection with the path
-
-                // Transform robot position to be at origin for easier math
-                double x1 = robot::x - points[0].x;
-                double x2 = robot::x - points[1].x;
-                double y1 = robot::y - points[0].y;
-                double y2 = robot::y - points[1].y;
-
-                // Find variables
-                double dx = x2 - x1;
-                double dy = y2 - y1;
-                double dr = sqrt(pow(dx, 2) + pow(dy, 2));
-                double D = x1 * y2 - x2 * y1;
-
-                // Use the discriminant to see if there are intersection points between the line and circle
-                double discriminant = pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2);
-
-                // = 0 is tangent, > 0 is intersection
-                if (discriminant >= 0)
+                for (int i = 0; i < points.size() - 1; i++)
                 {
-                    // Get the sign of dy
-                    int dySign;
-                    if (dy >= 0)
+                    // Find the intersection with the path
+
+                    // Transform robot position to be at origin for easier math
+                    double x1 = robot::x - points[i].x;
+                    double x2 = robot::x - points[i].x;
+                    double y1 = robot::y - points[i+1].y;
+                    double y2 = robot::y - points[i+1].y;
+
+                    // Find variables
+                    double dx = x2 - x1;
+                    double dy = y2 - y1;
+                    double dr = sqrt(pow(dx, 2) + pow(dy, 2));
+                    double D = x1 * y2 - x2 * y1;
+
+                    // Use the discriminant to see if there are intersection points between the line and circle
+                    double discriminant = pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2);
+
+                    // = 0 is tangent, > 0 is intersection
+                    if (discriminant >= 0)
                     {
-                        dySign = 1;
-                    }
-                    else
-                    {
-                        dySign = -1;
-                    }
-
-                    // Find possible solutions to quadratic
-                    double xSolution1 = (D * dy + dySign * dy * dx * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
-                    double xSolution2 = (D * dy - dySign * dy * dx * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
-                    double ySolution1 = (-D * dy + fabs(dy) * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
-                    double ySolution2 = (-D * dy - fabs(dy) * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
-
-                    // Offset solutions back to true position and store in a point
-                    Point solution1 = {xSolution1 + robot::x, ySolution1 + robot::y};
-                    Point solution2 = {xSolution2 + robot::x, ySolution2 + robot::y};
-
-                    // Verify if solutions are in the path
-                    double minX = std::min(x1, x2);
-                    double maxX = std::max(x1, x2);
-                    double minY = std::min(y1, y2);
-                    double maxY = std::max(y1, y2);
-
-                    // Is in range function
-                    auto isInRange = [](double num, double min, double max)
-                    {
-                        return num >= min && num <= max;
-                    };
-
-                    // Booleans if solutions are valid
-                    bool solution1Valid = isInRange(solution1.x, minX, maxX) && isInRange(solution1.y, minY, maxY);
-                    bool solution2Valid = isInRange(solution2.x, minX, maxX) && isInRange(solution2.y, minY, maxY);
-
-                    // If any solution is valid
-                    if (solution1Valid || solution2Valid)
-                    {
-                        // Euclidean Distance calculator function
-                        auto getDistance = [](Point pt1, Point pt2)
+                        // Get the sign of dy
+                        int dySign;
+                        if (dy >= 0)
                         {
-                            return sqrt(pow(pt2.x - pt1.x, 2) + pow(pt2.y - pt1.y, 2));
-                        };
-
-                        // If both solutions are valid, check which one is better and set that to be the goal point
-                        if (solution1Valid && solution2Valid)
-                        {
-                            // Whichever point is closer to next point in path is the goal point
-                            if (getDistance(solution1, points[2]) < getDistance({robot::x, robot::y}, points[2]))
-                            {
-                                // Goal is point 1
-                            }
-                            else
-                            {
-                                // Goal is point 2
-                            }
+                            dySign = 1;
                         }
-                        // If not, the one in range is the goal point
                         else
                         {
-                            if (solution1Valid)
-                            {
-                                // Goal is point 1
-                            }
-                            else
-                            {
-                                // Goal is point 2
-                            }
+                            dySign = -1;
                         }
 
-                        // If the goal point is closer to the next path point than the robot's distance from the next path point, then we're in business
+                        // Find possible solutions to quadratic
+                        double xSolution1 = (D * dy + dySign * dy * dx * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
+                        double xSolution2 = (D * dy - dySign * dy * dx * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
+                        double ySolution1 = (-D * dy + fabs(dy) * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
+                        double ySolution2 = (-D * dy - fabs(dy) * sqrt(pow(LOOKAHEAD_DISTANCE, 2) * pow(dr, 2) - pow(D, 2))) / pow(dr, 2);
 
-                        // Otherwise, the robot probably skipped points in its pathfollowing, keep searching
+                        // Offset solutions back to true position and store in a point
+                        Point solution1 = {xSolution1 + robot::x, ySolution1 + robot::y};
+                        Point solution2 = {xSolution2 + robot::x, ySolution2 + robot::y};
 
-                    }
-                    // Otherwise
-                    else
-                    {
-                        // Goal is the last goal point
+                        // Verify if solutions are in the path
+                        double minX = std::min(x1, x2);
+                        double maxX = std::max(x1, x2);
+                        double minY = std::min(y1, y2);
+                        double maxY = std::max(y1, y2);
+
+                        // Is in range function
+                        auto isInRange = [](double num, double min, double max)
+                        {
+                            return num >= min && num <= max;
+                        };
+
+                        // Booleans if solutions are valid
+                        bool solution1Valid = isInRange(solution1.x, minX, maxX) && isInRange(solution1.y, minY, maxY);
+                        bool solution2Valid = isInRange(solution2.x, minX, maxX) && isInRange(solution2.y, minY, maxY);
+
+                        // If any solution is valid
+                        if (solution1Valid || solution2Valid)
+                        {
+                            // Euclidean Distance calculator function
+                            auto getDistance = [](Point pt1, Point pt2)
+                            {
+                                return sqrt(pow(pt2.x - pt1.x, 2) + pow(pt2.y - pt1.y, 2));
+                            };
+
+                            // If both solutions are valid, check which one is better and set that to be the goal point
+                            if (solution1Valid && solution2Valid)
+                            {
+                                // Whichever point is closer to next point in path is the goal point
+                                if (getDistance(solution1, points[2]) < getDistance({robot::x, robot::y}, points[2]))
+                                {
+                                    // Goal is point 1
+                                    goalPoint = solution1;
+                                }
+                                else
+                                {
+                                    // Goal is point 2
+                                    goalPoint = solution2;
+                                }
+                            }
+                            // If not, the one in range is the goal point
+                            else
+                            {
+                                if (solution1Valid)
+                                {
+                                    // Goal is point 1
+                                    goalPoint = solution1;
+                                }
+                                else
+                                {
+                                    // Goal is point 2
+                                    goalPoint = solution2;
+                                }
+                            }
+
+                            // If the goal point is closer to the next path point than the robot's distance from the next path point, then we're in business
+                            if (getDistance(goalPoint, points[i+1]) < getDistance({robot::x, robot::y}, points[i+1]))
+                            {
+                                // Set the last found index
+                                lastFoundIndex = i;
+
+                                // Break out of the loop
+                                break;
+                            }
+                            // Otherwise, the robot probably skipped points in its pathfollowing, keep searching
+                            else
+                            {
+                                // Goal is the last goal point
+                                goalPoint = points[lastFoundIndex];
+                            }
+                        }
+                        // Otherwise
+                        else
+                        {
+                            // Goal is the last goal point
+                            goalPoint = points[i];
+                        }
                     }
                 }
 
                 // We have the goal point, now move to it
 
                 // PID to calculate angular velocity (linear can stay constant for now)
+                double angleToGoal = atan2(goalPoint.y - robot::y, goalPoint.x - robot::x);
 
+                // Normalize the angle
+                angleToGoal = atan2(sin(angleToGoal), cos(angleToGoal));
+
+                // Proportinal using turnKP
+                double angleError = angleToGoal - robot::heading;
+
+                // Normalize the angle error
+                angleError = atan2(sin(angleError), cos(angleError));
+
+                // Integral
+                double angleIntegral = 0;
+
+                // Windup prevention
+                if (!(leftSpeed >= 100 && (int) (-angleError / fabs(angleError)) == (int) (-leftSpeed / fabs(leftSpeed))))
+                {
+                    angleIntegral += (angleError * PID_TIMESTEP);
+                }
+
+                // Derivative
+                double angleDerivative = (angleError - prevError) / PID_TIMESTEP;
+                prevError = angleError;
                 
+                // Calculate the motor speed with constant linear velocity
+                double linearSpeed = 50;
+                double angularSpeed = angleError * turnKP + angleIntegral * turnKI + angleDerivative * turnKD;
+
+                // Apply the speeds to the motors
+                setLeftSpeed(linearSpeed + angularSpeed);
+                setRightSpeed(linearSpeed - angularSpeed);
+
+                // Break if we're at the end of the path
+                if (lastFoundIndex == points.size() - 1)
+                {
+                    break;
+                }
+
+                // Wait to not consume all of the CPU's resources
+                wait(10, msec);
             }
         }
 };
