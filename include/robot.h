@@ -909,8 +909,8 @@ class robot
                 // Proportional using turnKP
                 double angleError = angleToGoal - robot::heading;
 
-                // Normalize the angle error
-                angleError = atan2(sin(angleError), cos(angleError));
+                // Normalize the angle error (negate because clockwise is positive)
+                angleError = -atan2(sin(angleError), cos(angleError));
 
                 // Proportional for linear speed
                 double distanceToGoal = sqrt(pow(goalPoint.x - robot::x, 2) + pow(goalPoint.y - robot::y, 2));
