@@ -16,7 +16,7 @@ class robot
         // Odometry Variables
         static inline double x; // IN INCHES!
         static inline double y; // IN INCHES!
-        static inline double heading = 0; // IN RADIANS!
+        static inline double heading; // IN RADIANS!
 
         // Struct to represent an (x,y) point
         struct Point
@@ -31,7 +31,7 @@ class robot
         static const double L_R_WHEEL_DISTANCE = 3.776445512; // IN INCHES! 3.564016282 12.30394713
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 2; // IN INCHES! 5.25
+        static const double BACK_WHEEL_DISTANCE = 0; // IN INCHES! 5.25
 
         // Complementary filter tuning value, between 0 and 1. Values closer to 1 represents a greater trust in the odometry
         static const double ALPHA = 0.6; 
@@ -41,9 +41,14 @@ class robot
         static const double kI = 2;
         static const double kD = 1;
 
-        static const double turnKP = 6; 
-        static const double turnKI = 4;
-        static const double turnKD = 2;
+        static const double turnKP = 24; // 36
+        static const double turnKI = 0;
+        static const double turnKD = 0;
+
+        // Straight PID Constants
+        static const double straightKP = 0.5;
+        static const double straightKI = 0.0;
+        static const double straightKD = 0.0;
 
         static inline double error = 0;
         static inline double integral = 0;
@@ -54,9 +59,9 @@ class robot
 
         // Constants
         static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
-        static const double TURN_ERROR_TOLERANCE = 0.0174533; // in RADIANS!
+        static const double TURN_ERROR_TOLERANCE = 1.5 * (M_PI / 180); // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
-        static const double TIME_STABLE_TO_BREAK = 10; // Measured in seconds
+        static const double TIME_STABLE_TO_BREAK = 1; // Measured in seconds
         static const double VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
 
         static const double WHEEL_DIAMETER = 2; // in inches
@@ -65,6 +70,17 @@ class robot
 
         // Degree of LIP calculations
         static const int DEGREE_OF_LIP_POLYNOMIAL = 3;
+
+        // Odom or Inertial Only
+        static const bool ODOM_ONLY = false;
+
+        // Use Kalman Filter
+        static const bool KALMAN_FILTER = true;
+
+        // Kalman Filter Variables
+        static inline double odomUncertainty = 1; // Tune this, lower represents greater trust
+        static inline double inertialUncertainty = 2; // lower is greater trust
+        static inline double stateUncertainty = 3; // lower is greater trust
 
         /**
          * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
@@ -355,9 +371,9 @@ class robot
             positionCalculationTimer.clear();
 
             // Kalman Filter variables
-            double odomUncertainty = 0.1; // Tune this, lower represents greater trust
-            double inertialUncertainty = 5; // lower is greater trust
-            double stateUncertainty = 1; // lower is greater trust
+            // double odomUncertainty = 1; // Tune this, lower represents greater trust
+            // double inertialUncertainty = 2; // lower is greater trust
+            // double stateUncertainty = 3; // lower is greater trust
             
             // Calculate the first few points for LIP
             while(true)
@@ -386,10 +402,24 @@ class robot
                     robot::heading += deltaHeading;
                 }
                 // Odometry Only
-                else if (false)
+                else if (ODOM_ONLY && !KALMAN_FILTER)
                 {
                     // Add to running total
                     robot::heading += deltaHeading;
+
+                    // Normalize the heading
+                    robot::heading = fmod(robot::heading, (2 * M_PI)); 
+                    if (robot::heading < 0) 
+                    {
+                        heading += 2 * M_PI; // Make sure negative headings properly wrap into range
+                    }
+                }
+                // Inertial Only
+                else if (!ODOM_ONLY && !KALMAN_FILTER)
+                {
+                    // Merge inertial sensor data
+                    double inertialHeading = inertial1.heading(degrees) * (M_PI / 180);
+                    robot::heading = inertialHeading;
 
                     // Normalize the heading
                     robot::heading = fmod(robot::heading, (2 * M_PI)); 
@@ -571,7 +601,7 @@ class robot
             stopDrive();
             
         }
-
+        
         /**
          * @brief Function to turn towards a point, (x, y), on the field
          * @param targetX The X value of the point
@@ -652,7 +682,7 @@ class robot
 
                 // Change motor speed based on the drive direction
                 motorSpeed = (error * kP + integral * kI + derivative * kD);
-                strMotorSpeed = (strError * turnKP + strIntegral * turnKI + strDerivative * turnKD);
+                strMotorSpeed = (strError * straightKD + strIntegral * straightKI + strDerivative * straightKD);
                 if (driveReverse)
                 {
                     motorSpeed *= -1;
