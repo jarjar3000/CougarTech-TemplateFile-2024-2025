@@ -24,8 +24,6 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   // Initialize robot and encoders
-
    // Drive to (0, 1)
    robot::goTo(110, 0);
    // robot::goTo(110, -110);

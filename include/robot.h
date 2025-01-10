@@ -14,8 +14,8 @@ class robot
 {
     private:
         // Odometry Variables
-        static inline double x = 0; // IN INCHES!
-        static inline double y = 0; // IN INCHES!
+        static inline double x; // IN INCHES!
+        static inline double y; // IN INCHES!
         static inline double heading = 0; // IN RADIANS!
 
         // Struct to represent an (x,y) point
@@ -99,7 +99,7 @@ class robot
 
     public:
         // Is the robot calibrating?
-        static const bool CALIBRATE = true;
+        static const bool CALIBRATE = false;
         
         // Driving Variables
         static const double MAX_DRIVE_SPEED = 100;
@@ -753,6 +753,14 @@ class robot
             leftTracking.setPosition(0, degrees);
             rightTracking.setPosition(0, degrees);
             centerTracking.setPosition(0, degrees);
+
+            // Calibrate the inertial
+            inertial1.calibrate();
+            while(inertial1.isCalibrating())
+            {
+                controller1.rumble(".");
+                wait(100, msec);
+            }
             inertial1.setHeading(heading, degrees);
         }
 
