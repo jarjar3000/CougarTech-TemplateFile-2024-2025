@@ -55,6 +55,7 @@ rotation centerTracking = rotation(PORT3, false);
 // Three-Wires
 triport expander1 = triport(PORT6); 
 digital_out clamp1 = digital_out(Brain.ThreeWirePort.A);
+digital_out clamp2 = digital_out(Brain.ThreeWirePort.D);
 digital_out intakeLift1 = digital_out(Brain.ThreeWirePort.B);
 digital_out hang1 = digital_out(Brain.ThreeWirePort.C);
 limit limit1 = limit(expander1.A);

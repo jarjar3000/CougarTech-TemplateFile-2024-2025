@@ -35,6 +35,7 @@ extern distance distance1;
 // Pneumatics
 extern triport expander1;
 extern digital_out clamp1;
+extern digital_out clamp2;
 extern digital_out intakeLift1;
 extern digital_out hang1;
 extern timer failsafe;

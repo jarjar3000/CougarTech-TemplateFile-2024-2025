@@ -102,7 +102,7 @@ class robot
         static const bool CALIBRATE = true;
         
         // Driving Variables
-        static const double MAX_DRIVE_SPEED = 30;
+        static const double MAX_DRIVE_SPEED = 100;
         static const double MAX_TOP_ACCUMULATOR_SPEED = 100;
 
         /*
@@ -201,10 +201,12 @@ class robot
             if (clamp1.value() == 0)
             {
                 clamp1.set(true);
+                clamp2.set(true);
             }
             else
             {
                 clamp1.set(false);
+                clamp2.set(false);
             }
         }
 
