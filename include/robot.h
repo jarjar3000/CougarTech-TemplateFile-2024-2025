@@ -687,9 +687,21 @@ class robot
                 {
                     motorSpeed *= -1;
                 } 
+
+                // Calculate left and right side speeds
+                double leftMotorSpeed = motorSpeed + strMotorSpeed;
+                double rightMotorSpeed = motorSpeed - strMotorSpeed;
+
+                // Saturation protection
+                double maxSpeed = std::max(fabs(leftMotorSpeed), fabs(rightMotorSpeed));
+                if (maxSpeed > 100) {
+                    leftMotorSpeed = (leftMotorSpeed / maxSpeed) * 100;
+                    rightMotorSpeed = (rightMotorSpeed / maxSpeed) * 100;
+                }
+
                 // Account for the str drift; negative strErrors are to the left
-                setLeftSpeed(motorSpeed + strMotorSpeed);
-                setRightSpeed(motorSpeed - strMotorSpeed);
+                setLeftSpeed(leftMotorSpeed);
+                setRightSpeed(rightMotorSpeed);
 
                 // Check for completion with error check and velocity check.
                 if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
