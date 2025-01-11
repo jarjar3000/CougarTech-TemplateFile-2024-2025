@@ -130,8 +130,8 @@ class robot
         static inline bool PRINT_DATA = false;
 
         // Blue and Red thresholds
-        static const double OPTICAL_BLUE_HUE = 200;
-        static const double OPTICAL_RED_HUE = 50;
+        static const double OPTICAL_BLUE_HUE = 200; // Hues above this number are blue
+        static const double OPTICAL_RED_HUE = 30; // Hues below this number are red
 
         // Toggle of if fish mech is active
         static inline bool armActive = false;
