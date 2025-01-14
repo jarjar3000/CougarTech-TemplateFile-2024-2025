@@ -37,9 +37,9 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 3;
-        static const double kI = 2;
-        static const double kD = 1;
+        static const double kP = 12;
+        static const double kI = 0;
+        static const double kD = 0;
 
         static const double turnKP = 24; // 36
         static const double turnKI = 0;
@@ -606,16 +606,26 @@ class robot
          * @brief Function to turn towards a point, (x, y), on the field
          * @param targetX The X value of the point
          * @param targetY The Y value of the point
+         * @param reverse Whether the robot should turn its back to the point. Default is false
          */
-        static void turnToPoint(double targetX, double targetY)
+        static void turnToPoint(double targetX, double targetY, bool reverse = false)
         {
             // Use atan2 to calculate the heading
-            double targetHeading = -atan2(targetY - robot::y, targetX - robot::x); // This outputs radians
+            double targetHeading = atan2(targetY - robot::y, targetX - robot::x); // This outputs radians
+
+            // If reverse is true, adjust the target heading by 180 degrees (π radians)
+            if (reverse)
+            {
+                targetHeading += M_PI;
+            }
+
+            // Normalize the target heading to the range [-π, π]
+            targetHeading = atan2(sin(targetHeading), cos(targetHeading));
 
             // Only turn if we need to
-            if (fabs(robot::heading) >= TURN_ERROR_TOLERANCE)
+            if (fabs(robot::heading - targetHeading) >= TURN_ERROR_TOLERANCE)
             {
-                turnToHeading(targetHeading * (M_PI / 180)); // This function takes in degrees
+                turnToHeading(targetHeading * (180 / M_PI)); // This function takes in degrees
             }
         }
 
@@ -645,7 +655,7 @@ class robot
             double motorSpeed = 0, strMotorSpeed = 0;
 
             // Calculate the required distance
-            double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
+            double targetDistance = sqrt(pow(targetX - robot::x, 2) + pow(targetY - robot::y, 2));
 
             // Get the heading that is required to go to the point (the current heading)
             double targetHeading = robot::heading;
@@ -654,7 +664,7 @@ class robot
             do
             {
                 // Error
-                double currentDistance = sqrt(pow(robot::x, 2) + pow(robot::y, 2));
+                double currentDistance = sqrt(pow(targetX - robot::x, 2) + pow(targetY - robot::y, 2));
                 error = targetDistance - currentDistance;
 
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
@@ -670,6 +680,9 @@ class robot
                 // Calculate an error, integral, and derivative for the heading to prevent deviation from the path
                 strError = targetHeading - robot::heading;
 
+                // Normalize the heading error to [-π, π]
+                strError = atan2(sin(strError), cos(strError));
+
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-strError / fabs(strError)) == (int) (-motorSpeed / fabs(motorSpeed))))
                 {
@@ -682,7 +695,7 @@ class robot
 
                 // Change motor speed based on the drive direction
                 motorSpeed = (error * kP + integral * kI + derivative * kD);
-                strMotorSpeed = (strError * straightKD + strIntegral * straightKI + strDerivative * straightKD);
+                strMotorSpeed = (strError * straightKP + strIntegral * straightKI + strDerivative * straightKD);
                 if (driveReverse)
                 {
                     motorSpeed *= -1;
@@ -699,7 +712,7 @@ class robot
                     rightMotorSpeed = (rightMotorSpeed / maxSpeed) * 100;
                 }
 
-                // Account for the str drift; negative strErrors are to the left
+                // Set the motor speeds
                 setLeftSpeed(leftMotorSpeed);
                 setRightSpeed(rightMotorSpeed);
 
@@ -724,9 +737,9 @@ class robot
 
             // Stop driving
             stopDrive();
-            
+            controller1.rumble(".");
         }
-        
+
         /**
          * @brief Function intended to be run in a thread to print helpful information to the controller screen.
          */

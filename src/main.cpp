@@ -24,6 +24,11 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
+   // Draw a box and go back to 0, 0
+   robot::goTo(12, 0);
+   // robot::goTo(12, -12);
+   // robot::goTo(0, -12);
+   // robot::goTo(0, 0);
    
 }
 
