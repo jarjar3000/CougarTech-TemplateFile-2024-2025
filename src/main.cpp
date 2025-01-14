@@ -24,12 +24,15 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   // Draw a box and go back to 0, 0
-   robot::goTo(12, 0);
-   // robot::goTo(12, -12);
-   // robot::goTo(0, -12);
-   // robot::goTo(0, 0);
-   
+   // Turn to point (0, 12)
+   // robot::turnToPoint(0, -12); // This should be a right 90 degree turn
+
+   // robot::turnToPoint(12, 0); // This should be a left 90 degree turn
+
+   // Turn to same points but back faces the point
+   robot::turnToPoint(0, -12, true); // This should be a left 90 degree turn
+
+   robot::turnToPoint(12, 0, true); // This should be a right 90 degree turn (something is wrong with this turn)
 }
 
 int driver()

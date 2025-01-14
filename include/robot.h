@@ -78,9 +78,9 @@ class robot
         static const bool KALMAN_FILTER = true;
 
         // Kalman Filter Variables
-        static inline double odomUncertainty = 1; // Tune this, lower represents greater trust
-        static inline double inertialUncertainty = 2; // lower is greater trust
-        static inline double stateUncertainty = 3; // lower is greater trust
+        static inline double odomUncertainty = 3; // Tune this, lower represents greater trust
+        static inline double inertialUncertainty = 3; // lower is greater trust
+        static inline double stateUncertainty = 5; // lower is greater trust
 
         /**
          * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
@@ -611,15 +611,15 @@ class robot
         static void turnToPoint(double targetX, double targetY, bool reverse = false)
         {
             // Use atan2 to calculate the heading
-            double targetHeading = atan2(targetY - robot::y, targetX - robot::x); // This outputs radians
+            double targetHeading = -atan2(targetY - robot::y, targetX - robot::x); // This outputs radians
 
-            // If reverse is true, adjust the target heading by 180 degrees (π radians)
+            // If reverse is true, adjust the target heading by 180 degrees (pi radians) 
             if (reverse)
             {
                 targetHeading += M_PI;
             }
 
-            // Normalize the target heading to the range [-π, π]
+            // Normalize the target heading to the range
             targetHeading = atan2(sin(targetHeading), cos(targetHeading));
 
             // Only turn if we need to
@@ -637,15 +637,15 @@ class robot
          */
         static void goTo(double targetX, double targetY, bool driveReverse = false)
         {
-            // Turn to the target point. If reverse is true, turn towards the negation of the point, so the robot drives in reverse
+            // Turn to the target point. If reverse is true, call turn to point with the reverse parameter as true
             if (driveReverse)
             {
-                turnToPoint(-targetX, -targetY);
+                turnToPoint(targetX, targetY, true);
                 drive(reverse);
             }
             else
             {
-                turnToPoint(targetX, targetY);
+                turnToPoint(targetX, targetY, false);
                 drive(forward);
             }
 
@@ -680,7 +680,7 @@ class robot
                 // Calculate an error, integral, and derivative for the heading to prevent deviation from the path
                 strError = targetHeading - robot::heading;
 
-                // Normalize the heading error to [-π, π]
+                // Normalize the heading error to [-pi, pi]
                 strError = atan2(sin(strError), cos(strError));
 
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
