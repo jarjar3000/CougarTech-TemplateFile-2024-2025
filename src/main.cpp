@@ -24,7 +24,18 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   
+   if (robot::allianceIsRed)
+   {
+      // Red autonomous
+
+      // Go to mobile goal
+      robot::goTo(93.85, -46.64, true);
+      robot::clamp();
+   }
+   else
+   {
+      // Blue autonomous goes here
+   }
 }
 
 int driver()
@@ -199,9 +210,6 @@ int main()
    // Run the pre-autonomous function.
    pre_auton();
 
-   // Set the starting position
-   robot::init(0, 0, 0);
-
    // Set the alliance color
    wait(200, msec);
    if (optical1.hue() <= robot::OPTICAL_RED_HUE)
@@ -211,6 +219,18 @@ int main()
    else
    {
       robot::allianceIsRed = false;
+   }
+
+   // Set the starting position
+   if (robot::allianceIsRed)
+   {
+      // Red starting position
+      robot::init(94, -12, 270);
+   }
+   else
+   {
+      // Blue starting position
+      robot::init(94, -128.41, 90);
    }
 
    // Start the thread
