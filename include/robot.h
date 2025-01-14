@@ -28,13 +28,13 @@ class robot
         static const double LOOKAHEAD_DISTANCE = 5; // IN INCHES!
 
         // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 3.776445512; // IN INCHES! 3.564016282 12.30394713
+        static const double L_R_WHEEL_DISTANCE = 3.949328889; // IN INCHES! 3.564016282 12.30394713
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 0; // IN INCHES! 5.25
+        static const double BACK_WHEEL_DISTANCE = 2.375; // IN INCHES! 5.25
 
         // Complementary filter tuning value, between 0 and 1. Values closer to 1 represents a greater trust in the odometry
-        static const double ALPHA = 0.6; 
+        static const double ALPHA = 0.6;
 
         // PID Variables
         static const double kP = 3;
@@ -530,7 +530,7 @@ class robot
 
             // Change the targetHeading to radians, since we use radians internally
             targetHeading *= (M_PI / 180);
-
+            
             // Initialize the PID variables
             double error = 0, integral = 0, derivative = 0, prevError = heading;
             double motorSpeed = 0;

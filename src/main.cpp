@@ -24,22 +24,7 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   // Drive to (0, 1)
-   repeat (4)
-   {
-      robot::turnToHeading(90);
-
-      robot::turnToHeading(180);
-
-      robot::turnToHeading(270);
-
-      robot::turnToHeading(0);
-   }
-
-   // robot::goTo(110, 0);
-   // robot::goTo(110, -110);
-   // robot::goTo(110, 0);
-   // robot::goTo(0, 0);
+   
 }
 
 int driver()

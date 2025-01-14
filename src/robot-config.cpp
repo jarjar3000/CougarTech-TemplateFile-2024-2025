@@ -49,7 +49,7 @@ motor rightArm = motor(PORT9, ratio36_1, false);
 inertial inertial1 = inertial(PORT18);
 optical optical1 = optical(PORT7);
 rotation leftTracking = rotation(PORT11, false);
-rotation rightTracking = rotation(PORT2, false);
+rotation rightTracking = rotation(PORT2, true);
 rotation centerTracking = rotation(PORT3, false);
 
 // Three-Wires
