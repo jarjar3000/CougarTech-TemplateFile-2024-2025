@@ -27,8 +27,9 @@ class robot
         // Lookahead distance for pure pursiut
         static const double LOOKAHEAD_DISTANCE = 5; // IN INCHES!
 
-        // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 3.949328889; // IN INCHES! 3.564016282 12.30394713
+        // The distance the wheels are from the center of rotation
+        static const double LEFT_WHEEL_DISTANCE = 3.183656667; // POSITIVE VALUE, IN INCHES!
+        static const double RIGHT_WHEEL_DISTANCE = 0.73469; // POSITIVE VALUE, IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
         static const double BACK_WHEEL_DISTANCE = 2.375; // IN INCHES! 5.25
@@ -37,7 +38,7 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 12;
+        static const double kP = 3;
         static const double kI = 0;
         static const double kD = 0;
 
@@ -394,7 +395,7 @@ class robot
                 deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
 
                 // Calculate deltaHeading
-                double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
+                double deltaHeading = (deltaLeft - deltaRight) / (LEFT_WHEEL_DISTANCE + RIGHT_WHEEL_DISTANCE); // Equation outputs RADIANS
 
                 // Special version for calibration to tune odometry wheel distances
                 if (CALIBRATE)
@@ -463,7 +464,7 @@ class robot
                 }
 
                 // Calculate deltaFwd and deltaStrafe
-                double deltaFwd = (deltaRight + deltaLeft) / 2;
+                double deltaFwd = (deltaLeft * LEFT_WHEEL_DISTANCE + deltaRight * RIGHT_WHEEL_DISTANCE) / (LEFT_WHEEL_DISTANCE + RIGHT_WHEEL_DISTANCE);
                 double deltaStrafe = deltaBack - (BACK_WHEEL_DISTANCE * deltaHeading);
 
                 // Calculate deltaX and deltaY linearly or arc-based
@@ -637,6 +638,10 @@ class robot
          */
         static void goTo(double targetX, double targetY, bool driveReverse = false)
         {
+            // Set motor speed to 80
+            setLeftSpeed(80);
+            setRightSpeed(80);
+            
             // Turn to the target point. If reverse is true, call turn to point with the reverse parameter as true
             if (driveReverse)
             {
@@ -659,13 +664,16 @@ class robot
 
             // Get the heading that is required to go to the point (the current heading)
             double targetHeading = robot::heading;
+
+            // Clear the brain timer
+            Brain.resetTimer();
             
             // Drive towards the target point
             do
             {
                 // Error
                 double currentDistance = sqrt(pow(targetX - robot::x, 2) + pow(targetY - robot::y, 2));
-                error = targetDistance - currentDistance;
+                error = currentDistance;
 
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))

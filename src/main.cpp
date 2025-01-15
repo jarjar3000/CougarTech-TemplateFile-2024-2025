@@ -30,9 +30,11 @@ void autonomous(void)
    // robot::turnToPoint(12, 0); // This should be a left 90 degree turn
 
    // Turn to same points but back faces the point
-   robot::turnToPoint(0, -12, true); // This should be a left 90 degree turn
+   // robot::turnToPoint(0, -12, true); // This should be a left 90 degree turn
 
-   robot::turnToPoint(12, 0, true); // This should be a right 90 degree turn (something is wrong with this turn)
+   // robot::turnToPoint(12, 0, true); // This should be a right 90 degree turn (something is wrong with this turn)
+
+   robot::goTo(0, -12);
 }
 
 int driver()
