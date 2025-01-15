@@ -34,7 +34,11 @@ void autonomous(void)
 
    // robot::turnToPoint(12, 0, true); // This should be a right 90 degree turn (something is wrong with this turn)
 
-   robot::goTo(0, -12);
+   // robot::goTo(30, 0, true);
+
+   // robot::clamp();
+
+   robot::goTo(0, 12);
 }
 
 int driver()
@@ -210,7 +214,7 @@ int main()
    pre_auton();
 
    // Set the starting position
-   robot::init(0, 0, 0);
+   robot::init(0, 0, 180);
 
    // Set the alliance color
    wait(200, msec);
@@ -231,7 +235,7 @@ int main()
    thread odometryTracking = thread(robot::calculateRobotPosition);
 
    // Start the printing thread
-   thread controllerInfo = thread(robot::printInfoToController);
+   // thread controllerInfo = thread(robot::printInfoToController);
 
    // Start the arm thread
    thread arm = thread(robot::armRingStop);

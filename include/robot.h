@@ -114,6 +114,23 @@ class robot
             return output;
         }
 
+        /**
+         * Function to find and return the sign of a number
+         * @param num The number to find the sign of
+         * @return the sign of the number
+         */
+        static int sign(double num)
+        {
+            if (num < 0)
+            {
+                return -1;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
     public:
         // Is the robot calibrating?
         static const bool CALIBRATE = false;
@@ -671,9 +688,13 @@ class robot
             // Drive towards the target point
             do
             {
-                // Error
-                double currentDistance = sqrt(pow(targetX - robot::x, 2) + pow(targetY - robot::y, 2));
-                error = currentDistance;
+                // Preverse signs in x and y difference to allow for negative distances so the PID works properly
+
+                double diffX = sign(targetX - robot::x) * pow(targetX - robot::x, 2);
+                double diffY = sign(targetY - robot::y) * pow(targetY - robot::y, 2);
+
+                // Get current distance from the point 
+                error = sqrt(diffX + diffY);
 
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
@@ -708,6 +729,15 @@ class robot
                 {
                     motorSpeed *= -1;
                 } 
+
+                // Print the error to the controller screen
+                if (true)
+                {
+                    // Print error and robot position
+                    controller1.Screen.clearScreen();
+                    controller1.Screen.setCursor(1, 1);
+                    controller1.Screen.print("E: %.2f, X: %.2f, Y: %.2f", error, x, y);
+                }
 
                 // Calculate left and right side speeds
                 double leftMotorSpeed = motorSpeed + strMotorSpeed;
