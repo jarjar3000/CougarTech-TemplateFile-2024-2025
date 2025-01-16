@@ -41,10 +41,37 @@ void autonomous(void)
    robot::spinAccumulator(forward, 100);
 
    // Turn towards heading 0 and drive into the ring
-   robot::turnToHeading(0);
+   robot::turnToHeading(180);
    robot::driveStraight(forward, 18); // 20
 
-   // Turn towards the stacked rings
+   // Go towards the corner stack
+   double degTurn1 = 45;
+   if (robot::allianceIsRed)
+   {
+      robot::turnToHeading(180 + 45);
+   }
+   else
+   {
+      robot::turnToHeading(180 - 45);
+   }
+
+   // Accumulate corner stack
+   robot::driveStraight(forward, 40);
+
+   repeat(2)
+   {
+      robot::driveStraight(reverse, 5);
+      robot::driveStraight(forward, 5);
+   }
+
+   // Line up and grab middle ring
+   clamp(); // Let go so we can stack
+   robot::driveStraight(reverse, 10);
+   robot::turnToHeading(0);
+   robot::driveStraight(forward, 30);
+   robot::stopAccumulator();
+   
+   // Turn back to alliacne stake and score
    if (robot::allianceIsRed)
    {
       robot::turnToHeading(90);
@@ -54,28 +81,10 @@ void autonomous(void)
       robot::turnToHeading(270);
    }
 
-   // Drive to the stacked rings
-   robot::driveStraight(forward, 8);
+   // There is a ring in the way, try to push it out of the way
+   robot::driveStraight(reverse, 12);
+   robot::spinAccumulator(forward);
 
-   // Turn 45 degrees and get the other ring
-   double degTurn = 45;
-   if (robot::allianceIsRed)
-   {
-      robot::turnToHeading(90 - degTurn);
-   }
-   else
-   {
-      robot::turnToHeading(270 + degTurn);
-   }
-
-   robot::driveStraight(forward, 4);
-
-   // Drive backwards and go towards the corner stack
-   robot::driveStraight(reverse, 21); // 20
-   robot::turnToHeading(315);
-
-   // Accumulate corner stack
-   robot::driveStraight(forward, 40);
 }
 
 int driver()
