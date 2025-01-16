@@ -38,9 +38,9 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 4.1;
-        static const double kI = 0;
-        static const double kD = 0;
+        static const double kP = 5; //4.1
+        static const double kI = 1;
+        static const double kD = 0.1;
 
         static const double turnKP = 24; // 36
         static const double turnKI = 0;
@@ -63,7 +63,7 @@ class robot
         static const double TURN_ERROR_TOLERANCE = 1.5 * (M_PI / 180); // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
         static const double TIME_STABLE_TO_BREAK = 0.25; // Measured in seconds
-        static const double VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
+        static const double VELOCITY_STABLE_TO_BREAK = 20; // Measured in percent
 
         static const double WHEEL_DIAMETER = 2; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
@@ -623,21 +623,12 @@ class robot
 
                 // Print info on the screen (always)
                 controller1.Screen.setCursor(1, 1);
-                controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, totalDistanceMoved, motorSpeed);
+                controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, integral, derivative);
 
                 // Check for completion with error check and velocity check.
-                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
+                if (fabs(error) < DRIVE_ERROR_TOLERANCE)
                 {
-                    // Use the brain's timer to see if the condition above has been held for sufficient length
-                    if (Brain.Timer.value() > TIME_STABLE_TO_BREAK)
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    // Clear the timer for use when within margins
-                    Brain.resetTimer();
+                    break;
                 }
 
                 // Set current encoder values to previous
@@ -715,18 +706,9 @@ class robot
                 }
 
                 // Check for completion with error check and velocity check.
-                if (fabs(error) < TURN_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
+                if (fabs(error) < TURN_ERROR_TOLERANCE)
                 {
-                    // Use the brain's timer to see if the condition above has been held for sufficient length
-                    if (Brain.Timer.value() > TIME_STABLE_TO_BREAK)
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    // Clear the timer for use when within margins
-                    Brain.resetTimer();
+                    break;
                 }
 
                 // Don't consume all of the CPU's resources

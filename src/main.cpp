@@ -69,6 +69,13 @@ void autonomous(void)
    }
 
    robot::driveStraight(forward, 4);
+
+   // Drive backwards and go towards the corner stack
+   robot::driveStraight(reverse, 21); // 20
+   robot::turnToHeading(315);
+
+   // Accumulate corner stack
+   robot::driveStraight(forward, 40);
 }
 
 int driver()
