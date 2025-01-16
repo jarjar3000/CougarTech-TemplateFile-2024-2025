@@ -27,19 +27,20 @@ class robot
         // Lookahead distance for pure pursiut
         static const double LOOKAHEAD_DISTANCE = 5; // IN INCHES!
 
-        // The distance between the right and left tracking wheels
-        static const double L_R_WHEEL_DISTANCE = 3.949328889; // IN INCHES! 3.564016282 12.30394713
+        // The distance the wheels are from the center of rotation
+        static const double LEFT_WHEEL_DISTANCE = 3.208095654; // POSITIVE VALUE, IN INCHES!
+        static const double RIGHT_WHEEL_DISTANCE = 0.7403297662; // POSITIVE VALUE, IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 2.375; // IN INCHES! 5.25
+        static const double BACK_WHEEL_DISTANCE = 2.333; // IN INCHES! 5.25
 
         // Complementary filter tuning value, between 0 and 1. Values closer to 1 represents a greater trust in the odometry
         static const double ALPHA = 0.6;
 
         // PID Variables
         static const double kP = 3;
-        static const double kI = 2;
-        static const double kD = 1;
+        static const double kI = 0;
+        static const double kD = 0;
 
         static const double turnKP = 24; // 36
         static const double turnKI = 0;
@@ -78,9 +79,9 @@ class robot
         static const bool KALMAN_FILTER = true;
 
         // Kalman Filter Variables
-        static inline double odomUncertainty = 1; // Tune this, lower represents greater trust
-        static inline double inertialUncertainty = 2; // lower is greater trust
-        static inline double stateUncertainty = 3; // lower is greater trust
+        static inline double odomUncertainty = 3; // Tune this, lower represents greater trust
+        static inline double inertialUncertainty = 3; // lower is greater trust
+        static inline double stateUncertainty = 5; // lower is greater trust
 
         /**
          * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
@@ -111,6 +112,23 @@ class robot
             }
 
             return output;
+        }
+
+        /**
+         * Function to find and return the sign of a number
+         * @param num The number to find the sign of
+         * @return the sign of the number
+         */
+        static int sign(double num)
+        {
+            if (num < 0)
+            {
+                return -1;
+            }
+            else
+            {
+                return 1;
+            }
         }
 
     public:
@@ -292,7 +310,7 @@ class robot
 
                     controller1.rumble(".");
 
-                    wait(50, msec);
+                    wait(175, msec);
 
                     // Spin in reverse
                     topAccumulator.setVelocity(0, percent);
@@ -315,8 +333,9 @@ class robot
         {
             while (1)
             {
-                if (armActive && distance1.objectDistance(mm) <= 10) //12
+                if (armActive && limit1.pressing()) //12
                 {
+                    // wait(65, msec);
                     controller1.rumble("......");
                     topAccumulator.setVelocity(0, percent);
 
@@ -369,11 +388,6 @@ class robot
             double prevHeading[DEGREE_OF_LIP_POLYNOMIAL];
 
             positionCalculationTimer.clear();
-
-            // Kalman Filter variables
-            // double odomUncertainty = 1; // Tune this, lower represents greater trust
-            // double inertialUncertainty = 2; // lower is greater trust
-            // double stateUncertainty = 3; // lower is greater trust
             
             // Calculate the first few points for LIP
             while(true)
@@ -391,10 +405,10 @@ class robot
                 // Convert the degree values of the deltas to a linear measurement (inches) so it works with the heading equation
                 deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION);
                 deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION);
-                deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
+                deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); 
 
                 // Calculate deltaHeading
-                double deltaHeading = (deltaLeft - deltaRight) / L_R_WHEEL_DISTANCE; // Equation outputs RADIANS
+                double deltaHeading = (deltaLeft - deltaRight) / (LEFT_WHEEL_DISTANCE + RIGHT_WHEEL_DISTANCE); // Equation outputs RADIANS
 
                 // Special version for calibration to tune odometry wheel distances
                 if (CALIBRATE)
@@ -463,7 +477,7 @@ class robot
                 }
 
                 // Calculate deltaFwd and deltaStrafe
-                double deltaFwd = (deltaRight + deltaLeft) / 2;
+                double deltaFwd = (deltaLeft * LEFT_WHEEL_DISTANCE + deltaRight * RIGHT_WHEEL_DISTANCE) / (LEFT_WHEEL_DISTANCE + RIGHT_WHEEL_DISTANCE);
                 double deltaStrafe = deltaBack - (BACK_WHEEL_DISTANCE * deltaHeading);
 
                 // Calculate deltaX and deltaY linearly or arc-based
@@ -516,6 +530,108 @@ class robot
 
             // If a value is return, something bad happened
             return 1;
+        }
+
+        /**
+         * @brief Function to drive straight for a certain distance
+         * @param direction The direction to drive in
+         * @param distance The distance to drive in inches
+         */
+        static void driveStraight(vex::directionType direction, double distance)
+        {
+            // Initialize the PID variables
+            double error = 0, integral = 0, derivative = 0, prevError = 0;
+            double motorSpeed = 0;
+            double totalDistanceMoved = 0;
+
+            // Encoder values
+            double leftEncoder = 0, rightEncoder = 0, backEncoder = 0;
+            double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0;
+            
+            // Set heading to hold
+            double targetHeading = robot::heading;
+
+            // reset the timer
+            Brain.resetTimer();
+
+            // Set motors to drive
+            switch(direction)
+            {
+                case vex::directionType::fwd:
+                    drive(forward);
+                    break;
+                case vex::directionType::rev:
+                    drive(reverse);
+                    break;
+                case vex::directionType::undefined:
+                    break;
+            }
+
+            do 
+            {
+                // Get and store encoder values
+                leftEncoder = leftTracking.position(degrees);
+                rightEncoder = rightTracking.position(degrees); 
+                backEncoder = centerTracking.position(degrees);
+
+                // Get the robot's current heading using the encoders
+                double deltaLeft = leftEncoder - prevLeftEncoder;
+                double deltaRight = rightEncoder - prevRightEncoder;
+                double deltaBack = backEncoder - prevBackEncoder;
+
+                // Convert the degree values of the deltas to a linear measurement (inches) so it works with the heading equation
+                deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION);
+                deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION);
+                deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
+
+                double deltaFwd = (deltaLeft * LEFT_WHEEL_DISTANCE + deltaRight * RIGHT_WHEEL_DISTANCE) / (LEFT_WHEEL_DISTANCE + RIGHT_WHEEL_DISTANCE);
+                totalDistanceMoved += deltaFwd;
+
+                // Proportional
+                error = distance - totalDistanceMoved;
+
+                // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
+                if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
+                {
+                    integral += (error * PID_TIMESTEP);
+                }
+
+                // Derivative
+                derivative = (error - prevError) / PID_TIMESTEP;
+                prevError = error;
+
+                // Change motor speed and angluar velocity
+                motorSpeed = error * kP + integral * kI + derivative * kD;
+
+                setLeftSpeed(motorSpeed);
+                setRightSpeed(motorSpeed);
+
+                // Check for completion with error check and velocity check.
+                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
+                {
+                    // Use the brain's timer to see if the condition above has been held for sufficient length
+                    if (Brain.Timer.value() > TIME_STABLE_TO_BREAK)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    // Clear the timer for use when within margins
+                    Brain.resetTimer();
+                }
+
+                // Set current encoder values to previous
+                prevLeftEncoder = leftEncoder;
+                prevRightEncoder = rightEncoder;
+                prevBackEncoder = backEncoder;
+
+                wait(PID_TIMESTEP, seconds);
+            }
+            while(true);
+
+            // Stop the motors
+            stopDrive();
         }
 
         /**
@@ -606,16 +722,26 @@ class robot
          * @brief Function to turn towards a point, (x, y), on the field
          * @param targetX The X value of the point
          * @param targetY The Y value of the point
+         * @param reverse Whether the robot should turn its back to the point. Default is false
          */
-        static void turnToPoint(double targetX, double targetY)
+        static void turnToPoint(double targetX, double targetY, bool reverse = false)
         {
             // Use atan2 to calculate the heading
             double targetHeading = -atan2(targetY - robot::y, targetX - robot::x); // This outputs radians
 
-            // Only turn if we need to
-            if (fabs(robot::heading) >= TURN_ERROR_TOLERANCE)
+            // If reverse is true, adjust the target heading by 180 degrees (pi radians) 
+            if (reverse)
             {
-                turnToHeading(targetHeading * (M_PI / 180)); // This function takes in degrees
+                targetHeading += M_PI;
+            }
+
+            // Normalize the target heading to the range
+            targetHeading = atan2(sin(targetHeading), cos(targetHeading));
+
+            // Only turn if we need to
+            if (fabs(robot::heading - targetHeading) >= TURN_ERROR_TOLERANCE)
+            {
+                turnToHeading(targetHeading * (180 / M_PI)); // This function takes in degrees
             }
         }
 
@@ -627,15 +753,19 @@ class robot
          */
         static void goTo(double targetX, double targetY, bool driveReverse = false)
         {
-            // Turn to the target point. If reverse is true, turn towards the negation of the point, so the robot drives in reverse
+            // Set motor speed to 80
+            setLeftSpeed(80);
+            setRightSpeed(80);
+            
+            // Turn to the target point. If reverse is true, call turn to point with the reverse parameter as true
             if (driveReverse)
             {
-                turnToPoint(-targetX, -targetY);
+                turnToPoint(targetX, targetY, true);
                 drive(reverse);
             }
             else
             {
-                turnToPoint(targetX, targetY);
+                turnToPoint(targetX, targetY, false);
                 drive(forward);
             }
 
@@ -645,17 +775,24 @@ class robot
             double motorSpeed = 0, strMotorSpeed = 0;
 
             // Calculate the required distance
-            double targetDistance = sqrt(pow(targetX, 2) + pow(targetY, 2));
+            double targetDistance = sqrt(pow(targetX - robot::x, 2) + pow(targetY - robot::y, 2));
 
             // Get the heading that is required to go to the point (the current heading)
             double targetHeading = robot::heading;
+
+            // Clear the brain timer
+            Brain.resetTimer();
             
             // Drive towards the target point
             do
             {
-                // Error
-                double currentDistance = sqrt(pow(robot::x, 2) + pow(robot::y, 2));
-                error = targetDistance - currentDistance;
+                // Preverse signs in x and y difference to allow for negative distances so the PID works properly
+
+                double diffX = sign(targetX - robot::x) * pow(targetX - robot::x, 2);
+                double diffY = sign(targetY - robot::y) * pow(targetY - robot::y, 2);
+
+                // Get current distance from the point 
+                error = sqrt(diffX + diffY);
 
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
@@ -670,6 +807,9 @@ class robot
                 // Calculate an error, integral, and derivative for the heading to prevent deviation from the path
                 strError = targetHeading - robot::heading;
 
+                // Normalize the heading error to [-pi, pi]
+                strError = atan2(sin(strError), cos(strError));
+
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-strError / fabs(strError)) == (int) (-motorSpeed / fabs(motorSpeed))))
                 {
@@ -682,11 +822,20 @@ class robot
 
                 // Change motor speed based on the drive direction
                 motorSpeed = (error * kP + integral * kI + derivative * kD);
-                strMotorSpeed = (strError * straightKD + strIntegral * straightKI + strDerivative * straightKD);
+                strMotorSpeed = (strError * straightKP + strIntegral * straightKI + strDerivative * straightKD);
                 if (driveReverse)
                 {
                     motorSpeed *= -1;
                 } 
+
+                // Print the error to the controller screen
+                if (true)
+                {
+                    // Print error and robot position
+                    controller1.Screen.clearScreen();
+                    controller1.Screen.setCursor(1, 1);
+                    controller1.Screen.print("E: %.2f, X: %.2f, Y: %.2f", error, x, y);
+                }
 
                 // Calculate left and right side speeds
                 double leftMotorSpeed = motorSpeed + strMotorSpeed;
@@ -699,7 +848,7 @@ class robot
                     rightMotorSpeed = (rightMotorSpeed / maxSpeed) * 100;
                 }
 
-                // Account for the str drift; negative strErrors are to the left
+                // Set the motor speeds
                 setLeftSpeed(leftMotorSpeed);
                 setRightSpeed(rightMotorSpeed);
 
@@ -724,9 +873,9 @@ class robot
 
             // Stop driving
             stopDrive();
-            
+            controller1.rumble(".");
         }
-        
+
         /**
          * @brief Function intended to be run in a thread to print helpful information to the controller screen.
          */

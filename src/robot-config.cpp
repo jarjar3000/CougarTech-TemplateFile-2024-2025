@@ -43,7 +43,7 @@ motor topAccumulator = motor(PORT10, ratio18_1, false);
 /*
   Arm motors
 */
-motor rightArm = motor(PORT9, ratio36_1, false);
+motor rightArm = motor(PORT9, ratio36_1, true);
 
 //Sensors
 inertial inertial1 = inertial(PORT18);
