@@ -28,11 +28,11 @@ class robot
         static const double LOOKAHEAD_DISTANCE = 5; // IN INCHES!
 
         // The distance the wheels are from the center of rotation
-        static const double LEFT_WHEEL_DISTANCE = 3.183656667; // POSITIVE VALUE, IN INCHES!
-        static const double RIGHT_WHEEL_DISTANCE = 0.73469; // POSITIVE VALUE, IN INCHES!
+        static const double LEFT_WHEEL_DISTANCE = 3.208095654; // POSITIVE VALUE, IN INCHES!
+        static const double RIGHT_WHEEL_DISTANCE = 0.7403297662; // POSITIVE VALUE, IN INCHES!
 
         // The distance between the back tracking wheel and the center of the robot
-        static const double BACK_WHEEL_DISTANCE = 2.375; // IN INCHES! 5.25
+        static const double BACK_WHEEL_DISTANCE = 2.333; // IN INCHES! 5.25
 
         // Complementary filter tuning value, between 0 and 1. Values closer to 1 represents a greater trust in the odometry
         static const double ALPHA = 0.6;
@@ -133,7 +133,7 @@ class robot
 
     public:
         // Is the robot calibrating?
-        static const bool CALIBRATE = false;
+        static const bool CALIBRATE = true;
         
         // Driving Variables
         static const double MAX_DRIVE_SPEED = 100;
@@ -145,7 +145,7 @@ class robot
         static inline bool allianceIsRed = true;
 
         // Boolean to dictate if data should be printed to the screen (not via the thread)
-        static inline bool PRINT_DATA = false;
+        static inline bool PRINT_DATA = true;
 
         // Blue and Red thresholds
         static const double OPTICAL_BLUE_HUE = 200; // Hues above this number are blue

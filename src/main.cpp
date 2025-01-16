@@ -214,7 +214,7 @@ int main()
    pre_auton();
 
    // Set the starting position
-   robot::init(0, 0, 180);
+   robot::init(0, 0, 0);
 
    // Set the alliance color
    wait(200, msec);
@@ -235,7 +235,7 @@ int main()
    thread odometryTracking = thread(robot::calculateRobotPosition);
 
    // Start the printing thread
-   // thread controllerInfo = thread(robot::printInfoToController);
+   thread controllerInfo = thread(robot::printInfoToController);
 
    // Start the arm thread
    thread arm = thread(robot::armRingStop);
