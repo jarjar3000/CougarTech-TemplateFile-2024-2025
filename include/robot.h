@@ -133,7 +133,7 @@ class robot
 
     public:
         // Is the robot calibrating?
-        static const bool CALIBRATE = true;
+        static const bool CALIBRATE = false;
         
         // Driving Variables
         static const double MAX_DRIVE_SPEED = 100;
@@ -145,7 +145,7 @@ class robot
         static inline bool allianceIsRed = true;
 
         // Boolean to dictate if data should be printed to the screen (not via the thread)
-        static inline bool PRINT_DATA = true;
+        static inline bool PRINT_DATA = false;
 
         // Blue and Red thresholds
         static const double OPTICAL_BLUE_HUE = 200; // Hues above this number are blue
@@ -388,11 +388,6 @@ class robot
             double prevHeading[DEGREE_OF_LIP_POLYNOMIAL];
 
             positionCalculationTimer.clear();
-
-            // Kalman Filter variables
-            // double odomUncertainty = 1; // Tune this, lower represents greater trust
-            // double inertialUncertainty = 2; // lower is greater trust
-            // double stateUncertainty = 3; // lower is greater trust
             
             // Calculate the first few points for LIP
             while(true)
@@ -410,7 +405,7 @@ class robot
                 // Convert the degree values of the deltas to a linear measurement (inches) so it works with the heading equation
                 deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION);
                 deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION);
-                deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
+                deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); 
 
                 // Calculate deltaHeading
                 double deltaHeading = (deltaLeft - deltaRight) / (LEFT_WHEEL_DISTANCE + RIGHT_WHEEL_DISTANCE); // Equation outputs RADIANS
@@ -535,6 +530,108 @@ class robot
 
             // If a value is return, something bad happened
             return 1;
+        }
+
+        /**
+         * @brief Function to drive straight for a certain distance
+         * @param direction The direction to drive in
+         * @param distance The distance to drive in inches
+         */
+        static void driveStraight(vex::directionType direction, double distance)
+        {
+            // Initialize the PID variables
+            double error = 0, integral = 0, derivative = 0, prevError = 0;
+            double motorSpeed = 0;
+            double totalDistanceMoved = 0;
+
+            // Encoder values
+            double leftEncoder = 0, rightEncoder = 0, backEncoder = 0;
+            double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0;
+            
+            // Set heading to hold
+            double targetHeading = robot::heading;
+
+            // reset the timer
+            Brain.resetTimer();
+
+            // Set motors to drive
+            switch(direction)
+            {
+                case vex::directionType::fwd:
+                    drive(forward);
+                    break;
+                case vex::directionType::rev:
+                    drive(reverse);
+                    break;
+                case vex::directionType::undefined:
+                    break;
+            }
+
+            do 
+            {
+                // Get and store encoder values
+                leftEncoder = leftTracking.position(degrees);
+                rightEncoder = rightTracking.position(degrees); 
+                backEncoder = centerTracking.position(degrees);
+
+                // Get the robot's current heading using the encoders
+                double deltaLeft = leftEncoder - prevLeftEncoder;
+                double deltaRight = rightEncoder - prevRightEncoder;
+                double deltaBack = backEncoder - prevBackEncoder;
+
+                // Convert the degree values of the deltas to a linear measurement (inches) so it works with the heading equation
+                deltaLeft = (WHEEL_DIAMETER * M_PI) * (deltaLeft / ENCODER_TICKS_PER_REVOLUTION);
+                deltaRight = (WHEEL_DIAMETER * M_PI) * (deltaRight / ENCODER_TICKS_PER_REVOLUTION);
+                deltaBack = (WHEEL_DIAMETER * M_PI) * (deltaBack / ENCODER_TICKS_PER_REVOLUTION); // Back doesn't have a gear ratio, it's a dead wheel
+
+                double deltaFwd = (deltaLeft * LEFT_WHEEL_DISTANCE + deltaRight * RIGHT_WHEEL_DISTANCE) / (LEFT_WHEEL_DISTANCE + RIGHT_WHEEL_DISTANCE);
+                totalDistanceMoved += deltaFwd;
+
+                // Proportional
+                error = distance - totalDistanceMoved;
+
+                // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
+                if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
+                {
+                    integral += (error * PID_TIMESTEP);
+                }
+
+                // Derivative
+                derivative = (error - prevError) / PID_TIMESTEP;
+                prevError = error;
+
+                // Change motor speed and angluar velocity
+                motorSpeed = error * kP + integral * kI + derivative * kD;
+
+                setLeftSpeed(motorSpeed);
+                setRightSpeed(motorSpeed);
+
+                // Check for completion with error check and velocity check.
+                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
+                {
+                    // Use the brain's timer to see if the condition above has been held for sufficient length
+                    if (Brain.Timer.value() > TIME_STABLE_TO_BREAK)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    // Clear the timer for use when within margins
+                    Brain.resetTimer();
+                }
+
+                // Set current encoder values to previous
+                prevLeftEncoder = leftEncoder;
+                prevRightEncoder = rightEncoder;
+                prevBackEncoder = backEncoder;
+
+                wait(PID_TIMESTEP, seconds);
+            }
+            while(true);
+
+            // Stop the motors
+            stopDrive();
         }
 
         /**
