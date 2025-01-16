@@ -310,7 +310,7 @@ class robot
 
                     controller1.rumble(".");
 
-                    wait(50, msec);
+                    wait(175, msec);
 
                     // Spin in reverse
                     topAccumulator.setVelocity(0, percent);
@@ -333,8 +333,9 @@ class robot
         {
             while (1)
             {
-                if (armActive && distance1.objectDistance(mm) <= 10) //12
+                if (armActive && limit1.pressing()) //12
                 {
+                    // wait(65, msec);
                     controller1.rumble("......");
                     topAccumulator.setVelocity(0, percent);
 
