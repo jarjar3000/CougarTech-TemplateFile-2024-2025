@@ -38,7 +38,7 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 3;
+        static const double kP = 4.1;
         static const double kI = 0;
         static const double kD = 0;
 
@@ -59,10 +59,10 @@ class robot
         static inline double rightSpeed = 0;
 
         // Constants
-        static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
+        static const double DRIVE_ERROR_TOLERANCE = 1; // in inches
         static const double TURN_ERROR_TOLERANCE = 1.5 * (M_PI / 180); // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
-        static const double TIME_STABLE_TO_BREAK = 1; // Measured in seconds
+        static const double TIME_STABLE_TO_BREAK = 0.25; // Measured in seconds
         static const double VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
 
         static const double WHEEL_DIAMETER = 2; // in inches
@@ -554,6 +554,11 @@ class robot
             // reset the timer
             Brain.resetTimer();
 
+            // Reset the tracking wheel encoders
+            leftTracking.setPosition(0, degrees);
+            rightTracking.setPosition(0, degrees);
+            centerTracking.setPosition(0, degrees);
+
             // Set motors to drive
             switch(direction)
             {
@@ -588,7 +593,7 @@ class robot
                 totalDistanceMoved += deltaFwd;
 
                 // Proportional
-                error = distance - totalDistanceMoved;
+                error = distance - fabs(totalDistanceMoved);
 
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
                 if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
@@ -602,9 +607,23 @@ class robot
 
                 // Change motor speed and angluar velocity
                 motorSpeed = error * kP + integral * kI + derivative * kD;
+                switch (direction)
+                {
+                    case vex::directionType::fwd:
+                        setLeftSpeed(motorSpeed);
+                        setRightSpeed(motorSpeed);
+                        break;
+                    case vex::directionType::rev:
+                        setLeftSpeed(-motorSpeed);
+                        setRightSpeed(-motorSpeed);
+                        break;
+                    case vex::directionType::undefined:
+                        break;
+                }
 
-                setLeftSpeed(motorSpeed);
-                setRightSpeed(motorSpeed);
+                // Print info on the screen (always)
+                controller1.Screen.setCursor(1, 1);
+                controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, totalDistanceMoved, motorSpeed);
 
                 // Check for completion with error check and velocity check.
                 if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
@@ -631,6 +650,7 @@ class robot
             while(true);
 
             // Stop the motors
+            controller1.rumble("...");
             stopDrive();
         }
 
@@ -1173,5 +1193,11 @@ class robot
 
             // Stop the motors
             stopDrive();
+        }
+
+        static void setHeading(double deg)
+        {
+            inertial1.setHeading(deg, degrees);
+            robot::heading = deg * (M_PI / 180);
         }
 };

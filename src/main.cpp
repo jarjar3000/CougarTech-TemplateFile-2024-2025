@@ -27,15 +27,48 @@ void autonomous(void)
    if (robot::allianceIsRed)
    {
       // Red autonomous
-
-      // Go to mobile goal
-      robot::goTo(93.85, -46.64, true);
-      robot::clamp();
+      robot::setHeading(270);
    }
    else
    {
       // Blue autonomous goes here
+      robot::setHeading(90);
    }
+
+   // Drive to the mobile goal
+   robot::driveStraight(reverse, 32);
+   robot::clamp();
+   robot::spinAccumulator(forward, 100);
+
+   // Turn towards heading 0 and drive into the ring
+   robot::turnToHeading(0);
+   robot::driveStraight(forward, 18); // 20
+
+   // Turn towards the stacked rings
+   if (robot::allianceIsRed)
+   {
+      robot::turnToHeading(90);
+   }
+   else
+   {
+      robot::turnToHeading(270);
+   }
+
+   // Drive to the stacked rings
+   robot::driveStraight(forward, 8);
+
+   // Turn 45 degrees and get the other ring
+   double degTurn = 45;
+   if (robot::allianceIsRed)
+   {
+      robot::turnToHeading(90 - degTurn);
+   }
+   else
+   {
+      robot::turnToHeading(270 + degTurn);
+   }
+
+   robot::driveStraight(forward, 4);
 }
 
 int driver()
@@ -241,7 +274,7 @@ int main()
    thread odometryTracking = thread(robot::calculateRobotPosition);
 
    // Start the printing thread
-   thread controllerInfo = thread(robot::printInfoToController);
+   // thread controllerInfo = thread(robot::printInfoToController);
 
    // Start the arm thread
    thread arm = thread(robot::armRingStop);
