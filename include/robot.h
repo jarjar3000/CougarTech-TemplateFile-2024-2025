@@ -39,12 +39,12 @@ class robot
 
         // PID Variables
         static const double kP = 5; //4.1
-        static const double kI = 1;
+        static const double kI = 1; // 1
         static const double kD = 0.1;
 
         static const double turnKP = 24; // 36
-        static const double turnKI = 0;
-        static const double turnKD = 0;
+        static const double turnKI = 3;
+        static const double turnKD = 2;
 
         // Straight PID Constants
         static const double straightKP = 0.5;
