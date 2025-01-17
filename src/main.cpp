@@ -36,36 +36,45 @@ void autonomous(void)
    }
 
    // Drive to the mobile goal
-   robot::driveStraight(reverse, 32);
+   robot::driveStraight(reverse, 30); //32
+   wait(20, msec);
    robot::clamp();
    robot::spinAccumulator(forward, 100);
 
    // Turn towards heading 0 and drive into the ring
    robot::turnToHeading(180);
-   robot::driveStraight(forward, 18); // 20
+   robot::driveStraight(forward, 22); // 20
+
+   // Drive back to line up with corner
+   robot::driveStraight(reverse, 19);
 
    // Go towards the corner stack
-   double degTurn1 = 45;
+   double degTurn1 = 40;
    if (robot::allianceIsRed)
    {
-      robot::turnToHeading(180 + 45);
+      robot::turnToHeading(180 + degTurn1);
    }
    else
    {
-      robot::turnToHeading(180 - 45);
+      robot::turnToHeading(180 - degTurn1);
    }
 
    // Accumulate corner stack
-   robot::driveStraight(forward, 40);
+   // robot::driveStraight(forward, 49);//40
+   robot::drive(forward);
+   robot::setLeftSpeed(100);
+   robot::setRightSpeed(100);
+   wait(3, seconds);
+   robot::stopDrive();
 
    repeat(2)
    {
-      robot::driveStraight(reverse, 5);
-      robot::driveStraight(forward, 5);
+      robot::driveStraight(reverse, 8);
+      robot::driveStraight(forward, 8);
    }
 
    // Line up and grab middle ring
-   clamp(); // Let go so we can stack
+   robot::clamp(); // Let go so we can stack
    robot::driveStraight(reverse, 10);
    robot::turnToHeading(0);
    robot::driveStraight(forward, 30);
