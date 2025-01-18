@@ -72,7 +72,14 @@ void autonomous(void)
 
    // Drive backwards and go towards the corner stack
    robot::driveStraight(reverse, 21); // 20
-   robot::turnToHeading(315);
+   if (robot::allianceIsRed)
+   {
+      robot::turnToHeading(315);
+   }
+   else
+   {
+      robot::turnToHeading(135);
+   }
 
    // Accumulate corner stack
    robot::driveStraight(forward, 50); // 48
