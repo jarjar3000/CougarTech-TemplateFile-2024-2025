@@ -71,18 +71,37 @@ void autonomous(void)
    robot::driveStraight(forward, 5); // 4
 
    // Drive backwards and go towards the corner stack
-   robot::driveStraight(reverse, 21); // 20
+   robot::driveStraight(reverse, 20); // 20
    if (robot::allianceIsRed)
    {
-      robot::turnToHeading(315);
+      robot::turnToHeading(310);
    }
    else
    {
-      robot::turnToHeading(135);
+      robot::turnToHeading(140);
    }
 
    // Accumulate corner stack
-   robot::driveStraight(forward, 50); // 48
+   robot::drive(forward);
+   robot::setLeftSpeed(100);
+   robot::setRightSpeed(100);
+   wait(2, seconds);
+   robot::stopDrive();
+
+   // Get other corner rings
+   repeat(3)
+   {
+      robot::driveStraight(reverse, 5);
+      robot::setLeftSpeed(100);
+      robot::setRightSpeed(100);
+      robot::drive(forward);
+      wait(0.75, seconds);
+      robot::stopDrive();
+   }
+   robot::stopDrive();
+
+   // Drive back and pray
+   robot::driveStraight(reverse, 24);
 }
 
 int driver()
