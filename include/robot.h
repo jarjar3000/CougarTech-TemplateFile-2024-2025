@@ -38,13 +38,13 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 5; //4.1
-        static const double kI = 0.1; // 1
-        static const double kD = 0.1;
+        static const double kP = 4.1; //4.1
+        static const double kI = 0.0; // 1
+        static const double kD = 0.0; // 0.1
 
-        static const double turnKP = 24; // 36
-        static const double turnKI = 3;
-        static const double turnKD = 2;;
+        static const double turnKP = 30; // 36
+        static const double turnKI = 1;
+        static const double turnKD = 4;
 
         // Straight PID Constants
         static const double straightKP = 0.5;
@@ -310,7 +310,7 @@ class robot
 
                     controller1.rumble(".");
 
-                    wait(175, msec);
+                    wait(175, msec); // 175
 
                     // Spin in reverse
                     topAccumulator.setVelocity(0, percent);
@@ -622,8 +622,8 @@ class robot
                 }
 
                 // Print info on the screen (always)
-                controller1.Screen.setCursor(1, 1);
-                controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, integral, derivative);
+                // controller1.Screen.setCursor(1, 1);
+                // controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, integral, derivative);
 
                 // Check for completion with error check and velocity check.
                 if (fabs(error) < DRIVE_ERROR_TOLERANCE)
@@ -641,7 +641,7 @@ class robot
             while(true);
 
             // Stop the motors
-            controller1.rumble("...");
+            // controller1.rumble("...");
             stopDrive();
         }
 

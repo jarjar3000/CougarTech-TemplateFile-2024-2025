@@ -36,7 +36,7 @@ void autonomous(void)
    }
 
    // Drive to the mobile goal
-   robot::driveStraight(reverse, 30); //32
+   robot::driveStraight(reverse, 32); //32
    wait(20, msec);
    robot::clamp();
    robot::spinAccumulator(forward, 100);
@@ -46,10 +46,10 @@ void autonomous(void)
    robot::driveStraight(forward, 22); // 20
 
    // Drive back to line up with corner
-   robot::driveStraight(reverse, 19);
+   // robot::driveStraight(reverse, 24); // 19
 
    // Go towards the corner stack
-   double degTurn1 = 40;
+   double degTurn1 = 65;
    if (robot::allianceIsRed)
    {
       robot::turnToHeading(180 + degTurn1);
@@ -60,39 +60,27 @@ void autonomous(void)
    }
 
    // Accumulate corner stack
-   // robot::driveStraight(forward, 49);//40
    robot::drive(forward);
    robot::setLeftSpeed(100);
    robot::setRightSpeed(100);
-   wait(3, seconds);
+   wait(2, seconds);
    robot::stopDrive();
 
-   repeat(2)
+   // Get other corner rings
+   repeat(3)
    {
-      robot::driveStraight(reverse, 8);
-      robot::driveStraight(forward, 8);
+      robot::driveStraight(reverse, 5);
+      robot::setLeftSpeed(100);
+      robot::setRightSpeed(100);
+      robot::drive(forward);
+      wait(0.75, seconds);
+      robot::stopDrive();
    }
+   robot::stopDrive();
 
-   // Line up and grab middle ring
-   robot::clamp(); // Let go so we can stack
-   robot::driveStraight(reverse, 10);
-   robot::turnToHeading(0);
-   robot::driveStraight(forward, 30);
-   robot::stopAccumulator();
+   // Drive back and pray
+   robot::driveStraight(reverse, 24);
    
-   // Turn back to alliacne stake and score
-   if (robot::allianceIsRed)
-   {
-      robot::turnToHeading(90);
-   }
-   else
-   {
-      robot::turnToHeading(270);
-   }
-
-   // There is a ring in the way, try to push it out of the way
-   robot::driveStraight(reverse, 12);
-   robot::spinAccumulator(forward);
 
 }
 
@@ -299,7 +287,7 @@ int main()
    thread odometryTracking = thread(robot::calculateRobotPosition);
 
    // Start the printing thread
-   // thread controllerInfo = thread(robot::printInfoToController);
+   thread controllerInfo = thread(robot::printInfoToController);
 
    // Start the arm thread
    thread arm = thread(robot::armRingStop);
