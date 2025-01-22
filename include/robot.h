@@ -1225,4 +1225,9 @@ class robot
             inertial1.setHeading(deg, degrees);
             robot::heading = deg * (M_PI / 180);
         }
+
+        static double getHeadingInDegrees()
+        {
+            return robot::heading * (180 / M_PI);
+        }
 };

@@ -24,6 +24,7 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
+   rightArm.setStopping(hold);
    robot::setFast();
    Brain.Timer.clear();
    // Put ring on alliance stake
@@ -37,63 +38,65 @@ void autonomous(void)
    robot::driveStraight(reverse, 20); // into mogo
    robot::clamp();
 
-   // Turn right to face the red ring and grab it
-   robot::turnToHeading(90);
+   // Draw a "U" SHAPE to spend time more efficently
    robot::spinAccumulator(forward, 100);
-   robot::driveStraight(forward, 25); //25
+   robot::turnToHeading(90);
+   robot::driveStraight(forward, 12);
 
-   // Turn towards the next ring and grab it
-   robot::turnToHeading(180); // was 80 degree turn (170 hdg)
-   robot::driveStraight(forward, 23); // 25
+   robot::setLeftSpeed(60); // 60
+   robot::setRightSpeed(20); // 20
+   robot::drive(forward);
 
-   // Turn towards the 2 rings alligned straight and grab them
-   robot::turnToHeading(270);
-   robot::setPrecice();
-   robot::driveStraight(forward, 37);
+   waitUntil(robot::getHeadingInDegrees() >= 270);
 
-   // Turn to grab other ring
-   robot::setFast();
+   // Collect two rings in the line
+   robot::setLeftSpeed(30);
+   robot::setRightSpeed(30);
+   wait(2, seconds); // 1
+   robot::stopDrive();
+
+   // Get final ring
    robot::turnToHeading(150); // 120 degree turn to the left
-   robot::driveStraight(forward, 14);
+   robot::driveStraight(forward, 14); // 8 
 
    // Put goal in corner
-   robot::driveStraight(reverse, 6);
    robot::turnToHeading(45);
-   robot::driveStraight(reverse, 6); // 4
+   robot::driveStraight(reverse, 10); // 6
    robot::stopAccumulator();
    robot::clamp();
 
    // Release the goal, drive to the other side and get the goal
-   robot::driveStraight(forward, 12);
+   robot::driveStraight(forward, 12); // Needs to be less
    robot::turnToHeading(180);
    robot::driveStraight(reverse, 72);
    robot::clamp();
 
    // BEGINNING BUT OPPOSITE ----------------------------------------------------------------------------
 
-   // Turn right to face the red ring and grab it
-   robot::turnToHeading(90);
+   // Draw a "U" SHAPE to spend time more efficently
    robot::spinAccumulator(forward, 100);
-   robot::driveStraight(forward, 25); //25
+   robot::turnToHeading(90);
+   robot::driveStraight(forward, 12);
 
-   // Turn towards the next ring and grab it
-   robot::turnToHeading(0); // was 80 degree turn (170 hdg)
-   robot::driveStraight(forward, 25);
+   robot::setRightSpeed(60); // 60
+   robot::setLeftSpeed(20); // 20
+   robot::drive(forward);
 
-   // Turn towards the 2 rings alligned straight and grab them
-   robot::turnToHeading(270);
-   robot::setPrecice();
-   robot::driveStraight(forward, 37);
+   waitUntil(robot::getHeadingInDegrees() >= 270 && robot::getHeadingInDegrees() <= 360);
 
-   // Turn to grab other ring
-   robot::setFast();
-   robot::turnToHeading(300); // 120 degree turn to the left
-   robot::driveStraight(forward, 14);
+   // Collect two rings in the line
+   robot::setRightSpeed(30);
+   robot::setLeftSpeed(30);
+   wait(2, seconds);
+   robot::stopDrive();
+
+   // Get final ring
+   robot::turnToHeading(330); // 120 degree turn to the left
+   robot::driveStraight(forward, 14); // 8 
 
    // Put goal in corner
-   robot::driveStraight(reverse, 6);
-   robot::turnToHeading(45);
-   robot::driveStraight(reverse, 4); // 14
+   robot::turnToHeading(135);
+   robot::driveStraight(reverse, 6); // 4
    robot::stopAccumulator();
    robot::clamp();
 }
