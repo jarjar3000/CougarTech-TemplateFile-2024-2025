@@ -129,7 +129,7 @@ int driver()
    bottomAccumulatorL.setVelocity(100, percent);
    bottomAccumulatorR.setVelocity(100, percent);
    topAccumulator.setVelocity(robot::MAX_TOP_ACCUMULATOR_SPEED, percent);
-   rightArm.setVelocity(60, percent);
+   rightArm.setVelocity(100, percent);
    
    while (true)
    {
@@ -287,17 +287,7 @@ int main()
       robot::allianceIsRed = false;
    }
 
-   // Set the starting position
-   if (robot::allianceIsRed)
-   {
-      // Red starting position
-      robot::init(94, -12, 270);
-   }
-   else
-   {
-      // Blue starting position
-      robot::init(94, -128.41, 90);
-   }
+   robot::init(0, 0, 0);
 
    // Start the thread
    thread ejectThread = thread(robot::eject);
@@ -307,7 +297,7 @@ int main()
    thread odometryTracking = thread(robot::calculateRobotPosition);
 
    // Start the printing thread
-   // thread controllerInfo = thread(robot::printInfoToController);
+   thread controllerInfo = thread(robot::printInfoToController);
 
    // Start the arm thread
    thread arm = thread(robot::armRingStop);

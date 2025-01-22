@@ -38,13 +38,13 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 4.1; //4.1
-        static const double kI = 0.0; // 1
-        static const double kD = 0.0; // 0.1
+        static const double kP = 2; //4.1
+        static const double kI = 0; // 1
+        static const double kD = 0.2; // 0.1
 
-        static const double turnKP = 30; // 36
-        static const double turnKI = 1;
-        static const double turnKD = 4;
+        static const double turnKP = 36; // 36
+        static const double turnKI = 0;
+        static const double turnKD = 0.5;
 
         // Straight PID Constants
         static const double straightKP = 0.5;
@@ -59,11 +59,14 @@ class robot
         static inline double rightSpeed = 0;
 
         // Constants
-        static const double DRIVE_ERROR_TOLERANCE = 1; // in inches
-        static const double TURN_ERROR_TOLERANCE = 1.5 * (M_PI / 180); // in RADIANS!
+        static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
+        static const double TURN_ERROR_TOLERANCE = 1 * (M_PI / 180); // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
         static const double TIME_STABLE_TO_BREAK = 0.25; // Measured in seconds
-        static const double VELOCITY_STABLE_TO_BREAK = 20; // Measured in percent
+        static const double TURN_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
+        static const double DRIVE_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
+        static const double TURN_CYCLES_TO_BREAK = 5; // Measured in cycles
+        static const double DRIVE_CYCLES_TO_BREAK = 5; // Measured in cycles
 
         static const double WHEEL_DIAMETER = 2; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
@@ -310,7 +313,7 @@ class robot
 
                     controller1.rumble(".");
 
-                    wait(175, msec);
+                    wait(175, msec); // 175
 
                     // Spin in reverse
                     topAccumulator.setVelocity(0, percent);
@@ -622,8 +625,8 @@ class robot
                 }
 
                 // Print info on the screen (always)
-                controller1.Screen.setCursor(1, 1);
-                controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, integral, derivative);
+                // controller1.Screen.setCursor(1, 1);
+                // controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, integral, derivative);
 
                 // Check for completion with error check and velocity check.
                 if (fabs(error) < DRIVE_ERROR_TOLERANCE)
@@ -641,7 +644,7 @@ class robot
             while(true);
 
             // Stop the motors
-            controller1.rumble("...");
+            // controller1.rumble("...");
             stopDrive();
         }
 
@@ -664,6 +667,8 @@ class robot
 
             // Set motors to drive
             drive(forward);
+
+            int cycleCount = 0;
 
             // Do the turn
             do
@@ -706,10 +711,20 @@ class robot
                 }
 
                 // Check for completion with error check and velocity check.
-                if (fabs(error) < TURN_ERROR_TOLERANCE)
+                if (fabs(error) < TURN_ERROR_TOLERANCE && fabs(derivative) < TURN_VELOCITY_STABLE_TO_BREAK)
                 {
-                    break;
+                    if (cycleCount >= TURN_CYCLES_TO_BREAK)
+                    {
+                        break;
+                    }
                 }
+                else
+                {
+                    cycleCount = 0;
+                }
+
+                // Increase cycle count
+                cycleCount++;
 
                 // Don't consume all of the CPU's resources
                 wait(PID_TIMESTEP, seconds);
@@ -783,7 +798,7 @@ class robot
             double targetHeading = robot::heading;
 
             // Clear the brain timer
-            Brain.resetTimer();
+            int cycleCount = 0;
             
             // Drive towards the target point
             do
@@ -855,19 +870,21 @@ class robot
                 setRightSpeed(rightMotorSpeed);
 
                 // Check for completion with error check and velocity check.
-                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
+                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < DRIVE_VELOCITY_STABLE_TO_BREAK)
                 {
                     // Use the brain's timer to see if the condition above has been held for sufficient length
-                    if (Brain.Timer.value() > TIME_STABLE_TO_BREAK)
+                    if (cycleCount >= DRIVE_CYCLES_TO_BREAK)
                     {
                         break;
                     }
                 }
                 else
                 {
-                    // Clear the timer for use when within margins
-                    Brain.resetTimer();
+                    cycleCount = 0;
                 }
+
+                // Add to cycle count
+                cycleCount++;
 
                 // Don't hog CPU
                 wait(PID_TIMESTEP, seconds);
