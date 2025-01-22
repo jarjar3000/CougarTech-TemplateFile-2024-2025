@@ -38,13 +38,21 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 5; //4.1
-        static const double kI = 0.1; // 1
-        static const double kD = 0.1;
+        static inline double kP;
+        static inline double kI;
+        static inline double kD;
 
-        static const double turnKP = 24; // 36
-        static const double turnKI = 3;
-        static const double turnKD = 2;;
+        static const double fastKP = 3.5;
+        static const double fastKI = 0;
+        static const double fastKD = 0.2;
+
+        static const double preciceKP = 2; // 0.5
+        static const double preciceKI = 0;
+        static const double preciceKD = 0;
+
+        static const double turnKP = 32; // 36
+        static const double turnKI = 0;
+        static const double turnKD = 0.5;
 
         // Straight PID Constants
         static const double straightKP = 0.5;
@@ -59,11 +67,14 @@ class robot
         static inline double rightSpeed = 0;
 
         // Constants
-        static const double DRIVE_ERROR_TOLERANCE = 1; // in inches
+        static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
         static const double TURN_ERROR_TOLERANCE = 1.5 * (M_PI / 180); // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
         static const double TIME_STABLE_TO_BREAK = 0.25; // Measured in seconds
-        static const double VELOCITY_STABLE_TO_BREAK = 20; // Measured in percent
+        static const double TURN_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
+        static const double DRIVE_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
+        static const double TURN_CYCLES_TO_BREAK = 2; // Measured in cycles
+        static const double DRIVE_CYCLES_TO_BREAK = 5; // Measured in cycles
 
         static const double WHEEL_DIAMETER = 2; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
@@ -80,8 +91,8 @@ class robot
 
         // Kalman Filter Variables
         static inline double odomUncertainty = 3; // Tune this, lower represents greater trust
-        static inline double inertialUncertainty = 3; // lower is greater trust
-        static inline double stateUncertainty = 5; // lower is greater trust
+        static inline double inertialUncertainty = 5; // lower is greater trust
+        static inline double stateUncertainty = 0.1; // lower is greater trust
 
         /**
          * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
@@ -310,7 +321,7 @@ class robot
 
                     controller1.rumble(".");
 
-                    wait(175, msec);
+                    wait(175, msec); // 175
 
                     // Spin in reverse
                     topAccumulator.setVelocity(0, percent);
@@ -533,6 +544,26 @@ class robot
         }
 
         /**
+         * @brief Function to set constants to be precice
+         */
+        static void setPrecice()
+        {
+            kP = preciceKP;
+            kI = preciceKI;
+            kD = preciceKD;
+        }
+
+        /**
+         * @brief Function to set constants to be fast
+         */
+        static void setFast()
+        {
+            kP = fastKP;
+            kI = fastKI;
+            kD = fastKD;
+        }
+
+        /**
          * @brief Function to drive straight for a certain distance
          * @param direction The direction to drive in
          * @param distance The distance to drive in inches
@@ -622,8 +653,6 @@ class robot
                 }
 
                 // Print info on the screen (always)
-                controller1.Screen.setCursor(1, 1);
-                controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, integral, derivative);
 
                 // Check for completion with error check and velocity check.
                 if (fabs(error) < DRIVE_ERROR_TOLERANCE)
@@ -641,7 +670,7 @@ class robot
             while(true);
 
             // Stop the motors
-            controller1.rumble("...");
+            // controller1.rumble("...");
             stopDrive();
         }
 
@@ -664,6 +693,8 @@ class robot
 
             // Set motors to drive
             drive(forward);
+
+            int cycleCount = 0;
 
             // Do the turn
             do
@@ -706,10 +737,20 @@ class robot
                 }
 
                 // Check for completion with error check and velocity check.
-                if (fabs(error) < TURN_ERROR_TOLERANCE)
+                if (fabs(error) < TURN_ERROR_TOLERANCE && fabs(derivative) < TURN_VELOCITY_STABLE_TO_BREAK)
                 {
-                    break;
+                    if (cycleCount >= TURN_CYCLES_TO_BREAK)
+                    {
+                        break;
+                    }
                 }
+                else
+                {
+                    cycleCount = 0;
+                }
+
+                // Increase cycle count
+                cycleCount++;
 
                 // Don't consume all of the CPU's resources
                 wait(PID_TIMESTEP, seconds);
@@ -783,7 +824,7 @@ class robot
             double targetHeading = robot::heading;
 
             // Clear the brain timer
-            Brain.resetTimer();
+            int cycleCount = 0;
             
             // Drive towards the target point
             do
@@ -855,19 +896,21 @@ class robot
                 setRightSpeed(rightMotorSpeed);
 
                 // Check for completion with error check and velocity check.
-                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < VELOCITY_STABLE_TO_BREAK)
+                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < DRIVE_VELOCITY_STABLE_TO_BREAK)
                 {
                     // Use the brain's timer to see if the condition above has been held for sufficient length
-                    if (Brain.Timer.value() > TIME_STABLE_TO_BREAK)
+                    if (cycleCount >= DRIVE_CYCLES_TO_BREAK)
                     {
                         break;
                     }
                 }
                 else
                 {
-                    // Clear the timer for use when within margins
-                    Brain.resetTimer();
+                    cycleCount = 0;
                 }
+
+                // Add to cycle count
+                cycleCount++;
 
                 // Don't hog CPU
                 wait(PID_TIMESTEP, seconds);

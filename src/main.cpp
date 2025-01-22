@@ -24,76 +24,78 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   if (robot::allianceIsRed)
-   {
-      // Red autonomous
-      robot::setHeading(270);
-   }
-   else
-   {
-      // Blue autonomous goes here
-      robot::setHeading(90);
-   }
-
-   // Drive to the mobile goal
-   robot::driveStraight(reverse, 30); //32
-   wait(20, msec);
-   robot::clamp();
+   robot::setFast();
+   Brain.Timer.clear();
+   // Put ring on alliance stake
    robot::spinAccumulator(forward, 100);
-
-   // Turn towards heading 0 and drive into the ring
-   robot::turnToHeading(180);
-   robot::driveStraight(forward, 22); // 20
-
-   // Drive back to line up with corner
-   robot::driveStraight(reverse, 19);
-
-   // Go towards the corner stack
-   double degTurn1 = 40;
-   if (robot::allianceIsRed)
-   {
-      robot::turnToHeading(180 + degTurn1);
-   }
-   else
-   {
-      robot::turnToHeading(180 - degTurn1);
-   }
-
-   // Accumulate corner stack
-   // robot::driveStraight(forward, 49);//40
-   robot::drive(forward);
-   robot::setLeftSpeed(100);
-   robot::setRightSpeed(100);
-   wait(3, seconds);
-   robot::stopDrive();
-
-   repeat(2)
-   {
-      robot::driveStraight(reverse, 8);
-      robot::driveStraight(forward, 8);
-   }
-
-   // Line up and grab middle ring
-   robot::clamp(); // Let go so we can stack
-   robot::driveStraight(reverse, 10);
-   robot::turnToHeading(0);
-   robot::driveStraight(forward, 30);
+   wait(0.5, seconds);
    robot::stopAccumulator();
-   
-   // Turn back to alliacne stake and score
-   if (robot::allianceIsRed)
-   {
-      robot::turnToHeading(90);
-   }
-   else
-   {
-      robot::turnToHeading(270);
-   }
 
-   // There is a ring in the way, try to push it out of the way
-   robot::driveStraight(reverse, 12);
-   robot::spinAccumulator(forward);
+   // Go forward, turn left, and clamp mobile goal
+   robot::driveStraight(forward, 13); // 9
+   robot::turnToHeading(0);
+   robot::driveStraight(reverse, 20); // into mogo
+   robot::clamp();
 
+   // Turn right to face the red ring and grab it
+   robot::turnToHeading(90);
+   robot::spinAccumulator(forward, 100);
+   robot::driveStraight(forward, 25); //25
+
+   // Turn towards the next ring and grab it
+   robot::turnToHeading(180); // was 80 degree turn (170 hdg)
+   robot::driveStraight(forward, 23); // 25
+
+   // Turn towards the 2 rings alligned straight and grab them
+   robot::turnToHeading(270);
+   robot::setPrecice();
+   robot::driveStraight(forward, 37);
+
+   // Turn to grab other ring
+   robot::setFast();
+   robot::turnToHeading(150); // 120 degree turn to the left
+   robot::driveStraight(forward, 14);
+
+   // Put goal in corner
+   robot::driveStraight(reverse, 6);
+   robot::turnToHeading(45);
+   robot::driveStraight(reverse, 6); // 4
+   robot::stopAccumulator();
+   robot::clamp();
+
+   // Release the goal, drive to the other side and get the goal
+   robot::driveStraight(forward, 12);
+   robot::turnToHeading(180);
+   robot::driveStraight(reverse, 72);
+   robot::clamp();
+
+   // BEGINNING BUT OPPOSITE ----------------------------------------------------------------------------
+
+   // Turn right to face the red ring and grab it
+   robot::turnToHeading(90);
+   robot::spinAccumulator(forward, 100);
+   robot::driveStraight(forward, 25); //25
+
+   // Turn towards the next ring and grab it
+   robot::turnToHeading(0); // was 80 degree turn (170 hdg)
+   robot::driveStraight(forward, 25);
+
+   // Turn towards the 2 rings alligned straight and grab them
+   robot::turnToHeading(270);
+   robot::setPrecice();
+   robot::driveStraight(forward, 37);
+
+   // Turn to grab other ring
+   robot::setFast();
+   robot::turnToHeading(300); // 120 degree turn to the left
+   robot::driveStraight(forward, 14);
+
+   // Put goal in corner
+   robot::driveStraight(reverse, 6);
+   robot::turnToHeading(45);
+   robot::driveStraight(reverse, 4); // 14
+   robot::stopAccumulator();
+   robot::clamp();
 }
 
 int driver()
@@ -121,7 +123,7 @@ int driver()
    bottomAccumulatorL.setVelocity(100, percent);
    bottomAccumulatorR.setVelocity(100, percent);
    topAccumulator.setVelocity(robot::MAX_TOP_ACCUMULATOR_SPEED, percent);
-   rightArm.setVelocity(60, percent);
+   rightArm.setVelocity(100, percent);
    
    while (true)
    {
@@ -279,17 +281,7 @@ int main()
       robot::allianceIsRed = false;
    }
 
-   // Set the starting position
-   if (robot::allianceIsRed)
-   {
-      // Red starting position
-      robot::init(94, -12, 270);
-   }
-   else
-   {
-      // Blue starting position
-      robot::init(94, -128.41, 90);
-   }
+   robot::init(0, 0, 90);
 
    // Start the thread
    thread ejectThread = thread(robot::eject);
@@ -299,7 +291,7 @@ int main()
    thread odometryTracking = thread(robot::calculateRobotPosition);
 
    // Start the printing thread
-   // thread controllerInfo = thread(robot::printInfoToController);
+   thread controllerInfo = thread(robot::printInfoToController);
 
    // Start the arm thread
    thread arm = thread(robot::armRingStop);
