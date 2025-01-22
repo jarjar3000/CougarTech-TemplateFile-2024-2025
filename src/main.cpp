@@ -24,64 +24,12 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
-   if (robot::allianceIsRed)
-   {
-      // Red autonomous
-      robot::setHeading(270);
-   }
-   else
-   {
-      // Blue autonomous goes here
-      robot::setHeading(90);
-   }
-
-   // Drive to the mobile goal
-   robot::driveStraight(reverse, 32); //32
-   wait(20, msec);
-   robot::clamp();
-   robot::spinAccumulator(forward, 100);
-
-   // Turn towards heading 0 and drive into the ring
-   robot::turnToHeading(180);
-   robot::driveStraight(forward, 22); // 20
-
-   // Drive back to line up with corner
-   // robot::driveStraight(reverse, 24); // 19
-
-   // Go towards the corner stack
-   double degTurn1 = 65;
-   if (robot::allianceIsRed)
-   {
-      robot::turnToHeading(180 + degTurn1);
-   }
-   else
-   {
-      robot::turnToHeading(180 - degTurn1);
-   }
-
-   // Accumulate corner stack
-   robot::drive(forward);
-   robot::setLeftSpeed(100);
-   robot::setRightSpeed(100);
-   wait(2, seconds);
-   robot::stopDrive();
-
-   // Get other corner rings
-   repeat(3)
-   {
-      robot::driveStraight(reverse, 5);
-      robot::setLeftSpeed(100);
-      robot::setRightSpeed(100);
-      robot::drive(forward);
-      wait(0.75, seconds);
-      robot::stopDrive();
-   }
-   robot::stopDrive();
-
-   // Drive back and pray
+   robot::driveStraight(forward, 12);
+   robot::driveStraight(reverse, 12);
+   robot::driveStraight(forward, 24);
    robot::driveStraight(reverse, 24);
-   
-
+   robot::driveStraight(forward, 36);
+   robot::driveStraight(reverse, 36);
 }
 
 int driver()
@@ -109,7 +57,7 @@ int driver()
    bottomAccumulatorL.setVelocity(100, percent);
    bottomAccumulatorR.setVelocity(100, percent);
    topAccumulator.setVelocity(robot::MAX_TOP_ACCUMULATOR_SPEED, percent);
-   rightArm.setVelocity(60, percent);
+   rightArm.setVelocity(100, percent);
    
    while (true)
    {
@@ -267,17 +215,7 @@ int main()
       robot::allianceIsRed = false;
    }
 
-   // Set the starting position
-   if (robot::allianceIsRed)
-   {
-      // Red starting position
-      robot::init(94, -12, 270);
-   }
-   else
-   {
-      // Blue starting position
-      robot::init(94, -128.41, 90);
-   }
+   robot::init(0, 0, 0);
 
    // Start the thread
    thread ejectThread = thread(robot::eject);
