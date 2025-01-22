@@ -46,9 +46,10 @@ void autonomous(void)
    inertial1.resetRotation();
    skills.clear();
 
-   leftSpeed = 80;
-   rightSpeed = 100;
+   
    drive(forward);
+   setLeftSpeed(60);
+   setRightSpeed(100);
    wait(2, seconds);
    stopDrive();
 
