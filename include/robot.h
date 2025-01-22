@@ -38,11 +38,19 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 2; //4.1
-        static const double kI = 0; // 1
-        static const double kD = 0.2; // 0.1
+        static inline double kP;
+        static inline double kI;
+        static inline double kD;
 
-        static const double turnKP = 36; // 36
+        static const double fastKP = 3.5;
+        static const double fastKI = 0;
+        static const double fastKD = 0.2;
+
+        static const double preciceKP = 2; // 0.5
+        static const double preciceKI = 0;
+        static const double preciceKD = 0;
+
+        static const double turnKP = 32; // 36
         static const double turnKI = 0;
         static const double turnKD = 0.5;
 
@@ -60,12 +68,12 @@ class robot
 
         // Constants
         static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
-        static const double TURN_ERROR_TOLERANCE = 1 * (M_PI / 180); // in RADIANS!
+        static const double TURN_ERROR_TOLERANCE = 1.5 * (M_PI / 180); // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
         static const double TIME_STABLE_TO_BREAK = 0.25; // Measured in seconds
         static const double TURN_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
         static const double DRIVE_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
-        static const double TURN_CYCLES_TO_BREAK = 5; // Measured in cycles
+        static const double TURN_CYCLES_TO_BREAK = 2; // Measured in cycles
         static const double DRIVE_CYCLES_TO_BREAK = 5; // Measured in cycles
 
         static const double WHEEL_DIAMETER = 2; // in inches
@@ -83,8 +91,8 @@ class robot
 
         // Kalman Filter Variables
         static inline double odomUncertainty = 3; // Tune this, lower represents greater trust
-        static inline double inertialUncertainty = 3; // lower is greater trust
-        static inline double stateUncertainty = 5; // lower is greater trust
+        static inline double inertialUncertainty = 5; // lower is greater trust
+        static inline double stateUncertainty = 0.1; // lower is greater trust
 
         /**
          * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
@@ -536,6 +544,26 @@ class robot
         }
 
         /**
+         * @brief Function to set constants to be precice
+         */
+        static void setPrecice()
+        {
+            kP = preciceKP;
+            kI = preciceKI;
+            kD = preciceKD;
+        }
+
+        /**
+         * @brief Function to set constants to be fast
+         */
+        static void setFast()
+        {
+            kP = fastKP;
+            kI = fastKI;
+            kD = fastKD;
+        }
+
+        /**
          * @brief Function to drive straight for a certain distance
          * @param direction The direction to drive in
          * @param distance The distance to drive in inches
@@ -625,8 +653,6 @@ class robot
                 }
 
                 // Print info on the screen (always)
-                // controller1.Screen.setCursor(1, 1);
-                // controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, integral, derivative);
 
                 // Check for completion with error check and velocity check.
                 if (fabs(error) < DRIVE_ERROR_TOLERANCE)

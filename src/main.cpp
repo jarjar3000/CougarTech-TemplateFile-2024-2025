@@ -24,12 +24,78 @@ void pre_auton(void)
 // Autonomous
 void autonomous(void)
 {
+   robot::setFast();
+   Brain.Timer.clear();
+   // Put ring on alliance stake
+   robot::spinAccumulator(forward, 100);
+   wait(0.5, seconds);
+   robot::stopAccumulator();
+
+   // Go forward, turn left, and clamp mobile goal
+   robot::driveStraight(forward, 13); // 9
+   robot::turnToHeading(0);
+   robot::driveStraight(reverse, 20); // into mogo
+   robot::clamp();
+
+   // Turn right to face the red ring and grab it
+   robot::turnToHeading(90);
+   robot::spinAccumulator(forward, 100);
+   robot::driveStraight(forward, 25); //25
+
+   // Turn towards the next ring and grab it
+   robot::turnToHeading(180); // was 80 degree turn (170 hdg)
+   robot::driveStraight(forward, 23); // 25
+
+   // Turn towards the 2 rings alligned straight and grab them
+   robot::turnToHeading(270);
+   robot::setPrecice();
+   robot::driveStraight(forward, 37);
+
+   // Turn to grab other ring
+   robot::setFast();
+   robot::turnToHeading(150); // 120 degree turn to the left
+   robot::driveStraight(forward, 14);
+
+   // Put goal in corner
+   robot::driveStraight(reverse, 6);
+   robot::turnToHeading(45);
+   robot::driveStraight(reverse, 6); // 4
+   robot::stopAccumulator();
+   robot::clamp();
+
+   // Release the goal, drive to the other side and get the goal
    robot::driveStraight(forward, 12);
-   robot::driveStraight(reverse, 12);
-   robot::driveStraight(forward, 24);
-   robot::driveStraight(reverse, 24);
-   robot::driveStraight(forward, 36);
-   robot::driveStraight(reverse, 36);
+   robot::turnToHeading(180);
+   robot::driveStraight(reverse, 72);
+   robot::clamp();
+
+   // BEGINNING BUT OPPOSITE ----------------------------------------------------------------------------
+
+   // Turn right to face the red ring and grab it
+   robot::turnToHeading(90);
+   robot::spinAccumulator(forward, 100);
+   robot::driveStraight(forward, 25); //25
+
+   // Turn towards the next ring and grab it
+   robot::turnToHeading(0); // was 80 degree turn (170 hdg)
+   robot::driveStraight(forward, 25);
+
+   // Turn towards the 2 rings alligned straight and grab them
+   robot::turnToHeading(270);
+   robot::setPrecice();
+   robot::driveStraight(forward, 37);
+
+   // Turn to grab other ring
+   robot::setFast();
+   robot::turnToHeading(300); // 120 degree turn to the left
+   robot::driveStraight(forward, 14);
+
+   // Put goal in corner
+   robot::driveStraight(reverse, 6);
+   robot::turnToHeading(45);
+   robot::driveStraight(reverse, 4); // 14
+   robot::stopAccumulator();
+   robot::clamp();
 }
 
 int driver()
@@ -215,7 +281,7 @@ int main()
       robot::allianceIsRed = false;
    }
 
-   robot::init(0, 0, 0);
+   robot::init(0, 0, 90);
 
    // Start the thread
    thread ejectThread = thread(robot::eject);
