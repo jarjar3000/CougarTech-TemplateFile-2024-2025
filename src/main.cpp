@@ -43,9 +43,16 @@ void autonomous(void)
    // }
 
    inertial1.setRotation(0, degrees);
-   inertial1.resetRotation();
+   inertial1.resetRotation
    skills.clear();
 
+   leftSpeed = 100;
+   rightSpeed = 80;
+   wait(1, seconds);
+   leftSpeed = 0;
+   rightSpeed = 0;
+
+/*
    // Put ring on alliance stake
    spinAccumulator(forward, 90);
    wait(1, seconds);
@@ -117,6 +124,7 @@ void autonomous(void)
    drive(forward);
    waitUntil(skills.time(seconds) >= 59);
    hang();
+*/
 }
 
 int driver()
