@@ -46,10 +46,11 @@ void autonomous(void)
    inertial1.resetRotation();
    skills.clear();
 
-   
-   drive(forward);
-   setLeftSpeed(60);
-   setRightSpeed(100);
+   robot::setLeftSpeed(100);
+   robot::setRightSpeed(80);
+   //drive(forward);
+   //setLeftSpeed(60);
+   //setRightSpeed(100);
    wait(2, seconds);
    stopDrive();
 
