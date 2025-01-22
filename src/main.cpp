@@ -46,12 +46,11 @@ void autonomous(void)
    inertial1.resetRotation();
    skills.clear();
 
-   setLeftSpeed(100);
-   setRightSpeed(80);
+   leftSpeed = 80;
+   rightSpeed = 100;
    drive(forward);
-   wait(1, seconds);
-   leftSpeed = 0;
-   rightSpeed = 0;
+   wait(2, seconds);
+   stopDrive();
 
 /*
    // Put ring on alliance stake
