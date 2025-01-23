@@ -287,7 +287,7 @@ int main()
       robot::allianceIsRed = false;
    }
 
-   robot::init(0, 0, 0);
+   robot::init(0, 0, 90);
 
    // Start the thread
    thread ejectThread = thread(robot::eject);
