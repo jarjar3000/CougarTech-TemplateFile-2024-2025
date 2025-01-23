@@ -129,7 +129,7 @@ int driver()
    bottomAccumulatorL.setVelocity(100, percent);
    bottomAccumulatorR.setVelocity(100, percent);
    topAccumulator.setVelocity(robot::MAX_TOP_ACCUMULATOR_SPEED, percent);
-   rightArm.setVelocity(60, percent);
+   rightArm.setVelocity(100, percent);
    
    while (true)
    {
