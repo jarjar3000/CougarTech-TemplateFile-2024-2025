@@ -38,16 +38,24 @@ class robot
         static const double ALPHA = 0.6;
 
         // PID Variables
-        static const double kP = 2; //4.1
-        static const double kI = 0; // 1
-        static const double kD = 0.2; // 0.1
+        static inline double kP;
+        static inline double kI;
+        static inline double kD;
 
-        static const double turnKP = 36; // 36
-        static const double turnKI = 0;
+        static const double fastKP = 4.1;
+        static const double fastKI = 0.1;
+        static const double fastKD = 0.2;
+
+        static const double preciceKP = 3.5; // 0.5
+        static const double preciceKI = 0;
+        static const double preciceKD = 0.2;
+
+        static const double turnKP = 34; // 32
+        static const double turnKI = 0.1;
         static const double turnKD = 0.5;
 
         // Straight PID Constants
-        static const double straightKP = 0.5;
+        static const double straightKP = 75;
         static const double straightKI = 0.0;
         static const double straightKD = 0.0;
 
@@ -60,13 +68,15 @@ class robot
 
         // Constants
         static const double DRIVE_ERROR_TOLERANCE = 0.5; // in inches
-        static const double TURN_ERROR_TOLERANCE = 1 * (M_PI / 180); // in RADIANS!
+        static const double TURN_ERROR_TOLERANCE = 1.5 * (M_PI / 180); // in RADIANS!
         static const double PID_TIMESTEP = 0.02; // Measured in seconds
         static const double TIME_STABLE_TO_BREAK = 0.25; // Measured in seconds
         static const double TURN_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
         static const double DRIVE_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
-        static const double TURN_CYCLES_TO_BREAK = 5; // Measured in cycles
+        static const double TURN_CYCLES_TO_BREAK = 3; // Measured in cycles
         static const double DRIVE_CYCLES_TO_BREAK = 5; // Measured in cycles
+        static const double accelRatio = 0.2; // Ratio of distance to reach max speed
+        static const double decelRatio = 0.2; // Ratio of distance to start decelerating
 
         static const double WHEEL_DIAMETER = 2; // in inches
         static const double WHEEL_GEAR_RATIO = (double) 1 / 1;
@@ -83,8 +93,8 @@ class robot
 
         // Kalman Filter Variables
         static inline double odomUncertainty = 3; // Tune this, lower represents greater trust
-        static inline double inertialUncertainty = 3; // lower is greater trust
-        static inline double stateUncertainty = 5; // lower is greater trust
+        static inline double inertialUncertainty = 5; // lower is greater trust
+        static inline double stateUncertainty = 0.1; // lower is greater trust
 
         /**
          * @brief Calculate the Lagrange Interpolating Polynomial that passes through (x, y) points and returns result given an input
@@ -536,6 +546,26 @@ class robot
         }
 
         /**
+         * @brief Function to set constants to be precice
+         */
+        static void setPrecice()
+        {
+            kP = preciceKP;
+            kI = preciceKI;
+            kD = preciceKD;
+        }
+
+        /**
+         * @brief Function to set constants to be fast
+         */
+        static void setFast()
+        {
+            kP = fastKP;
+            kI = fastKI;
+            kD = fastKD;
+        }
+
+        /**
          * @brief Function to drive straight for a certain distance
          * @param direction The direction to drive in
          * @param distance The distance to drive in inches
@@ -544,18 +574,21 @@ class robot
         {
             // Initialize the PID variables
             double error = 0, integral = 0, derivative = 0, prevError = 0;
-            double motorSpeed = 0;
+            double leftMotorSpeed = 0, rightMotorSpeed = 0, prevLeftMotorSpeed = 0, prevRightMotorSpeed = 0;
             double totalDistanceMoved = 0;
 
             // Encoder values
             double leftEncoder = 0, rightEncoder = 0, backEncoder = 0;
             double prevLeftEncoder = 0, prevRightEncoder = 0, prevBackEncoder = 0;
             
-            // Set heading to hold
-            double targetHeading = robot::heading;
+            // Trapezoidal profile variables
+            const double maxSpeed = 100; // Max speed percentage
 
             // reset the timer
             Brain.resetTimer();
+
+            bool rampUp = true;
+            bool rampDown = false;
 
             // Reset the tracking wheel encoders
             leftTracking.setPosition(0, degrees);
@@ -574,6 +607,11 @@ class robot
                 case vex::directionType::undefined:
                     break;
             }
+
+            // Hold the initial heading
+            double initialHeading = robot::heading;
+
+            int cycleCount = 0;
 
             do 
             {
@@ -599,7 +637,9 @@ class robot
                 error = distance - fabs(totalDistanceMoved);
 
                 // Integral - only integrate when motor speed is less than 100 and the motor speed isn't the same sign as the error so integral doesn't wind
-                if (!(motorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-motorSpeed / fabs(motorSpeed))))
+                bool leftSaturated = !(leftMotorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-leftMotorSpeed / fabs(leftMotorSpeed)));
+                bool rightSaturated = !(rightMotorSpeed >= 100 && (int) (-error / fabs(error)) == (int) (-rightMotorSpeed / fabs(rightMotorSpeed)));
+                if (!leftSaturated && !rightSaturated)
                 {
                     integral += (error * PID_TIMESTEP);
                 }
@@ -608,43 +648,76 @@ class robot
                 derivative = (error - prevError) / PID_TIMESTEP;
                 prevError = error;
 
-                // Change motor speed and angluar velocity
-                motorSpeed = error * kP + integral * kI + derivative * kD;
+                // Calculate motor speed with PID
+                leftMotorSpeed = (error * kP + integral * kI + derivative * kD);
+                rightMotorSpeed = (error * kP + integral * kI + derivative * kD);
+
+                // Enable heading correction when the distance is large and the error is large
+                if (distance > 50 && fabs(error) > distance * 0.95)
+                {
+                    // Heading correction
+                    double headingError = initialHeading - robot::heading;
+                    double headingCorrection = headingError * straightKP;
+
+                    leftMotorSpeed += headingCorrection;
+                    rightMotorSpeed -= headingCorrection;
+                }
+
+                // Saturation protection
+                double maxMotorSpeed = fmax(fabs(leftMotorSpeed), fabs(rightMotorSpeed));
+                if (maxMotorSpeed > 100)
+                {
+                    leftMotorSpeed = (leftMotorSpeed / maxMotorSpeed) * 100;
+                    rightMotorSpeed = (rightMotorSpeed / maxMotorSpeed) * 100;
+                }
+
+                // Smooth the motor speed changes
+                const double controlRate = 0.15; // Smaller values add stability
+                leftMotorSpeed = prevLeftMotorSpeed + (controlRate * (leftMotorSpeed - prevLeftMotorSpeed));
+                rightMotorSpeed = prevRightMotorSpeed + (controlRate * (rightMotorSpeed - prevRightMotorSpeed));
+               
+                // Apply motor speed changes
                 switch (direction)
                 {
                     case vex::directionType::fwd:
-                        setLeftSpeed(motorSpeed);
-                        setRightSpeed(motorSpeed);
+                        setLeftSpeed(leftMotorSpeed);
+                        setRightSpeed(rightMotorSpeed);
                         break;
                     case vex::directionType::rev:
-                        setLeftSpeed(-motorSpeed);
-                        setRightSpeed(-motorSpeed);
+                        setLeftSpeed(-leftMotorSpeed);
+                        setRightSpeed(-rightMotorSpeed);
                         break;
                     case vex::directionType::undefined:
                         break;
                 }
 
-                // Print info on the screen (always)
-                // controller1.Screen.setCursor(1, 1);
-                // controller1.Screen.print("E: %.2f, I: %.2f, D: %.2f", error, integral, derivative);
-
-                // Check for completion with error check and velocity check.
-                if (fabs(error) < DRIVE_ERROR_TOLERANCE)
+                // Check for completion with error check and velocity check
+                if (fabs(error) < DRIVE_ERROR_TOLERANCE && fabs(derivative) < DRIVE_VELOCITY_STABLE_TO_BREAK)
                 {
-                    break;
+                    if (DRIVE_CYCLES_TO_BREAK <= cycleCount)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    cycleCount = 0;
                 }
 
                 // Set current encoder values to previous
                 prevLeftEncoder = leftEncoder;
                 prevRightEncoder = rightEncoder;
                 prevBackEncoder = backEncoder;
+                prevLeftMotorSpeed = leftMotorSpeed;
+                prevRightMotorSpeed = rightMotorSpeed;
+                cycleCount++;
 
                 wait(PID_TIMESTEP, seconds);
             }
             while(true);
 
             // Stop the motors
-            // controller1.rumble("...");
+            controller1.rumble("...");
             stopDrive();
         }
 
@@ -1198,5 +1271,10 @@ class robot
         {
             inertial1.setHeading(deg, degrees);
             robot::heading = deg * (M_PI / 180);
+        }
+
+        static double getHeadingInDegrees()
+        {
+            return robot::heading * (180 / M_PI);
         }
 };
