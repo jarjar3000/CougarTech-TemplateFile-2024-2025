@@ -33,21 +33,23 @@ void autonomous(void)
    robot::stopAccumulator();
 
    // Go forward, turn left, and clamp mobile goal
-   robot::driveStraight(forward, 13); // 9
+   robot::driveStraight(forward, 13); // 15
    robot::turnToHeading(0);
+   robot::setPrecice();
    robot::driveStraight(reverse, 20); // into mogo
+   robot::setFast();
    robot::clamp();
 
    // Draw a "U" SHAPE to spend time more efficently
    robot::spinAccumulator(forward, 100);
    robot::turnToHeading(90);
-   robot::driveStraight(forward, 12);
+   robot::driveStraight(forward, 12); // 10
 
    robot::setLeftSpeed(60); // 60
    robot::setRightSpeed(20); // 20
    robot::drive(forward);
 
-   waitUntil(robot::getHeadingInDegrees() >= 270);
+   waitUntil(robot::getHeadingInDegrees() >= 265);
 
    // Collect two rings in the line
    robot::setLeftSpeed(30);
@@ -57,23 +59,29 @@ void autonomous(void)
 
    // Get final ring
    robot::turnToHeading(150); // 120 degree turn to the left
-   robot::driveStraight(forward, 14); // 8 
+   robot::driveStraight(forward, 12); // 12 
+   robot::driveStraight(reverse, 4); // 2
 
    // Put goal in corner
    robot::turnToHeading(45);
-   robot::driveStraight(reverse, 10); // 6
+   robot::driveStraight(reverse, 6); // 8
    robot::stopAccumulator();
    robot::clamp();
 
    // Release the goal, drive to the other side and get the goal
-   robot::driveStraight(forward, 12); // Needs to be less
-   robot::turnToHeading(180);
-   robot::driveStraight(reverse, 72);
+   robot::driveStraight(forward, 12); // 11
+   robot::turnToHeading(180); // 180
+   wait(500, msec); // Wait for precision (THIS NEEDS TO WORK)
+   robot::driveStraight(reverse, 60); // 72
+
+   robot::setPrecice();
+   robot::driveStraight(reverse, 12); // 11
    robot::clamp();
 
    // BEGINNING BUT OPPOSITE ----------------------------------------------------------------------------
 
    // Draw a "U" SHAPE to spend time more efficently
+   robot::setFast();
    robot::spinAccumulator(forward, 100);
    robot::turnToHeading(90);
    robot::driveStraight(forward, 12);
@@ -82,7 +90,19 @@ void autonomous(void)
    robot::setLeftSpeed(20); // 20
    robot::drive(forward);
 
-   waitUntil(robot::getHeadingInDegrees() >= 270 && robot::getHeadingInDegrees() <= 360);
+   int count = 0;
+   while (count < 2)
+   {
+      if (robot::getHeadingInDegrees() >= 260 && robot::getHeadingInDegrees() <= 280)
+      {
+         count++;
+      }
+      else
+      {
+         count = 0;
+      }
+      wait(10, msec);
+   }
 
    // Collect two rings in the line
    robot::setRightSpeed(30);
@@ -91,14 +111,15 @@ void autonomous(void)
    robot::stopDrive();
 
    // Get final ring
-   robot::turnToHeading(330); // 120 degree turn to the left
+   robot::turnToHeading(35); // 45
    robot::driveStraight(forward, 14); // 8 
 
    // Put goal in corner
-   robot::turnToHeading(135);
+   robot::turnToHeading(125);
    robot::driveStraight(reverse, 6); // 4
    robot::stopAccumulator();
    robot::clamp();
+
 }
 
 int driver()
