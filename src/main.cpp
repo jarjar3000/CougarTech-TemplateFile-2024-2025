@@ -38,6 +38,7 @@ void autonomous(void)
    // Drive to the mobile goal
    robot::setPrecice();
    robot::driveStraight(reverse, 32);
+   robot::setFast();
    robot::clamp();
    robot::spinAccumulator(forward, 100);
 
@@ -72,7 +73,7 @@ void autonomous(void)
    robot::driveStraight(forward, 5); // 4
 
    // Drive backwards and go towards the corner stack
-   robot::driveStraight(reverse, 20); // 20
+   robot::driveStraight(reverse, 24); // 20
    if (robot::allianceIsRed)
    {
       robot::turnToHeading(310);
@@ -86,7 +87,7 @@ void autonomous(void)
    robot::drive(forward);
    robot::setLeftSpeed(100);
    robot::setRightSpeed(100);
-   wait(2, seconds);
+   wait(1.5, seconds);
    robot::stopDrive();
 
    // Get other corner rings
@@ -96,7 +97,7 @@ void autonomous(void)
       robot::setLeftSpeed(100);
       robot::setRightSpeed(100);
       robot::drive(forward);
-      wait(0.75, seconds);
+      wait(0.5, seconds);
       robot::stopDrive();
    }
    robot::stopDrive();
