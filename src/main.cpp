@@ -81,38 +81,6 @@ void autonomous(void)
    // Drive back and pray
    robot::driveStraight(reverse, 24);
    
-
-   // Allign with wall 
-   robot::setPrecice();
-   robot::driveStraight(forward, 16); // 8
-   robot::turnToHeading(90);
-
-   // Go to the tall wall stake
-   robot::driveStraight(forward, 38); // 20
-   robot::setFast();
-
-   // Grab the ring in front of the stake and ram the wall
-   robot::armActive = true;
-   robot::spinAccumulator(forward, 100);
-   robot::turnToHeading(0);
-
-   robot::drive(forward);
-   robot::setRightSpeed(30);
-   robot::setLeftSpeed(30);
-   Brain.Timer.clear();
-   waitUntil(Brain.Timer.time(seconds) >= 5 || limit1.pressing());
-   // robot::stopDrive();
-   robot::stopAccumulator();
-
-   // Stack
-   rightArm.setVelocity(100, percent);
-   rightArm.spin(forward);
-   wait(2, seconds);
-   rightArm.stop();
-   robot::stopDrive();
-
-   // Back away and then do something
-   robot::driveStraight(reverse, 6); // 10
 }
 
 int driver()
