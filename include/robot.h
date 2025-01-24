@@ -46,16 +46,16 @@ class robot
         static const double fastKI = 0.1;
         static const double fastKD = 0.2;
 
-        static const double preciceKP = 3.5; // 0.5
+        static const double preciceKP = 3; // 0.5
         static const double preciceKI = 0;
         static const double preciceKD = 0.2;
 
-        static const double turnKP = 34; // 32
+        static const double turnKP = 32; // 34
         static const double turnKI = 0.1;
         static const double turnKD = 0.5;
 
         // Straight PID Constants
-        static const double straightKP = 75;
+        static const double straightKP = 100; // 75
         static const double straightKI = 0.0;
         static const double straightKD = 0.0;
 
@@ -73,7 +73,7 @@ class robot
         static const double TIME_STABLE_TO_BREAK = 0.25; // Measured in seconds
         static const double TURN_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
         static const double DRIVE_VELOCITY_STABLE_TO_BREAK = 5; // Measured in percent
-        static const double TURN_CYCLES_TO_BREAK = 3; // Measured in cycles
+        static const double TURN_CYCLES_TO_BREAK = 4; // Measured in cycles
         static const double DRIVE_CYCLES_TO_BREAK = 5; // Measured in cycles
         static const double accelRatio = 0.2; // Ratio of distance to reach max speed
         static const double decelRatio = 0.2; // Ratio of distance to start decelerating
@@ -323,7 +323,7 @@ class robot
 
                     controller1.rumble(".");
 
-                    wait(175, msec); // 175
+                    wait(150, msec); // 175
 
                     // Spin in reverse
                     topAccumulator.setVelocity(0, percent);

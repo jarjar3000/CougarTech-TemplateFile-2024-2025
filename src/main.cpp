@@ -33,9 +33,10 @@ void autonomous(void)
    robot::stopAccumulator();
 
    // Go forward, turn left, and clamp mobile goal
+   robot::setPrecice();
    robot::driveStraight(forward, 13); // 15
    robot::turnToHeading(0);
-   robot::setPrecice();
+   wait(500, msec);
    robot::driveStraight(reverse, 20); // into mogo
    robot::setFast();
    robot::clamp();
@@ -69,13 +70,21 @@ void autonomous(void)
    robot::clamp();
 
    // Release the goal, drive to the other side and get the goal
-   robot::driveStraight(forward, 12); // 11
+   robot::driveStraight(forward, 13); // 12
    robot::turnToHeading(180); // 180
    wait(500, msec); // Wait for precision (THIS NEEDS TO WORK)
-   robot::driveStraight(reverse, 60); // 72
-
    robot::setPrecice();
-   robot::driveStraight(reverse, 12); // 11
+
+   robot::setLeftSpeed(50);
+   robot::setRightSpeed(50);
+
+   double amountSpun = 1500;
+   
+   leftF.spinFor(reverse, amountSpun, degrees, false);
+   rightF.spinFor(reverse, amountSpun, degrees, false);
+   leftB.spinFor(reverse, amountSpun, degrees, false);
+   rightB.spinFor(reverse, amountSpun, degrees, true);
+   
    robot::clamp();
 
    // BEGINNING BUT OPPOSITE ----------------------------------------------------------------------------
@@ -116,10 +125,41 @@ void autonomous(void)
 
    // Put goal in corner
    robot::turnToHeading(125);
-   robot::driveStraight(reverse, 6); // 4
+   robot::driveStraight(reverse, 7); // 4
    robot::stopAccumulator();
    robot::clamp();
 
+   // Allign with wall 
+   robot::setPrecice();
+   robot::driveStraight(forward, 16); // 8
+   robot::turnToHeading(90);
+
+   // Go to the tall wall stake
+   robot::driveStraight(forward, 38); // 20
+   robot::setFast();
+
+   // Grab the ring in front of the stake and ram the wall
+   robot::armActive = true;
+   robot::spinAccumulator(forward, 100);
+   robot::turnToHeading(0);
+
+   robot::drive(forward);
+   robot::setRightSpeed(30);
+   robot::setLeftSpeed(30);
+   Brain.Timer.clear();
+   waitUntil(Brain.Timer.time(seconds) >= 5 || limit1.pressing());
+   // robot::stopDrive();
+   robot::stopAccumulator();
+
+   // Stack
+   rightArm.setVelocity(100, percent);
+   rightArm.spin(forward);
+   wait(2, seconds);
+   rightArm.stop();
+   robot::stopDrive();
+
+   // Back away and then do something
+   robot::driveStraight(reverse, 6); // 10
 }
 
 int driver()
