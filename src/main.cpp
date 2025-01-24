@@ -41,106 +41,68 @@ void autonomous(void)
    robot::clamp();
    robot::spinAccumulator(forward, 100);
 
-   // Curve to grab stacked rings
-   double leftSpeed = 40;
-   double rightSpeed = 60;
+   // Turn towards heading 0 and drive into the ring
+   robot::turnToHeading(0);
+   robot::driveStraight(forward, 18); // 20
+
+   // Turn towards the stacked rings
    if (robot::allianceIsRed)
    {
-      robot::turnToHeading(45);
-      controller1.rumble(".-.-.-");
-      robot::setLeftSpeed(leftSpeed);
-      robot::setRightSpeed(rightSpeed);
-      robot::drive(forward);
-
-      waitUntil(robot::getHeadingInDegrees() <= 350 && robot::getHeadingInDegrees() >= 330);
-      controller1.rumble(".-.-.-");
-
-      // Go straight to grab the other rings
-      robot::stopDrive();
-      robot::setFast();
-      robot::driveStraight(forward, 10);
-      robot::intakeLift();
-      robot::driveStraight(forward, 24);
-
+      robot::turnToHeading(90);
    }
    else
    {
       robot::turnToHeading(270);
-      robot::setLeftSpeed(rightSpeed);
-      robot::setRightSpeed(leftSpeed);
-      robot::drive(forward);
-
-      waitUntil(robot::getHeadingInDegrees() <= 170);
-
-      // Go straight to grab the other rings
-      robot::stopDrive();
-      robot::driveStraight(forward, 10);
-      robot::intakeLift();
-      robot::driveStraight(forward, 24);
    }
 
-   // // Turn towards heading 0 and drive into the ring
-   // robot::turnToHeading(0);
-   // robot::driveStraight(forward, 18); // 20
+   // Drive to the stacked rings
+   robot::driveStraight(forward, 10); // 8
 
-   // // Turn towards the stacked rings
-   // if (robot::allianceIsRed)
-   // {
-   //    robot::turnToHeading(90);
-   // }
-   // else
-   // {
-   //    robot::turnToHeading(270);
-   // }
+   // Turn 45 degrees and get the other ring
+   double degTurn = 45;
+   if (robot::allianceIsRed)
+   {
+      robot::turnToHeading(90 - degTurn);
+   }
+   else
+   {
+      robot::turnToHeading(270 + degTurn);
+   }
 
-   // // Drive to the stacked rings
-   // robot::driveStraight(forward, 10); // 8
+   robot::driveStraight(forward, 5); // 4
 
-   // // Turn 45 degrees and get the other ring
-   // double degTurn = 45;
-   // if (robot::allianceIsRed)
-   // {
-   //    robot::turnToHeading(90 - degTurn);
-   // }
-   // else
-   // {
-   //    robot::turnToHeading(270 + degTurn);
-   // }
+   // Drive backwards and go towards the corner stack
+   robot::driveStraight(reverse, 20); // 20
+   if (robot::allianceIsRed)
+   {
+      robot::turnToHeading(310);
+   }
+   else
+   {
+      robot::turnToHeading(140);
+   }
 
-   // robot::driveStraight(forward, 5); // 4
+   // Accumulate corner stack
+   robot::drive(forward);
+   robot::setLeftSpeed(100);
+   robot::setRightSpeed(100);
+   wait(2, seconds);
+   robot::stopDrive();
 
-   // // Drive backwards and go towards the corner stack
-   // robot::driveStraight(reverse, 20); // 20
-   // if (robot::allianceIsRed)
-   // {
-   //    robot::turnToHeading(310);
-   // }
-   // else
-   // {
-   //    robot::turnToHeading(140);
-   // }
+   // Get other corner rings
+   repeat(3)
+   {
+      robot::driveStraight(reverse, 5);
+      robot::setLeftSpeed(100);
+      robot::setRightSpeed(100);
+      robot::drive(forward);
+      wait(0.75, seconds);
+      robot::stopDrive();
+   }
+   robot::stopDrive();
 
-   // // Accumulate corner stack
-   // robot::drive(forward);
-   // robot::setLeftSpeed(100);
-   // robot::setRightSpeed(100);
-   // wait(2, seconds);
-   // robot::stopDrive();
-
-   // // Get other corner rings
-   // repeat(3)
-   // {
-   //    robot::driveStraight(reverse, 5);
-   //    robot::setLeftSpeed(100);
-   //    robot::setRightSpeed(100);
-   //    robot::drive(forward);
-   //    wait(0.75, seconds);
-   //    robot::stopDrive();
-   // }
-   // robot::stopDrive();
-
-   // // Drive back and pray
-   // robot::driveStraight(reverse, 24);
+   // Drive back and pray
+   robot::driveStraight(reverse, 24);
 }
 
 int driver()
