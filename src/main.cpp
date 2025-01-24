@@ -36,10 +36,12 @@ void autonomous(void)
    }
 
    // Drive to the mobile goal
+   robot::setPrecice();
    robot::driveStraight(reverse, 32); //32
    wait(20, msec);
    robot::clamp();
    robot::spinAccumulator(forward, 100);
+   robot::setFast();
 
    // Turn towards heading 0 and drive into the ring
    robot::turnToHeading(180);
@@ -63,7 +65,11 @@ void autonomous(void)
    robot::drive(forward);
    robot::setLeftSpeed(100);
    robot::setRightSpeed(100);
-   wait(2, seconds);
+   wait(1.5, seconds);
+   robot::intakeLift();
+   wait(0.5, seconds);
+   robot::intakeLift();
+   wait(0.5, seconds);
    robot::stopDrive();
 
    // Get other corner rings
@@ -73,7 +79,11 @@ void autonomous(void)
       robot::setLeftSpeed(100);
       robot::setRightSpeed(100);
       robot::drive(forward);
-      wait(0.75, seconds);
+      wait(0.5, seconds);
+      robot::intakeLift();
+      wait(0.5, seconds);
+      robot::intakeLift();
+      wait(0.5, seconds);
       robot::stopDrive();
    }
    robot::stopDrive();
