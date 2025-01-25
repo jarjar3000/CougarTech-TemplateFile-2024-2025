@@ -66,10 +66,6 @@ void autonomous(void)
    robot::setLeftSpeed(100);
    robot::setRightSpeed(100);
    wait(1.5, seconds);
-   robot::intakeLift();
-   wait(0.5, seconds);
-   robot::intakeLift();
-   wait(0.5, seconds);
    robot::stopDrive();
 
    // Get other corner rings
@@ -79,11 +75,7 @@ void autonomous(void)
       robot::setLeftSpeed(100);
       robot::setRightSpeed(100);
       robot::drive(forward);
-      wait(0.5, seconds);
-      robot::intakeLift();
-      wait(0.5, seconds);
-      robot::intakeLift();
-      wait(0.5, seconds);
+      wait(1, seconds);
       robot::stopDrive();
    }
    robot::stopDrive();
