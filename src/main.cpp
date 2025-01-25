@@ -160,6 +160,58 @@ void autonomous(void)
 
    // Back away and then do something
    robot::driveStraight(reverse, 6); // 10
+
+   // BREAKPOINT OF DECISION TREE
+
+   // Go hang
+   robot::turnToHeading(90);
+   robot::driveStraight(reverse, 24);
+   robot::turnToHeading(90 + 45);
+   robot::hang();
+
+   robot::setLeftSpeed(100);
+   robot::setRightSpeed(100);
+   robot::drive(forward);
+   wait(3, seconds);
+   
+
+   /* More adventourous
+
+   // Turn towards the ring and get it
+   robot::spinAccumulator(forward, 100);
+   robot::turnToHeading(90);
+   robot::driveStraight(forward, 12);
+   robot::stopAccumulator();
+
+   // Intake the other ring (while storing) 1
+   robot::turnToHeading(180);
+   bottomAccumulatorL.setVelocity(100, percent);
+   bottomAccumulatorR.setVelocity(100, percent);
+   robot::driveStraight(forward, 12);
+   robot::stopAccumulator();
+
+   // Turn to heading 135 and get the goal
+   robot::turnToHeading(305);
+   robot::driveStraight(reverse, 14);
+   robot::turnToHeading(200);
+
+   // Put goal in the corner by backing up and praying
+   robot::drive(reverse);
+   robot::setLeftSpeed(100);
+   robot::setRightSpeed(100);
+   wait(3, seconds);
+   robot::stopDrive();
+
+   // Go hang
+   robot::driveStraight(forward, 6);
+   robot::turnToHeading(180 + 45);
+   robot::setLeftSpeed(100);
+   robot::setRightSpeed(100);
+   robot::drive(forward);
+   wait(3, seconds);
+   robot::hang();
+
+   */
 }
 
 int driver()
