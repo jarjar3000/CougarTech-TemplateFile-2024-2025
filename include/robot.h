@@ -319,7 +319,8 @@ class robot
                 if (((optical1.hue() >= OPTICAL_BLUE_HUE && allianceIsRed) || (optical1.hue() <= OPTICAL_RED_HUE && !allianceIsRed)) && !armActive)
                 {
                     controller1.rumble(".");
-                    waitUntil(limit1.pressing());
+                    // waitUntil(limit1.pressing());
+                    waitUntil(distance1.objectDistance(mm) <= 10);
 
                     controller1.rumble(".");
 
