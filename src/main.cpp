@@ -51,15 +51,26 @@ void autonomous(void)
    // robot::driveStraight(reverse, 24); // 19
 
    // Go towards the corner stack
-   double degTurn1 = 65;
    if (robot::allianceIsRed)
    {
-      robot::turnToHeading(180 + degTurn1);
+      robot::turnToHeading(270);
    }
    else
    {
-      robot::turnToHeading(180 - degTurn1);
+      robot::turnToHeading(90);
    }
+
+   robot::driveStraight(forward, 22);
+
+   if (robot::allianceIsRed)
+   {
+      robot::turnToHeading(270 - 45);
+   }
+   else
+   {
+      robot::turnToHeading(90 + 45);
+   }
+
 
    // Accumulate corner stack
    robot::drive(forward);
@@ -71,9 +82,10 @@ void autonomous(void)
    // Get other corner rings
    repeat(3)
    {
-      robot::driveStraight(reverse, 5);
       robot::setLeftSpeed(100);
       robot::setRightSpeed(100);
+      robot::drive(reverse);
+      wait(0.5, seconds);
       robot::drive(forward);
       wait(1, seconds);
       robot::stopDrive();
