@@ -57,7 +57,7 @@ void autonomous(void)
    }
 
    // Drive to the stacked rings
-   robot::driveStraight(forward, 8); // 8
+   robot::driveStraight(forward, 10); // 8
 
    // Turn 45 degrees and get the other ring
    double degTurn = 45;
@@ -70,7 +70,7 @@ void autonomous(void)
       robot::turnToHeading(270 + degTurn);
    }
 
-   robot::driveStraight(forward, 4); // 4
+   robot::driveStraight(forward, 5); // 4
    wait(500, msec);
 
    // Drive backwards and go towards the corner stack
