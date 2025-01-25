@@ -25,6 +25,7 @@ void pre_auton(void)
 void autonomous(void)
 {
    rightArm.setStopping(hold);
+   rightArm.setPosition(0, degrees);
    robot::setFast();
    Brain.Timer.clear();
    // Put ring on alliance stake
@@ -147,7 +148,7 @@ void autonomous(void)
    robot::setRightSpeed(30);
    robot::setLeftSpeed(30);
    Brain.Timer.clear();
-   waitUntil(Brain.Timer.time(seconds) >= 5 || limit1.pressing());
+   waitUntil(Brain.Timer.time(seconds) >= 5 || distance1.objectDistance(mm) <= 20);
    // robot::stopDrive();
    robot::stopAccumulator();
 
@@ -157,6 +158,10 @@ void autonomous(void)
    wait(2, seconds);
    rightArm.stop();
    robot::stopDrive();
+
+   // Put the arm back to ensure it doesn't catch
+   rightArm.spinFor(reverse, 600, degrees, false);
+   wait(1, seconds);
 
    // Back away and then do something
    robot::driveStraight(reverse, 6); // 10
