@@ -71,9 +71,10 @@ void autonomous(void)
    }
 
    robot::driveStraight(forward, 5); // 4
+   wait(500, msec);
 
    // Drive backwards and go towards the corner stack
-   robot::driveStraight(reverse, 24); // 20
+   robot::driveStraight(reverse, 20); // 22
    if (robot::allianceIsRed)
    {
       robot::turnToHeading(310);
@@ -87,7 +88,7 @@ void autonomous(void)
    robot::drive(forward);
    robot::setLeftSpeed(100);
    robot::setRightSpeed(100);
-   wait(1.5, seconds);
+   wait(2, seconds);
    robot::stopDrive();
 
    // Get other corner rings
