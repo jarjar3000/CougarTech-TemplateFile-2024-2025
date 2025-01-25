@@ -37,7 +37,7 @@ void autonomous(void)
 
    // Drive to the mobile goal
    robot::setPrecice();
-   robot::driveStraight(reverse, 32);
+   robot::driveStraight(reverse, 32); //28
    robot::setFast();
    robot::clamp();
    robot::spinAccumulator(forward, 100);
