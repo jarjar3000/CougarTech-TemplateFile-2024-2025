@@ -46,12 +46,12 @@ class robot
         static const double fastKI = 0.1;
         static const double fastKD = 0.2;
 
-        static const double preciceKP = 3.5; // 0.5
+        static const double preciceKP = 3.4; // 0.5
         static const double preciceKI = 0.1;
         static const double preciceKD = 0.2;
 
         static const double turnKP = 32; // 34
-        static const double turnKI = 0.1;
+        static const double turnKI = 0.0;
         static const double turnKD = 0.5;
 
         // Straight PID Constants
